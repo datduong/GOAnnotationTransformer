@@ -48,11 +48,12 @@ def seq2sentence (seq,kmer_len=3):
   
 
 
-seq_data = pd.read_csv("/u/scratch/d/datduong/deepgo/data/embeddings.tsv",dtype=str,sep="\t")
+# seq_data = pd.read_csv("/u/scratch/d/datduong/deepgo/data/embeddings.tsv",dtype=str,sep="\t")
+seq_data = pd.read_csv("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/uniprot-filtered-reviewed_yes.tab",dtype=str,sep="\t")
 # Entry Gene ontology IDs Sequence  Prot Emb
-fout = open("/u/scratch/d/datduong/deepgo/data/embeddings_finetune.txt","w")
+fout = open("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune.txt","w")
 for index,row in tqdm (seq_data.iterrows()):
-  seq = row['Sequence'][ 1:len((row['Sequence'])-1) ] ## remove start/stop codon ?
+  seq = row['Sequence'][ 1:(len(row['Sequence'])-1) ] ## remove start/stop codon ?
   largest_len_divisible = int ( np.floor ( len(seq) / 3 ) ) * 3
   new_seq = seq[0:largest_len_divisible]
   new_seq = seq2sentence (new_seq)
@@ -63,8 +64,9 @@ fout.close()
 
 
 ##
-fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune.txt","w")
-go_data = pd.read_csv("/u/scratch/d/datduong/Onto2Vec/GOVectorData/2016DeepGOData/AllAxioms_2016.lst",dtype=str,sep="|",header=None) ## doesnt' matter what sep
+# fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune.txt","w")
+fout = open ("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/go_finetune.txt","w")
+go_data = pd.read_csv("/u/scratch/d/datduong/Onto2Vec/GOVectorData/2017/AllAxioms.lst",dtype=str,sep="|",header=None) ## doesnt' matter what sep
 ## add go terms into fine tune as well 
 for index,row in tqdm (go_data.iterrows()): 
   line = row[0].split() 
