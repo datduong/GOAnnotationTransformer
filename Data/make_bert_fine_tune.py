@@ -52,10 +52,27 @@ seq_data = pd.read_csv("/u/scratch/d/datduong/deepgo/data/embeddings.tsv",dtype=
 # Entry Gene ontology IDs Sequence  Prot Emb
 fout = open("/u/scratch/d/datduong/deepgo/data/embeddings_finetune.txt","w")
 for index,row in tqdm (seq_data.iterrows()):
-  largest_len_divisible = int ( np.floor ( len(row['Sequence']) / 3 ) )
-  new_seq = row['Sequence'][0:largest_len_divisible]
+  seq = row['Sequence'][ 1:len((row['Sequence'])-1) ] ## remove start/stop codon ?
+  largest_len_divisible = int ( np.floor ( len(seq) / 3 ) ) * 3
+  new_seq = seq[0:largest_len_divisible]
   new_seq = seq2sentence (new_seq)
   fout.write(new_seq + "\n\n")
+
+
+fout.close() 
+
+
+##
+fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune.txt","w")
+go_data = pd.read_csv("/u/scratch/d/datduong/Onto2Vec/GOVectorData/2016DeepGOData/AllAxioms_2016.lst",dtype=str,sep="|",header=None) ## doesnt' matter what sep
+## add go terms into fine tune as well 
+for index,row in tqdm (go_data.iterrows()): 
+  line = row[0].split() 
+  has_go = np.array ( [bool(re.match('GO_',j)) for j in line] ) 
+  if np.sum ( has_go ) > 1: 
+    # where_replace = np.where(has_go==True)[0]
+    ## remove _ with : to get GO:xyz
+    fout.write (re.sub("_",":",line[0]) + "\n" + re.sub ("_",":", " ".join(line[1::])) + "\n\n")
 
 
 fout.close() 
