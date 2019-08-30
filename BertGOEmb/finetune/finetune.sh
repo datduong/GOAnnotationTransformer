@@ -34,7 +34,7 @@ cd $server/BertGOAnnotation/finetune/lm_finetuning
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO2017'
 config_name=$bert_vocab/'config.json'
 
-CUDA_VISIBLE_DEVICES=1 python3 -u finetune_on_pregenerated.py --bert_vocab $bert_vocab --pregenerated_data $output_dir --bert_model $bert_model --output_dir $output_dir --epochs 50 --train_batch_size 10 --config_name $config_name --config_override 
+CUDA_VISIBLE_DEVICES=1 python3 -u finetune_on_pregenerated.py --bert_vocab $bert_vocab --pregenerated_data $output_dir --bert_model $bert_model --output_dir $output_dir --epochs 50 --train_batch_size 8 --config_name $config_name --config_override 
 
 
 
