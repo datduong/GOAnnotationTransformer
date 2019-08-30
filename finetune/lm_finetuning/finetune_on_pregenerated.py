@@ -243,7 +243,13 @@ def main():
     num_train_optimization_steps = num_train_optimization_steps // torch.distributed.get_world_size()
 
   # Prepare model
-  model = BertForPreTraining.from_pretrained(args.bert_model)
+
+  if args.config_override: 
+    config = BertConfig.from_pretrained(args.config_name)
+    model = BertForPreTraining(config)
+  else: 
+    model = BertForPreTraining.from_pretrained(args.bert_model)
+
   if args.fp16:
     model.half()
   model.to(device)
