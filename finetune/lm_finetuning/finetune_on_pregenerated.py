@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, Dataset, RandomSampler
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
 
-from pytorch_transformers import WEIGHTS_NAME, CONFIG_NAME
+from pytorch_transformers import WEIGHTS_NAME, CONFIG_NAME, BertConfig
 from pytorch_transformers.modeling_bert import BertForPreTraining
 from pytorch_transformers.tokenization_bert import BertTokenizer
 from pytorch_transformers.optimization import AdamW, WarmupLinearSchedule
@@ -129,6 +129,9 @@ def main():
                "bert-large-uncased, bert-base-cased, bert-base-multilingual, bert-base-chinese.")
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--do_lower_case", action="store_true")
+  parser.add_argument("--config_override", action="store_true")
+  parser.add_argument("--config_name", type=str, default=None)
+
   parser.add_argument("--reduce_memory", action="store_true",
             help="Store training data as on-disc memmaps to massively reduce memory usage")
 

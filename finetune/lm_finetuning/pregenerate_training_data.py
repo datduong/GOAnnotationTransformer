@@ -8,6 +8,7 @@ from multiprocessing import Pool
 from random import random, randrange, randint, shuffle, choice
 from pytorch_transformers.tokenization_bert import BertTokenizer
 import numpy as np
+import re
 import json
 import collections
 
@@ -323,7 +324,9 @@ def main():
     else: 
         tokenizer = BertTokenizer.from_pretrained(args.bert_vocab, do_lower_case=args.do_lower_case)
 
+
     vocab_list = list(tokenizer.vocab.keys())
+
     with DocumentDatabase(reduce_memory=args.reduce_memory) as docs:
         with args.train_corpus.open() as f:
             doc = []
@@ -333,7 +336,7 @@ def main():
                     docs.add_document(doc)
                     doc = []
                 else:
-                    tokens = tokenizer.tokenize(line)
+                    tokens = tokenizer.tokenize(line) ## split by ":" because GO:something is not getting split well. re.sub(":","",line)
                     doc.append(tokens)
             if doc:
                 docs.add_document(doc)  # If the last doc didn't end on a newline, make sure it still gets added
