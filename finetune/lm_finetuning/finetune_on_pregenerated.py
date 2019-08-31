@@ -159,12 +159,12 @@ def main():
             help="Loss scaling to improve fp16 numeric stability. Only used when fp16 set to True.\n"
             "0 (default value): dynamic loss scaling.\n"
             "Positive power of 2: static loss scaling value.\n")
-  parser.add_argument("--warmup_steps", 
-            default=0, 
+  parser.add_argument("--warmup_steps",
+            default=0,
             type=int,
             help="Linear warmup over warmup_steps.")
-  parser.add_argument("--adam_epsilon", 
-            default=1e-8, 
+  parser.add_argument("--adam_epsilon",
+            default=1e-8,
             type=float,
             help="Epsilon for Adam optimizer.")
   parser.add_argument("--learning_rate",
@@ -227,9 +227,9 @@ def main():
 
 
 
-  if args.bert_vocab is None: 
+  if args.bert_vocab is None:
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)
-  else: 
+  else:
     tokenizer = BertTokenizer.from_pretrained(args.bert_vocab, do_lower_case=args.do_lower_case)
 
   total_train_examples = 0
@@ -244,10 +244,10 @@ def main():
 
   # Prepare model
 
-  if args.config_override: 
+  if args.config_override:
     config = BertConfig.from_pretrained(args.config_name)
     model = BertForPreTraining(config)
-  else: 
+  else:
     model = BertForPreTraining.from_pretrained(args.bert_model)
 
   if args.fp16:
@@ -333,6 +333,11 @@ def main():
           optimizer.step()
           optimizer.zero_grad()
           global_step += 1
+
+    if epoch % 10 == 0:
+      logging.info("** ** * Saving fine-tuned model ** ** * ")
+      model.save_pretrained(args.output_dir)
+      tokenizer.save_pretrained(args.output_dir)
 
   # Save a trained model
   if  n_gpu > 1 and torch.distributed.get_rank() == 0  or n_gpu <=1 :
