@@ -334,7 +334,7 @@ def main():
           optimizer.zero_grad()
           global_step += 1
 
-    if epoch % 10 == 0:
+    if epoch % 6 == 0: ## about every 1 hr
       logging.info("** ** * Saving fine-tuned model ** ** * ")
       model.save_pretrained(args.output_dir)
       tokenizer.save_pretrained(args.output_dir)

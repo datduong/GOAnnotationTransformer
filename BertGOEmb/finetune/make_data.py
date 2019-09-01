@@ -23,8 +23,8 @@ import networkx
 import obonet
 
 
-work_dir = '/u/flashscratch/d/datduong/goAndGeneAnnotationMar2017/'
-# work_dir = '/u/flashscratch/d/datduong/deepgo/data/'
+# work_dir = '/u/flashscratch/d/datduong/goAndGeneAnnotationMar2017/'
+work_dir = '/u/flashscratch/d/datduong/deepgo/data/'
 os.chdir (work_dir)
 
 # Read the taxrank ontology
