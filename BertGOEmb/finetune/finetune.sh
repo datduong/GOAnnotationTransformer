@@ -64,7 +64,9 @@ conda activate tensorflow_gpuenv
 server='/local/datdb'
 data_dir=$server/'deepgo/data'
 pregenerated_data=$data_dir/BertFineTuneGOEmb768
-output_dir=$data_dir/'BertFineTuneGOEmb768Result'
+bert_model=$data_dir/'BertFineTuneGOEmb768Result'
+
+output_dir=$data_dir/'BertFineTuneGOEmb768ResultContinue'
 mkdir $output_dir
 
 cd $server/BertGOAnnotation/finetune/lm_finetuning
@@ -72,6 +74,10 @@ cd $server/BertGOAnnotation/finetune/lm_finetuning
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO2016'
 config_name=$bert_vocab/'config.json'
 
-CUDA_VISIBLE_DEVICES=2 python3 -u finetune_on_pregenerated.py --bert_vocab $bert_vocab --pregenerated_data $pregenerated_data --bert_model bert-base-cased --output_dir $output_dir --epochs 50 --train_batch_size 16 --config_name $config_name --config_override 
+CUDA_VISIBLE_DEVICES=5 python3 -u finetune_on_pregenerated.py --bert_vocab $bert_vocab --pregenerated_data $pregenerated_data --output_dir $output_dir --epochs 50 --train_batch_size 16 --shift_epoch 50 --bert_model $bert_model
+
+# when continue, need to shift the epoch because of pregenerated data
+# do not override config if we want to continue training 
+# bert-base-cased --config_name $config_name --config_override 
 
 

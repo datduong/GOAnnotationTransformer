@@ -130,7 +130,8 @@ def main():
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--do_lower_case", action="store_true")
   parser.add_argument("--config_override", action="store_true")
-  parser.add_argument("--config_name", type=str, default=None)
+  parser.add_argument("--config_name", type=str, default=None) 
+  parser.add_argument("--shift_epoch", type=int, default=0)
 
   parser.add_argument("--reduce_memory", action="store_true",
             help="Store training data as on-disc memmaps to massively reduce memory usage")
@@ -299,7 +300,7 @@ def main():
   logging.info("  Num steps = %d", num_train_optimization_steps)
   model.train()
   for epoch in range(args.epochs):
-    epoch_dataset = PregeneratedDataset(epoch=epoch, training_path=args.pregenerated_data, tokenizer=tokenizer,
+    epoch_dataset = PregeneratedDataset(epoch=epoch+args.shift_epoch, training_path=args.pregenerated_data, tokenizer=tokenizer,
                       num_data_epochs=num_data_epochs, reduce_memory=args.reduce_memory)
     if args.local_rank == -1:
       train_sampler = RandomSampler(epoch_dataset)
