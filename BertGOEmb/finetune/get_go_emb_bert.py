@@ -25,9 +25,14 @@ from pytorch_transformers.optimization import AdamW, WarmupLinearSchedule
 ## we used the GO vectors as "word"
 ## we can get the GO emb directly from the BERT model 
 
-output = "/local/datdb/deepgo/data/BertFineTuneGOEmb768Result" 
-bert_model = "/local/datdb/deepgo/data/BertFineTuneGOEmb768Result/" ## not need the pytorch.bin thingy 
-word_path = "/local/datdb/deepgo/data/BertFineTuneGOEmb768Result/vocab.txt"
+# output = "/local/datdb/deepgo/data/BertFineTuneGOEmb768ResultEpoch100" 
+# bert_model = "/local/datdb/deepgo/data/BertFineTuneGOEmb768ResultEpoch100/" ## not need the pytorch.bin thingy 
+# word_path = "/local/datdb/deepgo/data/BertFineTuneGOEmb768ResultEpoch100/vocab.txt"
+
+output = "/local/datdb/goAndGeneAnnotationMar2017/BertFineTuneGOEmb768"
+bert_model = "/local/datdb/goAndGeneAnnotationMar2017/BertFineTuneGOEmb768"
+word_path = "/local/datdb/goAndGeneAnnotationMar2017/BertFineTuneGOEmb768/vocab.txt"
+
 
 model = BertForPreTraining.from_pretrained(bert_model)
 word_emb = model.bert.embeddings.word_embeddings.weight.data.numpy() ## extract as np
