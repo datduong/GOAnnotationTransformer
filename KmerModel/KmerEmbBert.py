@@ -16,7 +16,17 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
 
-class BertForTokenClassification(BertPreTrainedModel):
+from pytorch_transformers import WEIGHTS_NAME, CONFIG_NAME, BertConfig
+from pytorch_transformers.modeling_bert import BertForPreTraining, BertPreTrainedModel, BertModel
+from pytorch_transformers.tokenization_bert import BertTokenizer
+
+
+class BertForTokenClassification1hot (BertPreTrainedModel):
+
+  ## !! we change this to do 1-hot prediction 
+  ## take in K labels so we have vector of 1-hot length K
+  ## for each label, we get a vector output from BERT, then we predict 0/1 
+
   r"""
     **labels**: (`optional`) ``torch.LongTensor`` of shape ``(batch_size, sequence_length)``:
       Labels for computing the token classification loss.
@@ -48,8 +58,8 @@ class BertForTokenClassification(BertPreTrainedModel):
 
   """
   def __init__(self, config):
-    super(BertForTokenClassification, self).__init__(config)
-    self.num_labels = config.num_labels
+    super(BertForTokenClassification1hot, self).__init__(config)
+    self.num_labels = 2 # config.num_labels ## for us, each output vector is "yes/no", so we should keep this at self.num_labels=2 to avoid any strange error later
 
     self.bert = BertModel(config)
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
@@ -58,27 +68,31 @@ class BertForTokenClassification(BertPreTrainedModel):
     self.apply(self.init_weights)
 
   def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
-        position_ids=None, head_mask=None):
+        position_ids=None, head_mask=None, attention_mask_label=None):
+    
+    ## !! add @attention_mask_label
+
     outputs = self.bert(input_ids, position_ids=position_ids, token_type_ids=token_type_ids,
               attention_mask=attention_mask, head_mask=head_mask)
     
     sequence_output = outputs[0] ## last layer. 
     sequence_output = self.dropout(sequence_output)
 
-    ## must extract only the label side (i.e. 2nd sentence)
-    ## last layer outputs is batch_num x len_sent x dim 
-    ## we can restrict where the label start. and where it ends ?? 
-    ## notice, @attention_mask is used to avoid padding in the @active_loss
-    ## so we need to only create another @attention_mask_label to pay attention to labels only 
-    
     logits = self.classifier(sequence_output)
 
     outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
     if labels is not None:
       loss_fct = CrossEntropyLoss()
+
+      ## must extract only the label side (i.e. 2nd sentence)
+      ## last layer outputs is batch_num x len_sent x dim 
+      ## we can restrict where the label start. and where it ends ?? 
+      ## notice, @attention_mask is used to avoid padding in the @active_loss
+      ## so we need to only create another @attention_mask_label to pay attention to labels only 
+
       # Only keep active parts of the loss
-      if attention_mask is not None:
-        active_loss = attention_mask.view(-1) == 1
+      if attention_mask_label is not None: ## change @attention_mask --> @attention_mask_label
+        active_loss = attention_mask_label.view(-1) == 1
         active_logits = logits.view(-1, self.num_labels)[active_loss]
         active_labels = labels.view(-1)[active_loss]
         loss = loss_fct(active_logits, active_labels)
