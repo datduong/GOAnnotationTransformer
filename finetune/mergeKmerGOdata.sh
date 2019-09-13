@@ -13,6 +13,11 @@ cd /u/scratch/d/datduong/deepgo/data/DataToFinetuneBertTokenPredict
 cat /u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune.txt /u/scratch/d/datduong/deepgo/data/GO_branch_split_half.txt > AAseq+GObranch.txt 
 
 
+/local/datdb/BERTPretrainedModel/cased_L-12_H-768_A-12Kmer2016/ ## make sure no duplication 
+awk '!seen[$0]++' vocab+3kmer+GO.txt > vocab.txt
+
+
+
 ## now we make pregenerated data. 
 
 
