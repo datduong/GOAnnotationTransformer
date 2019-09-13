@@ -322,6 +322,7 @@ def main():
     if args.bert_vocab is None: 
         tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)
     else: 
+        print ('loading own vocab {}'.format(args.bert_vocab))
         tokenizer = BertTokenizer.from_pretrained(args.bert_vocab, do_lower_case=args.do_lower_case)
 
 

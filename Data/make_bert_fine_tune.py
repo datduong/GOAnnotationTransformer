@@ -7,6 +7,10 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm 
 
+
+np.random.seed(seed=201909) ## use year month as seed
+
+
 ## make bert finetune data
 
 ## use the kmer-as vocab.
@@ -28,11 +32,26 @@ for a1 in string:
       counter = counter + 1
 
 ## split
-def split_seq (seq_kmer): ## @seq_kmer is array to make it easier to work with
-  where = len(seq_kmer)//2
-  seq1 = " ".join( seq_kmer[0:where] )
-  seq2 = " ".join( seq_kmer[where::] )
-  return seq1 + "\n" + seq2 ## one sent per line, and blank between "document"
+def split_seq (seq_kmer, split_group=5): ## @seq_kmer is array to make it easier to work with
+  where = len(seq_kmer)//split_group
+  seq1 = ""
+  start = 0
+  do_break = False
+  for g in range(split_group): 
+    end = start+where
+    if end > len(seq_kmer): ## end point for this group
+      end = len(seq_kmer)
+      do_break = True
+    if len(seq1) == 0:
+      seq1 = " ".join( seq_kmer[start:end] )
+    else:
+      seq1 = seq1 +"\n"+ " ".join( seq_kmer[start:end] )
+    ## update @start 
+    start = start + where ## next place
+    if do_break: 
+      break 
+
+  return seq1 ## one sent per line, and blank between "document"
 
 
 def seq2sentence (seq,kmer_len=3):
@@ -48,25 +67,33 @@ def seq2sentence (seq,kmer_len=3):
   
 
 
-# seq_data = pd.read_csv("/u/scratch/d/datduong/deepgo/data/embeddings.tsv",dtype=str,sep="\t")
-seq_data = pd.read_csv("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/uniprot-filtered-reviewed_yes.tab",dtype=str,sep="\t")
-# Entry Gene ontology IDs Sequence  Prot Emb
-fout = open("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune.txt","w")
-for index,row in tqdm (seq_data.iterrows()):
-  seq = row['Sequence'][ 1:(len(row['Sequence'])-1) ] ## remove start/stop codon ?
-  largest_len_divisible = int ( np.floor ( len(seq) / 3 ) ) * 3
-  new_seq = seq[0:largest_len_divisible]
-  new_seq = seq2sentence (new_seq)
-  fout.write(new_seq + "\n\n")
+# # seq_data = pd.read_csv("/u/scratch/d/datduong/deepgo/data/embeddings.tsv",dtype=str,sep="\t")
+# seq_data = pd.read_csv("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/uniprot-filtered-reviewed_yes.tab",dtype=str,sep="\t")
+# # Entry Gene ontology IDs Sequence  Prot Emb
+# fout = open("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune.txt","w")
+
+# for index,row in tqdm (seq_data.iterrows()):
+
+#   if len(row['Sequence']) < 20 : ## not long enough 
+#     continue 
+
+#   if np.random.uniform() > .25 : 
+#     continue ## take only some data
+
+#   seq = row['Sequence'] # [ 1:(len(row['Sequence'])-1) ] ## remove start/stop codon ?
+#   largest_len_divisible = int ( np.floor ( len(seq) / 3 ) ) * 3
+#   new_seq = seq[0:largest_len_divisible]
+#   new_seq = seq2sentence (new_seq)
+#   fout.write(new_seq + "\n\n")
 
 
-fout.close() 
+# fout.close() 
 
 
 ##
-# fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune.txt","w")
-fout = open ("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/go_finetune.txt","w")
-go_data = pd.read_csv("/u/scratch/d/datduong/Onto2Vec/GOVectorData/2017/AllAxioms.lst",dtype=str,sep="|",header=None) ## doesnt' matter what sep
+fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune_axiom.txt","w")
+# fout = open ("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/go_finetune.txt","w")
+go_data = pd.read_csv("/u/scratch/d/datduong/Onto2Vec/GOVectorData/2016DeepGOData/AllAxioms_2016.lst",dtype=str,sep="|",header=None) ## doesnt' matter what sep
 ## add go terms into fine tune as well 
 for index,row in tqdm (go_data.iterrows()): 
   line = row[0].split() 
