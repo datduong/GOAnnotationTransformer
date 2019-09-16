@@ -6,11 +6,12 @@
 ## let's say we stick with deepgo for now. 
 
 /u/scratch/d/datduong/deepgo/data
-/u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune.txt
-/u/scratch/d/datduong/deepgo/data/GO_branch_split_half.txt
+# /u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune.txt
+/u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune_train.txt
+/u/scratch/d/datduong/deepgo/data/GO_branch_whole.txt
 mkdir /u/scratch/d/datduong/deepgo/data/DataToFinetuneBertTokenPredict
 cd /u/scratch/d/datduong/deepgo/data/DataToFinetuneBertTokenPredict
-cat /u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune.txt /u/scratch/d/datduong/deepgo/data/GO_branch_split_half.txt > AAseq+GObranch.txt 
+cat /u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune_train.txt /u/scratch/d/datduong/deepgo/data/GO_branch_whole.txt > AAseq+GObranchMaskLM.txt 
 
 
 /local/datdb/BERTPretrainedModel/cased_L-12_H-768_A-12Kmer2016/ ## make sure no duplication 

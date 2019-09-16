@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 np.random.seed(seed=201909) ## use year month as seed
 
+MAX_LEN = 1024
 
 ## make bert finetune data
 
@@ -32,7 +33,7 @@ for a1 in string:
       counter = counter + 1
 
 ## split
-def split_seq (seq_kmer, split_group=5): ## @seq_kmer is array to make it easier to work with
+def split_seq (seq_kmer, split_group=1): ## @seq_kmer is array to make it easier to work with
   where = len(seq_kmer)//split_group
   seq1 = ""
   start = 0
@@ -60,8 +61,8 @@ def seq2sentence (seq,kmer_len=3):
     seq_kmer.append ( seq[i:(i+3)] )
 
   ###
-  if len(seq_kmer) >= 512:
-    seq_kmer = seq_kmer[1:512] ## must shorten
+  if len(seq_kmer) >= MAX_LEN:
+    seq_kmer = seq_kmer[1:MAX_LEN] ## must shorten
 
   return split_seq(seq_kmer)
   
@@ -96,22 +97,22 @@ fout.close()
 fout2.close() 
 
 
-##
-fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune_axiom_train.txt","w")
-fout2 = open ("/u/scratch/d/datduong/deepgo/data/go_finetune_axiom_test.txt","w")
-# fout = open ("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/go_finetune.txt","w")
-go_data = pd.read_csv("/u/scratch/d/datduong/Onto2Vec/GOVectorData/2016DeepGOData/AllAxioms_2016.lst",dtype=str,sep="|",header=None) ## doesnt' matter what sep
-## add go terms into fine tune as well 
-for index,row in tqdm (go_data.iterrows()): 
-  line = row[0].split() 
-  has_go = np.array ( [bool(re.match('GO_',j)) for j in line] ) 
-  if np.sum ( has_go ) > 1: 
-    # where_replace = np.where(has_go==True)[0]
-    ## remove _ with : to get GO:xyz
-    if np.random.uniform() > .10 : 
-      fout.write (re.sub("_",":",line[0]) + "\n" + re.sub ("_",":", " ".join(line[1::])) + "\n\n")
-    else: 
-      fout2.write (re.sub("_",":",line[0]) + "\n" + re.sub ("_",":", " ".join(line[1::])) + "\n\n")
+# ##
+# fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune_axiom_train.txt","w")
+# fout2 = open ("/u/scratch/d/datduong/deepgo/data/go_finetune_axiom_test.txt","w")
+# # fout = open ("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/go_finetune.txt","w")
+# go_data = pd.read_csv("/u/scratch/d/datduong/Onto2Vec/GOVectorData/2016DeepGOData/AllAxioms_2016.lst",dtype=str,sep="|",header=None) ## doesnt' matter what sep
+# ## add go terms into fine tune as well 
+# for index,row in tqdm (go_data.iterrows()): 
+#   line = row[0].split() 
+#   has_go = np.array ( [bool(re.match('GO_',j)) for j in line] ) 
+#   if np.sum ( has_go ) > 1: 
+#     # where_replace = np.where(has_go==True)[0]
+#     ## remove _ with : to get GO:xyz
+#     if np.random.uniform() > .10 : 
+#       fout.write (re.sub("_",":",line[0]) + "\n" + re.sub ("_",":", " ".join(line[1::])) + "\n\n")
+#     else: 
+#       fout2.write (re.sub("_",":",line[0]) + "\n" + re.sub ("_",":", " ".join(line[1::])) + "\n\n")
 
-fout.close() 
-fout2.close() 
+# fout.close() 
+# fout2.close() 

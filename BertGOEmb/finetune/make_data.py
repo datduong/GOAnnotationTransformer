@@ -48,8 +48,11 @@ id_to_name = {id_: data.get('name') for id_, data in graph.nodes(data=True) if '
 #                            [1, 0, 1, 3, 2]], dtype=torch.long)
 
 
-
-fout = open("GO_branch_split_half.txt","w")
+split_half = False
+if split_half: 
+  fout = open("GO_branch_split_half.txt","w")
+else: 
+  fout = open("GO_branch_whole.txt","w")
 
 ##!! Each node must appear at least once so we can encode it
 
@@ -82,7 +85,10 @@ for node_name in tqdm(id_to_name): ## for each node
   if len(path_to_root) > 1: 
     path1 = path_to_root [ 0: (num_path//2) ] 
     path2 = path_to_root [ (num_path//2) :: ] 
-    fout.write ( re.sub(":","", " ".join(str(p) for p in path1) ) + "\n" + re.sub(":","", " ".join(str(p) for p in path2) ) + "\n\n" )
+    if split_half: 
+      fout.write ( re.sub(":","", " ".join(str(p) for p in path1) ) + "\n" + re.sub(":","", " ".join(str(p) for p in path2) ) + "\n\n" )
+    else: 
+      fout.write ( re.sub(":","", " ".join(str(p) for p in path1) ) + " " + re.sub(":","", " ".join(str(p) for p in path2) ) + "\n\n" )
 
 
 fout.close() 
