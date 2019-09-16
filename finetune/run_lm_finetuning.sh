@@ -17,14 +17,13 @@ train_masklm_data='/local/datdb/deepgo/data/DataToFinetuneBertTokenPredict/AAseq
 cd $server/BertGOAnnotation/finetune/
 
 ## only run Mask Language ?? 
-CUDA_VISIBLE_DEVICES=1 python3 -u run_lm_finetuning.py --block_size 512 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 10 --per_gpu_train_batch_size 12 --config_name $config_name --config_override --do_train 
-
---fp16
-
-# CUDA_VISIBLE_DEVICES=1 python3 -u lm_finetuning/finetune_on_pregenerated.py --bert_vocab $bert_vocab --pregenerated_data $data_dir --bert_model bert-base-cased --output_dir $output_dir --epochs 10 --train_batch_size 8 --config_name $config_name --config_override 
+CUDA_VISIBLE_DEVICES=1 python3 -u run_lm_finetuning.py --block_size 512 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 10 --per_gpu_train_batch_size 8 --config_name $config_name --config_override --do_train --model_type bert --overwrite_output_dir --save_steps 5000
 
 
---fp16
+# CUDA_VISIBLE_DEVICES=7 python3 -u lm_finetuning/finetune_on_pregenerated.py --bert_vocab $bert_vocab --pregenerated_data $data_dir --bert_model bert-base-cased --output_dir $output_dir --epochs 10 --train_batch_size 8 --config_name $config_name --config_override --local_rank 2
+
+
+# --fp16
 
 
 
