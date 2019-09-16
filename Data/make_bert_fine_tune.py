@@ -67,31 +67,38 @@ def seq2sentence (seq,kmer_len=3):
   
 
 
-# # seq_data = pd.read_csv("/u/scratch/d/datduong/deepgo/data/embeddings.tsv",dtype=str,sep="\t")
-# seq_data = pd.read_csv("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/uniprot-filtered-reviewed_yes.tab",dtype=str,sep="\t")
-# # Entry Gene ontology IDs Sequence  Prot Emb
-# fout = open("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune.txt","w")
+# seq_data = pd.read_csv("/u/scratch/d/datduong/deepgo/data/embeddings.tsv",dtype=str,sep="\t")
+seq_data = pd.read_csv("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/uniprot-filtered-reviewed_yes.tab",dtype=str,sep="\t")
+# Entry Gene ontology IDs Sequence  Prot Emb
+fout = open("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune_train.txt","w")
 
-# for index,row in tqdm (seq_data.iterrows()):
+fout2 = open("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/seq_finetune_test.txt","w")
 
-#   if len(row['Sequence']) < 20 : ## not long enough 
-#     continue 
+for index,row in tqdm (seq_data.iterrows()):
 
-#   if np.random.uniform() > .25 : 
-#     continue ## take only some data
+  if len(row['Sequence']) < 20 : ## not long enough 
+    continue 
 
-#   seq = row['Sequence'] # [ 1:(len(row['Sequence'])-1) ] ## remove start/stop codon ?
-#   largest_len_divisible = int ( np.floor ( len(seq) / 3 ) ) * 3
-#   new_seq = seq[0:largest_len_divisible]
-#   new_seq = seq2sentence (new_seq)
-#   fout.write(new_seq + "\n\n")
+  if np.random.uniform() > .25 : 
+    continue ## take only some data
 
+  seq = row['Sequence'] # [ 1:(len(row['Sequence'])-1) ] ## remove start/stop codon ?
+  largest_len_divisible = int ( np.floor ( len(seq) / 3 ) ) * 3
+  new_seq = seq[0:largest_len_divisible]
+  new_seq = seq2sentence (new_seq)
 
-# fout.close() 
+  if np.random.uniform() > .10 : 
+    fout.write(new_seq + "\n\n")
+  else: 
+    fout2.write(new_seq + "\n\n") ## testing data
+
+fout.close() 
+fout2.close() 
 
 
 ##
-fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune_axiom.txt","w")
+fout = open ("/u/scratch/d/datduong/deepgo/data/go_finetune_axiom_train.txt","w")
+fout2 = open ("/u/scratch/d/datduong/deepgo/data/go_finetune_axiom_test.txt","w")
 # fout = open ("/u/scratch/d/datduong/UniprotAllReviewGoAnnot/go_finetune.txt","w")
 go_data = pd.read_csv("/u/scratch/d/datduong/Onto2Vec/GOVectorData/2016DeepGOData/AllAxioms_2016.lst",dtype=str,sep="|",header=None) ## doesnt' matter what sep
 ## add go terms into fine tune as well 
@@ -101,8 +108,10 @@ for index,row in tqdm (go_data.iterrows()):
   if np.sum ( has_go ) > 1: 
     # where_replace = np.where(has_go==True)[0]
     ## remove _ with : to get GO:xyz
-    fout.write (re.sub("_",":",line[0]) + "\n" + re.sub ("_",":", " ".join(line[1::])) + "\n\n")
-
+    if np.random.uniform() > .10 : 
+      fout.write (re.sub("_",":",line[0]) + "\n" + re.sub ("_",":", " ".join(line[1::])) + "\n\n")
+    else: 
+      fout2.write (re.sub("_",":",line[0]) + "\n" + re.sub ("_",":", " ".join(line[1::])) + "\n\n")
 
 fout.close() 
-
+fout2.close() 

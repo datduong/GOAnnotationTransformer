@@ -68,18 +68,34 @@ class TextDataset(Dataset):
       logger.info("Creating features from dataset file at %s", directory)
 
       self.examples = []
-      with open(file_path, encoding="utf-8") as f:
-        text = f.read()
+      # with open(file_path, encoding="utf-8") as f:
+      #   text = f.read()
 
-      tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
+      fin = open(file_path,"r",encoding='utf-8')
+      for text in tqdm(fin): 
+        text = text.strip()
+        if len(text) == 0: ## skip blank ?? 
+          continue
 
-      while len(tokenized_text) >= block_size:  # Truncate in block of block_size
-        self.examples.append(tokenizer.add_special_tokens_single_sentence(tokenized_text[:block_size]))
-        tokenized_text = tokenized_text[block_size:]
-      # Note that we are loosing the last truncated example here for the sake of simplicity (no padding)
-      # If your dataset is small, first you should loook for a bigger one :-) and second you
-      # can change this behavior by adding (model specific) padding.
+        tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
 
+        if len(tokenized_text) < block_size : ## short enough, so just use it 
+          ## add padding to match block_size
+          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text) 
+          tokens = tokens + [0]*(block_size-len(tokens)) ## add padding 0
+          assert len(tokens) == block_size
+          self.examples.append(tokens)
+
+        else: 
+          while len(tokenized_text) >= block_size:  # Truncate in block of block_size
+            self.examples.append(tokenizer.add_special_tokens_single_sentence(tokenized_text[:block_size]))
+            tokenized_text = tokenized_text[block_size:]
+
+          # Note that we are loosing the last truncated example here for the sake of simplicity (no padding)
+          # If your dataset is small, first you should loook for a bigger one :-) and second you
+          # can change this behavior by adding (model specific) padding.
+
+      ## save at end 
       logger.info("Saving features into cached file %s", cached_features_file)
       with open(cached_features_file, 'wb') as handle:
         pickle.dump(self.examples, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -128,6 +144,10 @@ def train(args, train_dataset, model, tokenizer):
   """ Train the model """
   if args.local_rank in [-1, 0]:
     tb_writer = SummaryWriter()
+
+  # print ('train_dataset')
+  # print (train_dataset)
+  # print (train_dataset.examples[0])
 
   args.train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
   train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
@@ -297,7 +317,6 @@ def main():
 
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
-  # parser.add_argument("--config_name", type=str, default=None) 
 
   ## Required parameters
   parser.add_argument("--train_data_file", default=None, type=str, required=True,
