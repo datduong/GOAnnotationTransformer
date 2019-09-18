@@ -49,6 +49,8 @@ logger = logging.getLogger(__name__)
 
 sys.path.append("/local/datdb/BertGOAnnotation")
 import KmerModel.TokenClassifier as TokenClassifier
+import evaluation_metric
+
 
 MODEL_CLASSES = {
   'gpt2': (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer),
@@ -64,7 +66,7 @@ class TextDataset(Dataset):
     directory, filename = os.path.split(file_path)
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
 
-    label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet 
+    label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet
     num_label = len(label_2test_array)
     print ('num label {}'.format(num_label))
     ## faster look up
@@ -94,23 +96,23 @@ class TextDataset(Dataset):
 
         ## split at \t ?? [seq \t label]
         text = text.split("\t") ## position 0 is kmer sequence, position 1 is list of labels
-
+        kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
+        num_kmer_text = len(kmer_text)
         this_label = text[1].split() ## by space
 
         ## convert label into 1-hot style
-        label1hot = np.zeros(num_label) ## 1D array 
+        label1hot = np.zeros(num_label) ## 1D array
         index_as1 = [label_index_map[label] for label in this_label]
-        label1hot [ index_as1 ] = 1 
+        label1hot [ index_as1 ] = 1
         self.label1hot.append( label1hot )
 
-        ## create token_type 
-        token_type = [0]*(len(text[0])+2) + [1]*(num_label+1) ## add 2 because of cls and sep, ## add 1 because of sep 
+        ## create token_type
+        token_type = [0]*(num_kmer_text+2) + [1]*(num_label+1) ## add 2 because of cls and sep, ## add 1 because of sep
+        WHERE_KMER_END = num_kmer_text + 2 ## add 2 because of sep cls , so we can mask out Kmer, because we will only predict the labels
 
-        ## combine the labels back with the kmer text ?? 
-        WHERE_KMER_END = len(text[0]) + 2 ## add 2 because of sep cls , so we can mask out Kmer, because we will only predict the labels
-        # text = text[0] + " [SEP] " + text[1] ## make it like 2 sentences 
-
-        ## want kmer + ALL LABELS 
+        ## combine the labels back with the kmer text ??
+        ## want kmer + ALL LABELS
+        ## ok to use @text[0] because we will tokenize, so we will remove the space
         text = text[0] + " [SEP] " + label_string ## add all the labels
         text_split = tokenizer.tokenize(text)
         tokenized_text = tokenizer.convert_tokens_to_ids(text_split) ## the tab won't matter here ## split at \t ?? [seq \t label]
@@ -127,37 +129,17 @@ class TextDataset(Dataset):
           self.examples.append(tokens)
           self.attention_mask.append(attention_indicator)
 
-          token_type = token_type + [0]* (block_size-len(token_type)) ## zero here, because we use mask anyway, so doesn't matter
+          token_type = token_type + [0]* (block_size-len(token_type)) ## zero here, because we use mask anyway, so doesn't matter ... add 0-padding to the token types
           self.token_type.append(token_type)
 
           ## get label_mask, so we test only on labels we want, and not some random tokens
-          label_mask = np.zeros( block_size ) ## 0--> not attend to 
+          label_mask = np.zeros( block_size ) ## 0--> not attend to
           label_mask [ WHERE_KMER_END:(WHERE_KMER_END+num_label) ] = 1 ## set to 1 so we can pull these out later, ALL LABELS WILL NEED 1, NOT JUST THE TRUE LABEL
-          self.label_mask.append(label_mask.tolist())
-
-          if WHERE_KMER_END == 809: 
-            print (text)
-            print (text_split)
-            print (len(text_split))
-            for indexingi,i in enumerate(text_split): 
-              if bool(re.match(r'GO[0-9]',i)):
-                print (indexingi)
-                exit() 
-
-          if counter < 3: ## see 
-            print (text)
-            print (tokens)
-            print (this_label)
-            print (label1hot)
-            print (np.sum(label_mask))
-            print (token_type)
-            print (attention_indicator)
+          self.label_mask.append(label_mask)
 
         else:
-          print ('too long, code unable to split long sentence ... infact we should not split')
-          print ('block {}'.format(block_size))
-          print (len(tokenized_text))
-          exit() 
+          print ( 'too long, code unable to split long sentence ... infact we should not split ... block {} len {}'.format(block_size,len(tokenized_text)) )
+          exit()
           # while len(tokenized_text) >= block_size:  # Truncate in block of block_size
           #   self.examples.append(tokenizer.add_special_tokens_single_sentence(tokenized_text[:block_size]))
           #   tokenized_text = tokenized_text[block_size:]
@@ -174,7 +156,7 @@ class TextDataset(Dataset):
 
   def __getitem__(self, item):
     return (torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]),
-            torch.LongTensor(self.label1hot[item]), torch.tensor(self.label_mask[item]), 
+            torch.LongTensor(self.label1hot[item]), torch.tensor(self.label_mask[item]),
             torch.tensor(self.token_type[item]) )
 
 
@@ -191,8 +173,11 @@ def set_seed(args):
     torch.cuda.manual_seed_all(args.seed)
 
 
-def train(args, train_dataset, model, tokenizer):
+def train(args, train_dataset, model, tokenizer, label_2test_array):
   """ Train the model """
+
+  num_labels = len(label_2test_array)
+
   if args.local_rank in [-1, 0]:
     tb_writer = SummaryWriter()
 
@@ -245,42 +230,49 @@ def train(args, train_dataset, model, tokenizer):
   tr_loss, logging_loss = 0.0, 0.0
   model.zero_grad()
   train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
+
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
   for _ in train_iterator:
+
+    prediction = []
+    true_label = []
+
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
       # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
-      ## !!!  WE ARE NOT GOING TO TRAIN MASKED-LM 
+      ## !!!  WE ARE NOT GOING TO TRAIN MASKED-LM
 
-      ## also, the batch will have this ordering 
+      ## also, the batch will have this ordering
       # return (torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]),
-      #       torch.LongTensor(self.label1hot[item]), torch.LongTensor(self.label_mask[item]), 
+      #       torch.LongTensor(self.label1hot[item]), torch.LongTensor(self.label_mask[item]),
       #       torch.tensor(self.token_type[item]) )
 
-      max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len 
-
-      print ('where 1st one in top')
-      for indexingj, j in enumerate(batch[3][0]): 
-        if j == 1: 
-          print (indexingj)
-          exit() 
-
+      max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len
       attention_mask = batch[0][:,0:max_len_in_batch].to(args.device)
       inputs = batch[1][:,0:max_len_in_batch].to(args.device)
       labels = batch[2].to(args.device) ## already in batch_size x num_label
-      labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU 
+      labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
       token_type = batch[4][:,0:max_len_in_batch].to(args.device)
 
       model.train()
 
-      # call to the @model 
+      # call to the @model
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
-   
+
       outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
+      ## track predicted probability 
+      true_label.append ( batch[2].data.numpy() ) 
+      ## (batch*num_label) x 2, because 0/1 construction for labels, so we take [:,1] to get the vote on "yes"
+      # print (outputs[1].shape) ## label x 2 
+      norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2 
+      norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label 
+      # print (norm_prob.shape)
+      prediction.append ( np.reshape(norm_prob, ( batch[1].shape[0], num_labels )) ) ## num actual sample v.s. num label
+      
       if args.n_gpu > 1:
         loss = loss.mean()  # mean() to average on multi-gpu parallel training
       if args.gradient_accumulation_steps > 1:
@@ -326,6 +318,11 @@ def train(args, train_dataset, model, tokenizer):
       if args.max_steps > 0 and global_step > args.max_steps:
         epoch_iterator.close()
         break
+    
+    ## end 1 epoch
+    result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
+    evaluation_metric.print_metrics( result )
+
     if args.max_steps > 0 and global_step > args.max_steps:
       train_iterator.close()
       break
@@ -364,7 +361,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     attention_mask = batch[0].to(args.device)
     inputs = batch[1].to(args.device)
     labels = batch[2].to(args.device)
-    labels_mask = batch[3] ## probably doesn't need this to be in GPU 
+    labels_mask = batch[3] ## probably doesn't need this to be in GPU
     token_type = batch[4].to(args.device)
 
     with torch.no_grad():
@@ -554,7 +551,7 @@ def main():
 
   logger.info("Training/evaluation parameters %s", args)
 
-  # read in labels to be testing 
+  # read in labels to be testing
   label_2test_array = pd.read_csv(args.label_2test,header=None)
   label_2test_array = sorted(list( label_2test_array[0] ))
   label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
@@ -569,7 +566,7 @@ def main():
     if args.local_rank == 0:
       torch.distributed.barrier()
 
-    global_step, tr_loss = train(args, train_dataset, model, tokenizer)
+    global_step, tr_loss = train(args, train_dataset, model, tokenizer,label_2test_array)
     logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
 

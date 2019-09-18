@@ -94,15 +94,12 @@ class BertForTokenClassification1hot (BertPreTrainedModel):
       # Only keep active parts of the loss
       if attention_mask_label is not None: ## change @attention_mask --> @attention_mask_label
         active_loss = attention_mask_label.view(-1) == 1
-        print (torch.sum(attention_mask_label,1))
-        print (active_loss.shape)
-        print (torch.sum(active_loss,1))
         active_logits = logits.view(-1, self.num_labels)[active_loss]
         active_labels = labels.view(-1) # [active_loss] ## do not need to extract labels ?? we can pass in the exact true label 
         loss = loss_fct(active_logits, active_labels)
       else:
         loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-      outputs = (loss,) + outputs
+      outputs = (loss,active_logits,) + outputs
 
     return outputs  # (loss), scores, (hidden_states), (attentions)
 
