@@ -264,15 +264,15 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
-      ## track predicted probability 
-      true_label.append ( batch[2].data.numpy() ) 
+      ## track predicted probability
+      true_label.append ( batch[2].data.numpy() )
       ## (batch*num_label) x 2, because 0/1 construction for labels, so we take [:,1] to get the vote on "yes"
-      # print (outputs[1].shape) ## label x 2 
-      norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2 
-      norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label 
+      # print (outputs[1].shape) ## label x 2
+      norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
+      norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
       # print (norm_prob.shape)
       prediction.append ( np.reshape(norm_prob, ( batch[1].shape[0], num_labels )) ) ## num actual sample v.s. num label
-      
+
       if args.n_gpu > 1:
         loss = loss.mean()  # mean() to average on multi-gpu parallel training
       if args.gradient_accumulation_steps > 1:
@@ -318,7 +318,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       if args.max_steps > 0 and global_step > args.max_steps:
         epoch_iterator.close()
         break
-    
+
     ## end 1 epoch
     result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
     evaluation_metric.print_metrics( result )
