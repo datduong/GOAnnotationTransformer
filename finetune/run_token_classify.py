@@ -88,8 +88,8 @@ class TextDataset(Dataset):
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
-        if counter > 100 :
-          break
+        # if counter > 100 :
+        #   break
         text = text.strip()
         if len(text) == 0: ## skip blank ??
           continue
@@ -234,8 +234,8 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
   for _ in train_iterator:
 
-    prediction = []
-    true_label = []
+    prediction = None
+    true_label = None
 
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
@@ -264,14 +264,19 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
-      ## track predicted probability
-      true_label.append ( batch[2].data.numpy() )
+      
       ## (batch*num_label) x 2, because 0/1 construction for labels, so we take [:,1] to get the vote on "yes"
       # print (outputs[1].shape) ## label x 2
       norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
       norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
       # print (norm_prob.shape)
-      prediction.append ( np.reshape(norm_prob, ( batch[1].shape[0], num_labels )) ) ## num actual sample v.s. num label
+      if prediction is None: 
+        ## track predicted probability
+        true_label = batch[2].data.numpy() 
+        prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
+      else: 
+        true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
+        prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
 
       if args.n_gpu > 1:
         loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -298,7 +303,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
           # Log metrics
           if args.local_rank == -1 and args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
-            results = evaluate(args, model, tokenizer)
+            results = evaluate(args, model, tokenizer,label_2test_array)
             for key, value in results.items():
               tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
           tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
@@ -320,6 +325,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         break
 
     ## end 1 epoch
+    true_label = np.array (true_label)
     result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
     evaluation_metric.print_metrics( result )
 
@@ -334,6 +340,9 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
 
 def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
+
+  num_labels = len(label_2test_array)
+
   # Loop to handle MNLI double evaluation (matched, mis-matched)
   eval_output_dir = args.output_dir
 
@@ -355,27 +364,43 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
   nb_eval_steps = 0
   model.eval()
 
+  prediction = None
+  true_label = None
+
   for batch in tqdm(eval_dataloader, desc="Evaluating"):
     # batch = batch.to(args.device)
 
-    attention_mask = batch[0].to(args.device)
-    inputs = batch[1].to(args.device)
-    labels = batch[2].to(args.device)
-    labels_mask = batch[3] ## probably doesn't need this to be in GPU
-    token_type = batch[4].to(args.device)
+    max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len
+    attention_mask = batch[0][:,0:max_len_in_batch].to(args.device)
+    inputs = batch[1][:,0:max_len_in_batch].to(args.device)
+    labels = batch[2].to(args.device) ## already in batch_size x num_label
+    labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
+    token_type = batch[4][:,0:max_len_in_batch].to(args.device)
 
     with torch.no_grad():
-      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, attention_mask_label=labels_mask )
+      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask ) 
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
     nb_eval_steps += 1
 
-  eval_loss = eval_loss / nb_eval_steps
-  # perplexity = torch.exp(torch.tensor(eval_loss))
+    ## track output 
+    norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
+    norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
+    # print (norm_prob.shape)
+    if prediction is None: 
+      ## track predicted probability
+      true_label = batch[2].data.numpy() 
+      prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
+    else: 
+      true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
+      prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
 
-  result = {
-    "eval_loss": eval_loss
-  }
+
+  true_label = np.array (true_label)
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
+  evaluation_metric.print_metrics( result )
+
+  result['eval_loss'] = eval_loss / nb_eval_steps
 
   output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
   with open(output_eval_file, "w") as writer:

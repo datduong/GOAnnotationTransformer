@@ -59,8 +59,8 @@ def seq2sentence (seq,kmer_len=3):
   return split_seq(seq_kmer)
   
 
-fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/test-mf.tsv"
-fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/test-mf.csv"
+fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/train-mf.tsv"
+fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/train-mf.csv"
 
 df = pd.read_csv(fin,sep="\t")
 print (fin)
