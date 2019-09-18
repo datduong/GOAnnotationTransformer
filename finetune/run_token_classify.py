@@ -27,6 +27,8 @@ import logging
 import os
 import pickle
 import random
+import re,sys
+import pandas as pd
 
 import numpy as np
 import torch
@@ -45,20 +47,29 @@ from pytorch_transformers.modeling_bert import BertForPreTraining
 
 logger = logging.getLogger(__name__)
 
+sys.path.append("/local/datdb/BertGOAnnotation")
+import KmerModel.TokenClassifier as TokenClassifier
 
 MODEL_CLASSES = {
   'gpt2': (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer),
   'openai-gpt': (OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer),
-  'bert': (BertConfig, BertForMaskedLM, BertTokenizer),
+  'bert': (BertConfig, TokenClassifier.BertForTokenClassification1hot, BertTokenizer), ## replace the standard @BertForTokenClassification
   'roberta': (RobertaConfig, RobertaForMaskedLM, RobertaTokenizer)
 }
 
 
 class TextDataset(Dataset):
-  def __init__(self, tokenizer, file_path='train', block_size=512):
+  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512):
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
+
+    label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet 
+    num_label = len(label_2test_array)
+    print ('num label {}'.format(num_label))
+    ## faster look up
+    label_index_map = { name : index for index,name in enumerate(label_2test_array) }
+    label_string = " ".join(label_2test_array)
 
     if os.path.exists(cached_features_file):
       logger.info("Loading features from cached file %s", cached_features_file)
@@ -67,46 +78,93 @@ class TextDataset(Dataset):
     else:
       logger.info("Creating features from dataset file at %s", directory)
 
+      self.attention_mask = []
       self.examples = []
-      self.attention_mask = [] 
-      # with open(file_path, encoding="utf-8") as f:
-      #   text = f.read()
+      self.label1hot = [] ## take 1 hot (should short labels by alphabet)
+      self.label_mask = []
+      self.token_type = []
 
       fin = open(file_path,"r",encoding='utf-8')
-      for counter, text in tqdm(enumerate(fin)): 
-        # if counter > 100 : 
-        #   break
+      for counter, text in tqdm(enumerate(fin)):
+        if counter > 100 :
+          break
         text = text.strip()
-        if len(text) == 0: ## skip blank ?? 
+        if len(text) == 0: ## skip blank ??
           continue
 
-        tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
+        ## split at \t ?? [seq \t label]
+        text = text.split("\t") ## position 0 is kmer sequence, position 1 is list of labels
 
-        if len(tokenized_text) < block_size : ## short enough, so just use it 
+        this_label = text[1].split() ## by space
+
+        ## convert label into 1-hot style
+        label1hot = np.zeros(num_label) ## 1D array 
+        index_as1 = [label_index_map[label] for label in this_label]
+        label1hot [ index_as1 ] = 1 
+        self.label1hot.append( label1hot )
+
+        ## create token_type 
+        token_type = [0]*(len(text[0])+2) + [1]*(num_label+1) ## add 2 because of cls and sep, ## add 1 because of sep 
+
+        ## combine the labels back with the kmer text ?? 
+        WHERE_KMER_END = len(text[0]) + 2 ## add 2 because of sep cls , so we can mask out Kmer, because we will only predict the labels
+        # text = text[0] + " [SEP] " + text[1] ## make it like 2 sentences 
+
+        ## want kmer + ALL LABELS 
+        text = text[0] + " [SEP] " + label_string ## add all the labels
+        text_split = tokenizer.tokenize(text)
+        tokenized_text = tokenizer.convert_tokens_to_ids(text_split) ## the tab won't matter here ## split at \t ?? [seq \t label]
+
+        if len(tokenized_text) < block_size : ## short enough, so just use it
           ## add padding to match block_size
-          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text) 
+          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text) ## [CLS] something [SEP]
           attention_indicator = [1]*len(tokens) + [0]*(block_size-len(tokens))
           tokens = tokens + [0]*(block_size-len(tokens)) ## add padding 0
+
           assert len(tokens) == block_size
+          assert len(attention_indicator) == block_size
+
           self.examples.append(tokens)
           self.attention_mask.append(attention_indicator)
 
-        else: 
-          while len(tokenized_text) >= block_size:  # Truncate in block of block_size
-            self.examples.append(tokenizer.add_special_tokens_single_sentence(tokenized_text[:block_size]))
-            tokenized_text = tokenized_text[block_size:]
-            attention_indicator = [1]*block_size
-            self.attention_mask.append(attention_indicator)
+          token_type = token_type + [0]* (block_size-len(token_type)) ## zero here, because we use mask anyway, so doesn't matter
+          self.token_type.append(token_type)
 
-          # Note that we are loosing the last truncated example here for the sake of simplicity (no padding)
-          # If your dataset is small, first you should look for a bigger one :-) and second you
-          # can change this behavior by adding (model specific) padding.
-        
-        # print (self.examples[0])
-        # print (self.attention_mask[0])
-        # exit() 
+          ## get label_mask, so we test only on labels we want, and not some random tokens
+          label_mask = np.zeros( block_size ) ## 0--> not attend to 
+          label_mask [ WHERE_KMER_END:(WHERE_KMER_END+num_label) ] = 1 ## set to 1 so we can pull these out later, ALL LABELS WILL NEED 1, NOT JUST THE TRUE LABEL
+          self.label_mask.append(label_mask.tolist())
 
-      ## save at end 
+          if WHERE_KMER_END == 809: 
+            print (text)
+            print (text_split)
+            print (len(text_split))
+            for indexingi,i in enumerate(text_split): 
+              if bool(re.match(r'GO[0-9]',i)):
+                print (indexingi)
+                exit() 
+
+          if counter < 3: ## see 
+            print (text)
+            print (tokens)
+            print (this_label)
+            print (label1hot)
+            print (np.sum(label_mask))
+            print (token_type)
+            print (attention_indicator)
+
+        else:
+          print ('too long, code unable to split long sentence ... infact we should not split')
+          print ('block {}'.format(block_size))
+          print (len(tokenized_text))
+          exit() 
+          # while len(tokenized_text) >= block_size:  # Truncate in block of block_size
+          #   self.examples.append(tokenizer.add_special_tokens_single_sentence(tokenized_text[:block_size]))
+          #   tokenized_text = tokenized_text[block_size:]
+          #   attention_indicator = [1]*block_size
+          #   self.attention_mask.append(attention_indicator)
+
+      ## save at end
       # logger.info("Saving features into cached file %s", cached_features_file)
       # with open(cached_features_file, 'wb') as handle:
       #   pickle.dump(self.examples, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -115,11 +173,13 @@ class TextDataset(Dataset):
     return len(self.examples)
 
   def __getitem__(self, item):
-    return ( torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]) ) 
+    return (torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]),
+            torch.LongTensor(self.label1hot[item]), torch.tensor(self.label_mask[item]), 
+            torch.tensor(self.token_type[item]) )
 
 
-def load_and_cache_examples(args, tokenizer, evaluate=False):
-  dataset = TextDataset(tokenizer, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size)
+def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
+  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size)
   return dataset
 
 
@@ -129,47 +189,6 @@ def set_seed(args):
   torch.manual_seed(args.seed)
   if args.n_gpu > 0:
     torch.cuda.manual_seed_all(args.seed)
-
-
-def mask_tokens(inputs, tokenizer, args):
-  """ Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% random, 10% original. """
-
-  max_len = torch.max ( torch.sum ( inputs[0], 1 ) )  ## sum for each row, what is the longest sent in this batch ??
-  # print ('max_len {}'.format(max_len))
-
-  word_index = inputs[1][:,0:max_len].clone() ## don't need all the length 
-  labels = word_index.clone() 
-
-  # We sample a few tokens in each sequence for masked-LM training (with probability args.mlm_probability defaults to 0.15 in Bert/RoBERTa)
-
-  masked_indices = torch.bernoulli(torch.full( (labels.shape[0],max_len), args.mlm_probability)).bool() ## only need to sample words to remove from 0 to longest-len
-  # masked_indices = torch.cat( (masked_indices,torch.zeros((labels.shape[0],labels.shape[1]-max_len))), dim=1 ).bool() ## now we need to append to all zero, so that we match the maximum batching length of 512 .... actually we can do better ?? 
-
-  # print (masked_indices.shape)
-  # print (torch.sum(masked_indices))
-
-  ## not all batch has same length ?? 
-  masked_indices = masked_indices & inputs[0][:,0:max_len].bool() ## is attention weight masking 
-  
-  # print (masked_indices.shape)
-  # print (torch.sum(masked_indices))
-
-  labels[~masked_indices] = -1  # We only compute loss on masked tokens
-
-  # print ('labels')
-  # print (labels.shape)
-
-  # 80% of the time, we replace masked input tokens with tokenizer.mask_token ([MASK])
-  indices_replaced = torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
-  word_index[indices_replaced] = tokenizer.convert_tokens_to_ids(tokenizer.mask_token)
-
-  # 10% of the time, we replace masked input tokens with random word
-  indices_random = torch.bernoulli(torch.full(labels.shape, 0.5)).bool() & masked_indices & ~indices_replaced
-  random_words = torch.randint(len(tokenizer), labels.shape, dtype=torch.long)
-  word_index[indices_random] = random_words[indices_random]
-
-  # The rest of the time (10% of the time) we keep the masked input tokens unchanged
-  return word_index, labels, inputs[0][:,0:max_len]
 
 
 def train(args, train_dataset, model, tokenizer):
@@ -230,12 +249,36 @@ def train(args, train_dataset, model, tokenizer):
   for _ in train_iterator:
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
-      inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
-      inputs = inputs.to(args.device)
-      labels = labels.to(args.device)
-      attention_mask = attention_mask.to(args.device)
+      # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
+      ## !!!  WE ARE NOT GOING TO TRAIN MASKED-LM 
+
+      ## also, the batch will have this ordering 
+      # return (torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]),
+      #       torch.LongTensor(self.label1hot[item]), torch.LongTensor(self.label_mask[item]), 
+      #       torch.tensor(self.token_type[item]) )
+
+      max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len 
+
+      print ('where 1st one in top')
+      for indexingj, j in enumerate(batch[3][0]): 
+        if j == 1: 
+          print (indexingj)
+          exit() 
+
+      attention_mask = batch[0][:,0:max_len_in_batch].to(args.device)
+      inputs = batch[1][:,0:max_len_in_batch].to(args.device)
+      labels = batch[2].to(args.device) ## already in batch_size x num_label
+      labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU 
+      token_type = batch[4][:,0:max_len_in_batch].to(args.device)
+
       model.train()
-      outputs = model(inputs, attention_mask=attention_mask, masked_lm_labels=labels)  # if args.mlm else model(inputs, labels=labels)
+
+      # call to the @model 
+      # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
+      #   position_ids=None, head_mask=None, attention_mask_label=None):
+   
+      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )  # if args.mlm else model(inputs, labels=labels)
+
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
       if args.n_gpu > 1:
@@ -293,11 +336,11 @@ def train(args, train_dataset, model, tokenizer):
   return global_step, tr_loss / global_step
 
 
-def evaluate(args, model, tokenizer, prefix=""):
+def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
   # Loop to handle MNLI double evaluation (matched, mis-matched)
   eval_output_dir = args.output_dir
 
-  eval_dataset = load_and_cache_examples(args, tokenizer, evaluate=True)
+  eval_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=True)
 
   if not os.path.exists(eval_output_dir) and args.local_rank in [-1, 0]:
     os.makedirs(eval_output_dir)
@@ -318,20 +361,23 @@ def evaluate(args, model, tokenizer, prefix=""):
   for batch in tqdm(eval_dataloader, desc="Evaluating"):
     # batch = batch.to(args.device)
 
-    inputs = batch[1].to(args.device)
     attention_mask = batch[0].to(args.device)
+    inputs = batch[1].to(args.device)
+    labels = batch[2].to(args.device)
+    labels_mask = batch[3] ## probably doesn't need this to be in GPU 
+    token_type = batch[4].to(args.device)
 
     with torch.no_grad():
-      outputs = model(inputs, attention_mask=attention_mask, masked_lm_labels=inputs) if args.mlm else model(batch, labels=batch)
+      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, attention_mask_label=labels_mask )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
     nb_eval_steps += 1
 
   eval_loss = eval_loss / nb_eval_steps
-  perplexity = torch.exp(torch.tensor(eval_loss))
+  # perplexity = torch.exp(torch.tensor(eval_loss))
 
   result = {
-    "perplexity": perplexity
+    "eval_loss": eval_loss
   }
 
   output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
@@ -346,6 +392,8 @@ def evaluate(args, model, tokenizer, prefix=""):
 
 def main():
   parser = argparse.ArgumentParser()
+
+  parser.add_argument("--label_2test", type=str, default=None)
 
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
@@ -506,12 +554,17 @@ def main():
 
   logger.info("Training/evaluation parameters %s", args)
 
+  # read in labels to be testing 
+  label_2test_array = pd.read_csv(args.label_2test,header=None)
+  label_2test_array = sorted(list( label_2test_array[0] ))
+  label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
+
   # Training
   if args.do_train:
     if args.local_rank not in [-1, 0]:
       torch.distributed.barrier()  # Barrier to make sure only the first process in distributed training process the dataset, and the others will use the cache
 
-    train_dataset = load_and_cache_examples(args, tokenizer, evaluate=False)
+    train_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False)
 
     if args.local_rank == 0:
       torch.distributed.barrier()

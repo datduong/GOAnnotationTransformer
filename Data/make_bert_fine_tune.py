@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 np.random.seed(seed=201909) ## use year month as seed
 
-MAX_LEN = 1024
+MAX_LEN = 512
 
 ## make bert finetune data
 

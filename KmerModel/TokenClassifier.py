@@ -65,7 +65,8 @@ class BertForTokenClassification1hot (BertPreTrainedModel):
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
     self.classifier = nn.Linear(config.hidden_size, config.num_labels)
 
-    self.apply(self.init_weights)
+    # self.apply(self.init_weights)
+    self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
   def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
         position_ids=None, head_mask=None, attention_mask_label=None):
@@ -93,8 +94,11 @@ class BertForTokenClassification1hot (BertPreTrainedModel):
       # Only keep active parts of the loss
       if attention_mask_label is not None: ## change @attention_mask --> @attention_mask_label
         active_loss = attention_mask_label.view(-1) == 1
+        print (torch.sum(attention_mask_label,1))
+        print (active_loss.shape)
+        print (torch.sum(active_loss,1))
         active_logits = logits.view(-1, self.num_labels)[active_loss]
-        active_labels = labels.view(-1)[active_loss]
+        active_labels = labels.view(-1) # [active_loss] ## do not need to extract labels ?? we can pass in the exact true label 
         loss = loss_fct(active_logits, active_labels)
       else:
         loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
