@@ -8,7 +8,7 @@ server='/local/datdb'
 data_dir=$server/'deepgo/data/DataToFinetuneBertTokenPredict/FinetunePhaseData'
 mkdir $server/'deepgo/data/BertNotFtAAseqGO'
 
-for ontology in 'cc' ; do 
+for ontology in 'cc'  ; do 
   last_save=$server/'deepgo/data/BertNotFtAAseqGO/fold_1_ppi_'$ontology
   output_dir=$server/'deepgo/data/BertNotFtAAseqGO/fold_1_ppi_'$ontology
   mkdir $output_dir
