@@ -59,22 +59,25 @@ def seq2sentence (seq,kmer_len=3):
   return split_seq(seq_kmer)
   
 
-fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/train-mf.tsv"
-fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/train-mf.csv"
+for data_type in ['train','dev','test']: 
+  for ontology in ['cc','bp','mf']: 
 
-df = pd.read_csv(fin,sep="\t")
-print (fin)
-print ( df.shape ) 
+    fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/"+data_type+"-"+ontology+".tsv"
+    fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/"+data_type+"-"+ontology+".csv"
 
-## write out each line, no header and make into kmer 
-# Entry Gene ontology IDs Sequence  Prot Emb
+    df = pd.read_csv(fin,sep="\t")
+    print (fin)
+    print ( df.shape ) 
 
-fout = open(fout,'w')
-for index,row in df.iterrows(): 
-  new_seq = seq2sentence (row['Sequence'])
-  go_list = re.sub(r":","",row['Gene ontology IDs'])
-  go_list = sorted(go_list.split(";"))
-  fout.write(new_seq + "\t" + " ".join(go_list)+"\n")
+    ## write out each line, no header and make into kmer 
+    # Entry Gene ontology IDs Sequence  Prot Emb
+
+    fout = open(fout,'w')
+    for index,row in df.iterrows(): 
+      new_seq = seq2sentence (row['Sequence'])
+      go_list = re.sub(r":","",row['Gene ontology IDs'])
+      go_list = sorted(go_list.split(";"))
+      fout.write(new_seq + "\t" + " ".join(go_list)+"\n")
 
 
-fout.close() 
+    fout.close() 

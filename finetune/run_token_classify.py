@@ -231,6 +231,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   model.zero_grad()
   train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
 
+  ## track best loss on eval set ?? 
+  eval_loss = np.inf 
+  last_best = 0 
+
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
   for _ in train_iterator:
 
@@ -300,15 +304,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         model.zero_grad()
         global_step += 1
 
-        if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
-          # Log metrics
-          if args.local_rank == -1 and args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
-            results = evaluate(args, model, tokenizer,label_2test_array)
-            for key, value in results.items():
-              tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-          tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-          tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
-          logging_loss = tr_loss
 
         if args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
           # Save model checkpoint
@@ -320,14 +315,35 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
           torch.save(args, os.path.join(output_dir, 'training_args.bin'))
           logger.info("Saving model checkpoint to %s", output_dir)
 
+        if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
+          # Log metrics
+          if args.local_rank == -1 and args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
+            results = evaluate(args, model, tokenizer,label_2test_array)
+            for key, value in results.items():
+              tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
+            if results['eval_loss'] < eval_loss: 
+              eval_loss = results['eval_loss']
+              last_best = step 
+            else: 
+              ## break counter 
+              if step - last_best > 5 : 
+                print ("**** break early ****")
+                break ## break early 
+
+          tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
+          tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
+          logging_loss = tr_loss
+
+
       if args.max_steps > 0 and global_step > args.max_steps:
         epoch_iterator.close()
         break
 
     ## end 1 epoch
-    true_label = np.array (true_label)
-    result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-    evaluation_metric.print_metrics( result )
+    # print ('\neval on trainset\n')
+    # true_label = np.array (true_label)
+    # result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
+    # evaluation_metric.print_metrics( result )
 
     if args.max_steps > 0 and global_step > args.max_steps:
       train_iterator.close()
@@ -626,10 +642,11 @@ def main():
       logging.getLogger("pytorch_transformers.modeling_utils").setLevel(logging.WARN)  # Reduce logging
     logger.info("Evaluate the following checkpoints: %s", checkpoints)
     for checkpoint in checkpoints:
+      print( "\n\nEvaluate the following checkpoints: {} \n".format(checkpoint) )
       global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
       model = model_class.from_pretrained(checkpoint)
       model.to(args.device)
-      result = evaluate(args, model, tokenizer, prefix=global_step)
+      result = evaluate(args, model, tokenizer, label_2test_array, prefix=global_step)
       result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
       results.update(result)
 
