@@ -26,13 +26,13 @@ for ontology in 'cc'  ; do
 
   # 5040 batches train
   ## continue training 
-  CUDA_VISIBLE_DEVICES=2 python3 -u run_token_classify_ppi.py --block_size 2048 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 50 --per_gpu_train_batch_size 6 --per_gpu_eval_batch_size 8 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 6000 --logging_steps 6000 --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override # --no_cuda
+  CUDA_VISIBLE_DEVICES=1 python3 -u run_token_classify_ppi.py --block_size 2048 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 25 --per_gpu_train_batch_size 6 --per_gpu_eval_batch_size 8 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 4000 --logging_steps 4000 --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override # --no_cuda
 
 
   ## testing phase 
   
   eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/test-'$ontology'-ppi.csv'
-  # CUDA_VISIBLE_DEVICES=2 python3 -u run_token_classify_ppi.py --block_size 2048 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 25 --per_gpu_train_batch_size 6 --per_gpu_eval_batch_size 12 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --save_steps 4000 --logging_steps 4000 --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints > $output_dir/eval_all_check_point.txt
+  CUDA_VISIBLE_DEVICES=1 python3 -u run_token_classify_ppi.py --block_size 2048 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 25 --per_gpu_eval_batch_size 12 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints > $output_dir/eval_all_check_point.txt
 
 done 
 
