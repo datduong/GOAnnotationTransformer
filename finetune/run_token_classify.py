@@ -363,11 +363,11 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         epoch_iterator.close()
         break
 
-      if break_early:
-        break
-
 
     ## end 1 epoch
+    if break_early:
+      break
+
     # print ('\neval on trainset\n')
     # true_label = np.array (true_label)
     # result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k

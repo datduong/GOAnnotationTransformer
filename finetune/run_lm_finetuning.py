@@ -321,8 +321,9 @@ def evaluate(args, model, tokenizer, prefix=""):
   for batch in tqdm(eval_dataloader, desc="Evaluating"):
     # batch = batch.to(args.device)
 
-    inputs = batch[1].to(args.device)
-    attention_mask = batch[0].to(args.device)
+    max_len = torch.max( torch.sum (batch[0], 1) ) ## max len
+    inputs = batch[1][:, 0:max_len].to(args.device)
+    attention_mask = batch[0][:, 0:max_len].to(args.device)
 
     with torch.no_grad():
       outputs = model(inputs, attention_mask=attention_mask, masked_lm_labels=inputs) if args.mlm else model(batch, labels=batch)
