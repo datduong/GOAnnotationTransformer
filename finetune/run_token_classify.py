@@ -73,7 +73,7 @@ class TextDataset(Dataset):
     label_index_map = { name : index for index,name in enumerate(label_2test_array) }
     label_string = " ".join(label_2test_array)
 
-    if os.path.exists(cached_features_file+'examples'): ## take 1 thing to test if it exists 
+    if os.path.exists(cached_features_file+'examples'): ## take 1 thing to test if it exists
       logger.info("Loading features from cached file %s", cached_features_file)
       with open(cached_features_file+'examples', 'rb') as handle:
         self.examples = pickle.load(handle)
@@ -145,6 +145,9 @@ class TextDataset(Dataset):
           label_mask = np.zeros( block_size ) ## 0--> not attend to
           label_mask [ WHERE_KMER_END:(WHERE_KMER_END+num_label) ] = 1 ## set to 1 so we can pull these out later, ALL LABELS WILL NEED 1, NOT JUST THE TRUE LABEL
           self.label_mask.append(label_mask)
+
+          if counter < 3:
+            print ('\nsee input text\n {}'.format(tokens))
 
         else:
           print ( 'too long, code unable to split long sentence ... infact we should not split ... block {} len {}'.format(block_size,len(tokenized_text)) )
@@ -250,9 +253,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   model.zero_grad()
   train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
 
-  ## track best loss on eval set ?? 
-  eval_loss = np.inf 
-  last_best = 0 
+  ## track best loss on eval set ??
+  eval_loss = np.inf
+  last_best = 0
+  break_early = False
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
   for _ in train_iterator:
@@ -287,17 +291,17 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
-      
+
       ## (batch*num_label) x 2, because 0/1 construction for labels, so we take [:,1] to get the vote on "yes"
       # print (outputs[1].shape) ## label x 2
       # norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
       # norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
       # # print (norm_prob.shape)
-      # if prediction is None: 
+      # if prediction is None:
       #   ## track predicted probability
-      #   true_label = batch[2].data.numpy() 
+      #   true_label = batch[2].data.numpy()
       #   prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
-      # else: 
+      # else:
       #   true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
       #   prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
 
@@ -340,14 +344,15 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
             results = evaluate(args, model, tokenizer,label_2test_array)
             for key, value in results.items():
               tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-            if results['eval_loss'] < eval_loss: 
+            if results['eval_loss'] < eval_loss:
               eval_loss = results['eval_loss']
-              last_best = step 
-            else: 
-              ## break counter 
-              if step - last_best > 5 : 
+              last_best = step
+            else:
+              ## break counter
+              if step - last_best > 5 :
                 print ("**** break early ****")
-                break ## break early 
+                # break ## break early
+                break_early = True
 
           tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
           tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
@@ -357,6 +362,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       if args.max_steps > 0 and global_step > args.max_steps:
         epoch_iterator.close()
         break
+
+      if break_early:
+        break
+
 
     ## end 1 epoch
     # print ('\neval on trainset\n')
@@ -413,20 +422,20 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     token_type = batch[4][:,0:max_len_in_batch].to(args.device)
 
     with torch.no_grad():
-      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask ) 
+      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
     nb_eval_steps += 1
 
-    ## track output 
+    ## track output
     norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
     norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
     # print (norm_prob.shape)
-    if prediction is None: 
+    if prediction is None:
       ## track predicted probability
-      true_label = batch[2].data.numpy() 
+      true_label = batch[2].data.numpy()
       prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
-    else: 
+    else:
       true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
       prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
 

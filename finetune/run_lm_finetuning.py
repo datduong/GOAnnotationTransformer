@@ -60,62 +60,59 @@ class TextDataset(Dataset):
     directory, filename = os.path.split(file_path)
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
 
-    if os.path.exists(cached_features_file):
+    if os.path.exists(cached_features_file+"examples"):
       logger.info("Loading features from cached file %s", cached_features_file)
-      with open(cached_features_file, 'rb') as handle:
+      with open(cached_features_file+"examples", 'rb') as handle:
         self.examples = pickle.load(handle)
+      with open(cached_features_file+"attention_mask", 'rb') as handle:
+        self.attention_mask = pickle.load(handle)
+
     else:
       logger.info("Creating features from dataset file at %s", directory)
 
       self.examples = []
-      self.attention_mask = [] 
-      # with open(file_path, encoding="utf-8") as f:
-      #   text = f.read()
+      self.attention_mask = []
 
       fin = open(file_path,"r",encoding='utf-8')
-      for counter, text in tqdm(enumerate(fin)): 
-        # if counter > 100 : 
+      for counter, text in tqdm(enumerate(fin)):
+        # if counter > 100 :
         #   break
         text = text.strip()
-        if len(text) == 0: ## skip blank ?? 
+        if len(text) == 0: ## skip blank ??
           continue
 
-        tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
+        tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text)) ## @text is "A A B C X Z"
 
-        if len(tokenized_text) < block_size : ## short enough, so just use it 
+        if len(tokenized_text) < block_size : ## short enough, so just use it
           ## add padding to match block_size
-          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text) 
+          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text)
           attention_indicator = [1]*len(tokens) + [0]*(block_size-len(tokens))
           tokens = tokens + [0]*(block_size-len(tokens)) ## add padding 0
           assert len(tokens) == block_size
           self.examples.append(tokens)
           self.attention_mask.append(attention_indicator)
 
-        else: 
-          while len(tokenized_text) >= block_size:  # Truncate in block of block_size
-            self.examples.append(tokenizer.add_special_tokens_single_sentence(tokenized_text[:block_size]))
-            tokenized_text = tokenized_text[block_size:]
-            attention_indicator = [1]*block_size
-            self.attention_mask.append(attention_indicator)
+        else:
+          print ('segment too long \n{}'.format(tokens))
+          exit()
 
-          # Note that we are loosing the last truncated example here for the sake of simplicity (no padding)
-          # If your dataset is small, first you should look for a bigger one :-) and second you
-          # can change this behavior by adding (model specific) padding.
-        
-        # print (self.examples[0])
-        # print (self.attention_mask[0])
-        # exit() 
+        if counter < 5:
+          print ('\nsee tokens/mask')
+          print (tokens)
+          print (attention_indicator)
 
-      ## save at end 
-      # logger.info("Saving features into cached file %s", cached_features_file)
-      # with open(cached_features_file, 'wb') as handle:
-      #   pickle.dump(self.examples, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      ## save at end
+      logger.info("Saving features into cached file %s", cached_features_file)
+      with open(cached_features_file+"examples", 'wb') as handle:
+        pickle.dump(self.examples, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+"attention_mask", 'wb') as handle:
+        pickle.dump(self.attention_mask, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
   def __len__(self):
     return len(self.examples)
 
   def __getitem__(self, item):
-    return ( torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]) ) 
+    return ( torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]) )
 
 
 def load_and_cache_examples(args, tokenizer, evaluate=False):
@@ -137,20 +134,21 @@ def mask_tokens(inputs, tokenizer, args):
   max_len = torch.max ( torch.sum ( inputs[0], 1 ) )  ## sum for each row, what is the longest sent in this batch ??
   # print ('max_len {}'.format(max_len))
 
-  word_index = inputs[1][:,0:max_len].clone() ## don't need all the length 
-  labels = word_index.clone() 
+  word_index = inputs[1][:,0:max_len].clone() ## don't need all the length
+  labels = word_index.clone()
 
   # We sample a few tokens in each sequence for masked-LM training (with probability args.mlm_probability defaults to 0.15 in Bert/RoBERTa)
 
   masked_indices = torch.bernoulli(torch.full( (labels.shape[0],max_len), args.mlm_probability)).bool() ## only need to sample words to remove from 0 to longest-len
-  # masked_indices = torch.cat( (masked_indices,torch.zeros((labels.shape[0],labels.shape[1]-max_len))), dim=1 ).bool() ## now we need to append to all zero, so that we match the maximum batching length of 512 .... actually we can do better ?? 
+
+  # masked_indices = torch.cat( (masked_indices,torch.zeros((labels.shape[0],labels.shape[1]-max_len))), dim=1 ).bool() ## now we need to append to all zero, so that we match the maximum batching length of 512 .... actually we can do better ??
 
   # print (masked_indices.shape)
   # print (torch.sum(masked_indices))
 
-  ## not all batch has same length ?? 
-  masked_indices = masked_indices & inputs[0][:,0:max_len].bool() ## is attention weight masking 
-  
+  ## not all batch has same length ??
+  masked_indices = masked_indices & inputs[0][:,0:max_len].bool() ## is attention weight masking
+
   # print (masked_indices.shape)
   # print (torch.sum(masked_indices))
 
@@ -228,6 +226,7 @@ def train(args, train_dataset, model, tokenizer):
   train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
   for _ in train_iterator:
+    loss_this_epoch = 0 
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
       inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
@@ -237,6 +236,8 @@ def train(args, train_dataset, model, tokenizer):
       model.train()
       outputs = model(inputs, attention_mask=attention_mask, masked_lm_labels=labels)  # if args.mlm else model(inputs, labels=labels)
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
+
+      loss_this_epoch = loss + loss_this_epoch
 
       if args.n_gpu > 1:
         loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -287,6 +288,8 @@ def train(args, train_dataset, model, tokenizer):
       train_iterator.close()
       break
 
+    print ('\ntrain loss epoch ... {} (not exact loss)'.format(loss_this_epoch/step))
+
   if args.local_rank in [-1, 0]:
     tb_writer.close()
 
@@ -331,7 +334,8 @@ def evaluate(args, model, tokenizer, prefix=""):
   perplexity = torch.exp(torch.tensor(eval_loss))
 
   result = {
-    "perplexity": perplexity
+    "perplexity": perplexity, 
+    "eval_loss": eval_loss
   }
 
   output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
