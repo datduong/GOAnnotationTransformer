@@ -65,6 +65,7 @@ class TextDataset(Dataset):
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
+    logger.info ('cached_features_file %s', cached_features_file) 
 
     label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet
     num_label = len(label_2test_array)
@@ -73,10 +74,21 @@ class TextDataset(Dataset):
     label_index_map = { name : index for index,name in enumerate(label_2test_array) }
     label_string = " ".join(label_2test_array)
 
-    if os.path.exists(cached_features_file):
+    if os.path.exists(cached_features_file+'examples'): ## take 1 thing to test if it exists 
       logger.info("Loading features from cached file %s", cached_features_file)
-      with open(cached_features_file, 'rb') as handle:
+      with open(cached_features_file+'examples', 'rb') as handle:
         self.examples = pickle.load(handle)
+      with open(cached_features_file+'attention_mask', 'rb') as handle:
+        self.attention_mask = pickle.load(handle)
+      with open(cached_features_file+'label1hot', 'rb') as handle:
+        self.label1hot = pickle.load(handle)
+      with open(cached_features_file+'label_mask', 'rb') as handle:
+        self.label_mask = pickle.load(handle)
+      with open(cached_features_file+'token_type', 'rb') as handle:
+        self.token_type = pickle.load(handle)
+      with open(cached_features_file+'ppi_vec', 'rb') as handle:
+        self.ppi_vec = pickle.load(handle)
+
     else:
       logger.info("Creating features from dataset file at %s", directory)
 
@@ -99,7 +111,7 @@ class TextDataset(Dataset):
         text = text.split("\t") ## position 0 is kmer sequence, position 1 is list of labels
 
         ### !!!!
-        ### !!!! now we append the protein-network vector 
+        ### !!!! now we append the protein-network vector
         self.ppi_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
 
 
@@ -153,13 +165,20 @@ class TextDataset(Dataset):
           #   attention_indicator = [1]*block_size
           #   self.attention_mask.append(attention_indicator)
 
-        
-
-
       ## save at end
-      # logger.info("Saving features into cached file %s", cached_features_file)
-      # with open(cached_features_file, 'wb') as handle:
-      #   pickle.dump(self.examples, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      logger.info("To save read/write time... Saving features into cached file %s", cached_features_file)
+      with open(cached_features_file+'examples', 'wb') as handle:
+        pickle.dump(self.examples, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'attention_mask', 'wb') as handle:
+        pickle.dump(self.attention_mask, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'label1hot', 'wb') as handle:
+        pickle.dump(self.label1hot, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'label_mask', 'wb') as handle:
+        pickle.dump(self.label_mask, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'token_type', 'wb') as handle:
+        pickle.dump(self.token_type, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'ppi_vec', 'wb') as handle:
+          pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
   def __len__(self):
     return len(self.examples)
@@ -241,15 +260,15 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   model.zero_grad()
   train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
 
-  ## track best loss on eval set ?? 
-  eval_loss = np.inf 
-  last_best = 0 
+  ## track best loss on eval set ??
+  eval_loss = np.inf
+  last_best = 0
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
   for _ in train_iterator:
 
-    prediction = None
-    true_label = None
+    # prediction = None ## not track to save some time
+    # true_label = None
 
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
@@ -280,19 +299,19 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
-      
+
       ## (batch*num_label) x 2, because 0/1 construction for labels, so we take [:,1] to get the vote on "yes"
       # print (outputs[1].shape) ## label x 2
-      norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
-      norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
-      # print (norm_prob.shape)
-      if prediction is None: 
-        ## track predicted probability
-        true_label = batch[2].data.numpy() 
-        prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
-      else: 
-        true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
-        prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
+      # norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
+      # norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
+      # # print (norm_prob.shape)
+      # if prediction is None:
+      #   ## track predicted probability
+      #   true_label = batch[2].data.numpy()
+      #   prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
+      # else:
+      #   true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
+      #   prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
 
       if args.n_gpu > 1:
         loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -333,14 +352,14 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
             results = evaluate(args, model, tokenizer,label_2test_array)
             for key, value in results.items():
               tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-            if results['eval_loss'] < eval_loss: 
+            if results['eval_loss'] < eval_loss:
               eval_loss = results['eval_loss']
-              last_best = step 
-            else: 
-              ## break counter 
-              if step - last_best > 5 : 
+              last_best = step
+            else:
+              ## break counter
+              if step - last_best > 5 :
                 print ("**** break early ****")
-                break ## break early 
+                break ## break early
 
           tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
           tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
@@ -405,25 +424,25 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
     token_type = batch[4][:,0:max_len_in_batch].to(args.device)
 
-    ppi_vec = batch[5].unsqueeze(1).to(args.device) ## make 3D batchsize x 1 x dim
+    ppi_vec = batch[5].unsqueeze(1).expand(inputs.shape[0],max_len_in_batch,256).to(args.device) ## make 3D batchsize x 1 x dim
 
 
     with torch.no_grad():
-      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec ) 
+      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
-      
+
     nb_eval_steps += 1
 
-    ## track output 
+    ## track output
     norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
     norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
     # print (norm_prob.shape)
-    if prediction is None: 
+    if prediction is None:
       ## track predicted probability
-      true_label = batch[2].data.numpy() 
+      true_label = batch[2].data.numpy()
       prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
-    else: 
+    else:
       true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
       prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
 
