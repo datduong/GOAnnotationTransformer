@@ -171,8 +171,6 @@ class TextDataset(Dataset):
       with open(cached_features_file+'token_type', 'wb') as handle:
         pickle.dump(self.token_type, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-
-
   def __len__(self):
     return len(self.examples)
 
@@ -260,10 +258,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
   for _ in train_iterator:
-
-    # prediction = None
-    # true_label = None
-
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
       # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
@@ -291,20 +285,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
-
-      ## (batch*num_label) x 2, because 0/1 construction for labels, so we take [:,1] to get the vote on "yes"
-      # print (outputs[1].shape) ## label x 2
-      # norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
-      # norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
-      # # print (norm_prob.shape)
-      # if prediction is None:
-      #   ## track predicted probability
-      #   true_label = batch[2].data.numpy()
-      #   prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
-      # else:
-      #   true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
-      #   prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
-
       if args.n_gpu > 1:
         loss = loss.mean()  # mean() to average on multi-gpu parallel training
       if args.gradient_accumulation_steps > 1:
@@ -327,7 +307,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         model.zero_grad()
         global_step += 1
 
-
         if args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
           # Save model checkpoint
           output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
@@ -344,20 +323,20 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
             results = evaluate(args, model, tokenizer,label_2test_array)
             for key, value in results.items():
               tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
+
             if results['eval_loss'] < eval_loss:
               eval_loss = results['eval_loss']
+              print ('\nupdate lowest loss on eval point {}\nreset break_early to False'.format(eval_loss))
               last_best = step
+              break_early = False
             else:
-              ## break counter
-              if step - last_best > 5 :
-                print ("**** break early ****")
+              if step - last_best > 5 : ## break counter
                 # break ## break early
                 break_early = True
 
           tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
           tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
           logging_loss = tr_loss
-
 
       if args.max_steps > 0 and global_step > args.max_steps:
         epoch_iterator.close()
@@ -366,6 +345,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
     ## end 1 epoch
     if break_early:
+      print ("**** break early ****")
       break
 
     # print ('\neval on trainset\n')
@@ -442,13 +422,15 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 
   true_label = np.array (true_label)
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-  evaluation_metric.print_metrics( result )
+  # evaluation_metric.print_metrics( result )
 
   result['eval_loss'] = eval_loss / nb_eval_steps
 
   output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
-  with open(output_eval_file, "w") as writer:
+  with open(output_eval_file, "a+") as writer:
     logger.info("***** Eval results {} *****".format(prefix))
+    print("\n***** Eval results {} *****".format(prefix))
+    writer.write("\n***** Eval results {} *****".format(prefix))
     for key in sorted(result.keys()):
       logger.info("  %s = %s", key, str(result[key]))
       writer.write("%s = %s\n" % (key, str(result[key])))

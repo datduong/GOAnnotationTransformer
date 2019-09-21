@@ -75,17 +75,18 @@ class TextDataset(Dataset):
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
-        # if counter > 100 :
-        #   break
+        if counter > 100 :
+          break
         text = text.strip()
         if len(text) == 0: ## skip blank ??
           continue
 
-        tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text)) ## @text is "A A B C X Z"
+        tokenized_text = tokenizer.tokenize(" ".join(t for t in text) ) ## split letters than space
+        tokenized_text_id = tokenizer.convert_tokens_to_ids(tokenized_text) ## @text is "A A B C X Z"
 
         if len(tokenized_text) < block_size : ## short enough, so just use it
           ## add padding to match block_size
-          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text)
+          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text_id)
           attention_indicator = [1]*len(tokens) + [0]*(block_size-len(tokens))
           tokens = tokens + [0]*(block_size-len(tokens)) ## add padding 0
           assert len(tokens) == block_size
@@ -97,7 +98,8 @@ class TextDataset(Dataset):
           exit()
 
         if counter < 5:
-          print ('\nsee tokens/mask')
+          print ('\nsee tokenized_text/index/mask')
+          print (tokenized_text)
           print (tokens)
           print (attention_indicator)
 
@@ -340,11 +342,12 @@ def evaluate(args, model, tokenizer, prefix=""):
   }
 
   output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
-  with open(output_eval_file, "w") as writer:
+  with open(output_eval_file, "a+") as writer: ## append
     logger.info("***** Eval results {} *****".format(prefix))
     for key in sorted(result.keys()):
       logger.info("  %s = %s", key, str(result[key]))
       writer.write("%s = %s\n" % (key, str(result[key])))
+      print("%s = %s\n" % (key, str(result[key])))
 
   return result
 

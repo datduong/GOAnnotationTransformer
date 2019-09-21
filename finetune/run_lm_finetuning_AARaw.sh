@@ -11,7 +11,7 @@ output_dir=$server/'deepgo/data/BertFtAARaw/' # Continue
 mkdir $output_dir
 
 # bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12Kmer2016/vocab+3kmer+GO.txt'
-bert_vocab=$output_dir/'vocab+GO.txt'
+bert_vocab=$output_dir/'vocabAA.txt'
 config_name=$output_dir/'config.json'
 
 train_masklm_data='/local/datdb/deepgo/data/BertFtAARaw/seq_finetune_aa_train.txt'
@@ -27,7 +27,7 @@ cd $server/BertGOAnnotation/finetune/
 
 
 ## continue training 
-CUDA_VISIBLE_DEVICES=7 python3 -u run_lm_finetuning.py --learning_rate 0.0001 --config_override --block_size 2048 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 16 --per_gpu_eval_batch_size 16 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 5000 --logging_steps 5000 --evaluate_during_training --eval_data_file $eval_masklm_data > $output_dir/train_point.txt
+CUDA_VISIBLE_DEVICES=5 python3 -u run_lm_finetuning.py --learning_rate 0.0001 --config_override --block_size 1024 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 24 --per_gpu_eval_batch_size 32 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 5000 --logging_steps 5000 --evaluate_during_training --eval_data_file $eval_masklm_data > $output_dir/train_point.txt
 
 
 

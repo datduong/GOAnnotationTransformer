@@ -55,8 +55,8 @@ def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True):
   metrics['hamming loss'] = hamming_loss(y, yhat)
   metrics['fmax score'] = fmax.f_max ( y, yhat_raw )
   # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html#the-average-precision-score-in-multi-label-settings
-  metrics['macro average prec'] = average_precision_score(y, yhat_raw, average='macro') ## true y, predicted y.
-  metrics['micro average prec'] = average_precision_score(y, yhat_raw, average='micro')
+  # metrics['macro average prec'] = average_precision_score(y, yhat_raw, average='macro') ## true y, predicted y.
+  # metrics['micro average prec'] = average_precision_score(y, yhat_raw, average='micro')
 
   return metrics
 
