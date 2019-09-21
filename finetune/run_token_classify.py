@@ -426,7 +426,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 
   true_label = np.array (true_label)
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-  evaluation_metric.print_metrics( result )
+  # evaluation_metric.print_metrics( result )
 
   result['eval_loss'] = eval_loss / nb_eval_steps
 
@@ -436,8 +436,9 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     print("\n***** Eval results {} *****".format(prefix))
     writer.write("\n***** Eval results {} *****".format(prefix))
     for key in sorted(result.keys()):
-      logger.info("  %s = %s", key, str(result[key]))
-      writer.write("%s = %s\n" % (key, str(result[key])))
+      print("  %s = %s", key, str(result[key]))
+      # writer.write("%s = %s\n" % (key, str(result[key])))
+
 
   return result
 
