@@ -257,7 +257,8 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   break_early = False
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
-  for _ in train_iterator:
+
+  for epoch_counter in train_iterator:
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
       # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
@@ -324,16 +325,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
             for key, value in results.items():
               tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
 
-            if results['eval_loss'] < eval_loss:
-              eval_loss = results['eval_loss']
-              print ('\nupdate lowest loss on eval point {}\nreset break_early to False'.format(eval_loss))
-              last_best = step
-              break_early = False
-            else:
-              if step - last_best > 5 : ## break counter
-                # break ## break early
-                break_early = True
-
           tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
           tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
           logging_loss = tr_loss
@@ -344,7 +335,20 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
 
     ## end 1 epoch
+    results = evaluate(args, model, tokenizer,label_2test_array)
+    if results['eval_loss'] < eval_loss:
+      eval_loss = results['eval_loss']
+      last_best = epoch_counter
+      break_early = False
+      print ('\nupdate lowest loss on eval point {}\nreset break_early to False, see break_early variable {}'.format(eval_loss,break_early))
+    else:
+      if epoch_counter - last_best > 5 : ## break counter
+        # break ## break early
+        break_early = True
+        print ('set break_early to True, see break_early variable {}'.format(break_early))
+
     if break_early:
+      train_iterator.close()
       print ("**** break early ****")
       break
 
@@ -422,7 +426,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 
   true_label = np.array (true_label)
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-  # evaluation_metric.print_metrics( result )
+  evaluation_metric.print_metrics( result )
 
   result['eval_loss'] = eval_loss / nb_eval_steps
 
