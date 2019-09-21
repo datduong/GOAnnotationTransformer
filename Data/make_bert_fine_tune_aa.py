@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 np.random.seed(seed=201909) ## use year month as seed
 
-MAX_LEN = 1024
+MAX_LEN = 1022
 
 ## make bert finetune data
 
@@ -45,7 +45,7 @@ for index,row in tqdm (seq_data.iterrows()):
   seq = row['Sequence'] # [ 1:(len(row['Sequence'])-1) ] ## remove start/stop codon ?
   if len(seq) > MAX_LEN : ## bound
     where = np.random.choice ( np.arange(len(seq)-MAX_LEN), size=1 )
-    seq = seq[int(where)::] ## get the random segment 
+    seq = seq[int(where):MAX_LEN] ## get the random segment 
   
   if np.random.uniform() > .10 : 
     fout.write(seq + "\n\n")

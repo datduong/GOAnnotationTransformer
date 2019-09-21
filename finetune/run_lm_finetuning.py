@@ -54,8 +54,13 @@ MODEL_CLASSES = {
 }
 
 
+np.random.seed(seed=201909) ## use year month as seed
+
 class TextDataset(Dataset):
   def __init__(self, tokenizer, file_path='train', block_size=512):
+
+    # block_size_small = block_size-2 ## make space for CLS SEP
+
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
@@ -75,8 +80,8 @@ class TextDataset(Dataset):
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
-        if counter > 100 :
-          break
+        # if counter > 100 :
+        #   break
         text = text.strip()
         if len(text) == 0: ## skip blank ??
           continue
@@ -84,18 +89,17 @@ class TextDataset(Dataset):
         tokenized_text = tokenizer.tokenize(" ".join(t for t in text) ) ## split letters than space
         tokenized_text_id = tokenizer.convert_tokens_to_ids(tokenized_text) ## @text is "A A B C X Z"
 
-        if len(tokenized_text) < block_size : ## short enough, so just use it
-          ## add padding to match block_size
-          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text_id)
-          attention_indicator = [1]*len(tokens) + [0]*(block_size-len(tokens))
-          tokens = tokens + [0]*(block_size-len(tokens)) ## add padding 0
-          assert len(tokens) == block_size
-          self.examples.append(tokens)
-          self.attention_mask.append(attention_indicator)
+        this_len = len(tokenized_text_id) ## actual size of sequence
+        if this_len+2 > block_size : # must make space for CLS and SEP
+          print ('\nsegment too long...len {}\n'.format( this_len ))
+          exit() 
 
-        else:
-          print ('segment too long \n{}'.format(tokens))
-          exit()
+        tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text_id)
+        attention_indicator = [1]*len(tokens) + [0]*(block_size-len(tokens))
+        tokens = tokens + [0]*(block_size-len(tokens)) ## add padding 0
+        assert len(tokens) == block_size
+        self.examples.append(tokens)
+        self.attention_mask.append(attention_indicator)
 
         if counter < 5:
           print ('\nsee tokenized_text/index/mask')

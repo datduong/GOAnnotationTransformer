@@ -27,7 +27,7 @@ cd $server/BertGOAnnotation/finetune/
 
 
 ## continue training 
-CUDA_VISIBLE_DEVICES=5 python3 -u run_lm_finetuning.py --learning_rate 0.0001 --config_override --block_size 1024 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 24 --per_gpu_eval_batch_size 32 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 5000 --logging_steps 5000 --evaluate_during_training --eval_data_file $eval_masklm_data > $output_dir/train_point.txt
+CUDA_VISIBLE_DEVICES=5 python3 -u run_lm_finetuning.py --learning_rate 0.0001 --config_override --block_size 1048 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 8 --per_gpu_eval_batch_size 8 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 10000 --logging_steps 10000 --evaluate_during_training --eval_data_file $eval_masklm_data > $output_dir/train_point.txt
 
 
 
