@@ -20,7 +20,9 @@ tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertForPreTraining(config)
 model.eval() 
 
-input_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute")).unsqueeze(0)  # Batch size 1
+input_ids1 = tokenizer.encode("Hello, my dog is cute")  # Batch size 1
+input_ids2 = tokenizer.encode("Hello, my dog is one")
+input_ids = torch.tensor ( [input_ids1,input_ids2] ) 
 outputs = model(input_ids)
 
 outputs[-1][5][0][11] ## last entry. return 12 heads of the last layer.  from A --> to --> B

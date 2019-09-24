@@ -308,7 +308,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         model.zero_grad()
         global_step += 1
 
-        if args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
+        if (epoch_counter>0) and args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
           # Save model checkpoint
           output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
           if not os.path.exists(output_dir):
@@ -340,12 +340,12 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       eval_loss = results['eval_loss']
       last_best = epoch_counter
       break_early = False
-      print ('\nupdate lowest loss on eval point {}\nreset break_early to False, see break_early variable {}'.format(eval_loss,break_early))
+      print ('\nupdate lowest loss on epoch {}, {}\nreset break_early to False, see break_early variable {}'.format(epoch_counter,eval_loss,break_early))
     else:
-      if epoch_counter - last_best > 5 : ## break counter
+      if epoch_counter - last_best > 5 : ## break counter after 5 epoch
         # break ## break early
         break_early = True
-        print ('set break_early to True, see break_early variable {}'.format(break_early))
+        print ('epoch {} set break_early to True, see break_early variable {}'.format(epoch_counter,break_early))
 
     if break_early:
       train_iterator.close()
@@ -436,7 +436,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     print("\n***** Eval results {} *****".format(prefix))
     writer.write("\n***** Eval results {} *****".format(prefix))
     for key in sorted(result.keys()):
-      print("  %s = %s", key, str(result[key]))
+      print( "  {} = {}".format( key, str(result[key]) ) ) 
       # writer.write("%s = %s\n" % (key, str(result[key])))
 
 
