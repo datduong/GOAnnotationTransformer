@@ -12,6 +12,8 @@ from sklearn.metrics import average_precision_score
 from tqdm import tqdm
 
 import pickle,gzip
+
+sys.path.append("/local/datdb/BertGOAnnotation/finetune")
 import fmax
 
 def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True):

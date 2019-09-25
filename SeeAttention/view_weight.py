@@ -1,6 +1,7 @@
 
 
 from __future__ import absolute_import, division, print_function
+
 import argparse
 import glob
 import logging
@@ -9,15 +10,29 @@ import pickle
 import random
 import re,sys
 import pandas as pd
-import numpy as np
 
+import numpy as np
 import torch
+from torch.utils.data import DataLoader, Dataset, SequentialSampler, RandomSampler
+from torch.utils.data.distributed import DistributedSampler
+from tensorboardX import SummaryWriter
+from tqdm import tqdm, trange
+
 from pytorch_transformers import (WEIGHTS_NAME, AdamW, WarmupLinearSchedule,
-                  BertConfig, BertTokenizer)
+                  BertConfig, BertForMaskedLM, BertTokenizer,
+                  GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
+                  OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
+                  RobertaConfig, RobertaForMaskedLM, RobertaTokenizer)
+
+from pytorch_transformers.modeling_bert import BertForPreTraining
 
 sys.path.append("/local/datdb/BertGOAnnotation")
 import KmerModel.TokenClassifier as TokenClassifier
 import finetune.evaluation_metric as evaluation_metric
+
+import view_util
+
+logger = logging.getLogger(__name__)
 
 
 class TextDataset(Dataset):
@@ -145,57 +160,180 @@ def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
   return dataset
 
 
+def main():
+  parser = argparse.ArgumentParser()
 
-## does weight make sense ? 
+  parser.add_argument("--label_2test", type=str, default=None)
 
-config = BertConfig.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
-config.output_attentions=True ## override @config
-config.output_hidden_states=True
+  parser.add_argument("--bert_vocab", type=str, default=None)
+  parser.add_argument("--config_override", action="store_true")
+
+  ## Required parameters
+  parser.add_argument("--train_data_file", default=None, type=str, required=True,
+            help="The input training data file (a text file).")
+  parser.add_argument("--output_dir", default=None, type=str, required=True,
+            help="The output directory where the model predictions and checkpoints will be written.")
+
+  ## Other parameters
+  parser.add_argument("--eval_data_file", default=None, type=str,
+            help="An optional input evaluation data file to evaluate the perplexity on (a text file).")
+
+  parser.add_argument("--model_type", default="bert", type=str,
+            help="The model architecture to be fine-tuned.")
+  parser.add_argument("--model_name_or_path", default="bert-base-cased", type=str,
+            help="The model checkpoint for weights initialization.")
+
+  parser.add_argument("--mlm", action='store_true',
+            help="Train with masked-language modeling loss instead of language modeling.")
+  parser.add_argument("--mlm_probability", type=float, default=0.15,
+            help="Ratio of tokens to mask for masked language modeling loss")
+
+  parser.add_argument("--config_name", default="", type=str,
+            help="Optional pretrained config name or path if not the same as model_name_or_path")
+  parser.add_argument("--tokenizer_name", default="", type=str,
+            help="Optional pretrained tokenizer name or path if not the same as model_name_or_path")
+  parser.add_argument("--cache_dir", default="", type=str,
+            help="Optional directory to store the pre-trained models downloaded from s3 (instread of the default one)")
+  parser.add_argument("--block_size", default=-1, type=int,
+            help="Optional input sequence length after tokenization."
+               "The training dataset will be truncated in block of this size for training."
+               "Default to the model max input length for single sentence inputs (take into account special tokens).")
+  parser.add_argument("--do_train", action='store_true',
+            help="Whether to run training.")
+  parser.add_argument("--do_eval", action='store_true',
+            help="Whether to run eval on the dev set.")
+  parser.add_argument("--evaluate_during_training", action='store_true',
+            help="Run evaluation during training at each logging step.")
+  parser.add_argument("--do_lower_case", action='store_true',
+            help="Set this flag if you are using an uncased model.")
+
+  parser.add_argument("--per_gpu_train_batch_size", default=4, type=int,
+            help="Batch size per GPU/CPU for training.")
+  parser.add_argument("--per_gpu_eval_batch_size", default=4, type=int,
+            help="Batch size per GPU/CPU for evaluation.")
+  parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
+            help="Number of updates steps to accumulate before performing a backward/update pass.")
+  parser.add_argument("--learning_rate", default=5e-5, type=float,
+            help="The initial learning rate for Adam.")
+  parser.add_argument("--weight_decay", default=0.0, type=float,
+            help="Weight deay if we apply some.")
+  parser.add_argument("--adam_epsilon", default=1e-8, type=float,
+            help="Epsilon for Adam optimizer.")
+  parser.add_argument("--max_grad_norm", default=1.0, type=float,
+            help="Max gradient norm.")
+  parser.add_argument("--num_train_epochs", default=1.0, type=float,
+            help="Total number of training epochs to perform.")
+  parser.add_argument("--max_steps", default=-1, type=int,
+            help="If > 0: set total number of training steps to perform. Override num_train_epochs.")
+  parser.add_argument("--warmup_steps", default=0, type=int,
+            help="Linear warmup over warmup_steps.")
+
+  parser.add_argument('--logging_steps', type=int, default=50,
+            help="Log every X updates steps.")
+  parser.add_argument('--save_steps', type=int, default=50,
+            help="Save checkpoint every X updates steps.")
+  parser.add_argument("--eval_all_checkpoints", action='store_true',
+            help="Evaluate all checkpoints starting with the same prefix as model_name_or_path ending and ending with step number")
+  parser.add_argument("--no_cuda", action='store_true',
+            help="Avoid using CUDA when available")
+  parser.add_argument('--overwrite_output_dir', action='store_true',
+            help="Overwrite the content of the output directory")
+  parser.add_argument('--overwrite_cache', action='store_true',
+            help="Overwrite the cached training and evaluation sets")
+  parser.add_argument('--seed', type=int, default=42,
+            help="random seed for initialization")
+
+  parser.add_argument('--fp16', action='store_true',
+            help="Whether to use 16-bit (mixed) precision (through NVIDIA apex) instead of 32-bit")
+  parser.add_argument('--fp16_opt_level', type=str, default='O1',
+            help="For fp16: Apex AMP optimization level selected in ['O0', 'O1', 'O2', and 'O3']."
+               "See details at https://nvidia.github.io/apex/amp.html")
+  parser.add_argument("--local_rank", type=int, default=-1,
+            help="For distributed training: local_rank")
+  parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
+  parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
+  args = parser.parse_args()
+    
+  ## does weight make sense ?
+
+  config = BertConfig.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
+  config.output_attentions=True ## override @config
+  config.output_hidden_states=True
+
+  tokenizer = BertTokenizer.from_pretrained(args.tokenizer_name if args.tokenizer_name else args.model_name_or_path, do_lower_case=args.do_lower_case)
+
+  model = TokenClassifier.BertForTokenClassification1hot.from_pretrained(args.model_name_or_path, config=config) ## use @config=config to override the default @config
+
+  model.cuda() ## ?? do we need to send to gpu
+
+  ## create dataset again.
+  ## must respect the ordering of GO terms.
+
+  # read in labels to be testing
+  label_2test_array = pd.read_csv(args.label_2test,header=None)
+  label_2test_array = sorted(list( label_2test_array[0] ))
+  label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
+  num_label = len(label_2test_array)
+
+  eval_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=True)
+  args.eval_batch_size = args.per_gpu_eval_batch_size ## just use 1 gpu
+  eval_sampler = SequentialSampler(eval_dataset) 
+  eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size)
+
+  number_sequences = len(eval_dataset)
+  print ("\nnumber seqs {}\n".format(number_sequences))
+
+  ## create @label_names_in_index
+  label_names_in_index = view_util.get_word_index_in_array(tokenizer,label_2test_array) ## these are the word_index we will need to extract 
+
+  letters = 'A, E, I, O, U, B, C, D, F, G, H, J, K, L, M, N, P, Q, R, S, T, V, X, Z, W, Y'.split(',')
+  letters = sorted ( [let.strip() for let in letters] )
+  AA_names_in_index = view_util.get_word_index_in_array(tokenizer,letters) ## these are word_index we want. we don't need to extract CLS and SEP ... but they can probably be important ??
 
 
-tokenizer = BertTokenizer.from_pretrained(args.tokenizer_name if args.tokenizer_name else args.model_name_or_path, do_lower_case=args.do_lower_case)
+  ## what do we need to keep ??
 
-model = TokenClassifier.BertForTokenClassification1hot.from_pretrained(args.model_name_or_path, config=config) ## use @config=config to override the default @config
+  eval_loss = 0.0
+  nb_eval_steps = 0
+  model.eval()
 
-# model.to(args.device) ## ?? do we need to send to gpu 
+  GO2GO_attention = np.zeros(len(num_label,num_label))
 
-## create dataset again.
-## must respect the ordering of GO terms. 
+  for batch in tqdm(eval_dataloader, desc="Evaluating"):
 
-# read in labels to be testing
-label_2test_array = pd.read_csv(args.label_2test,header=None)
-label_2test_array = sorted(list( label_2test_array[0] ))
-label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
+    max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len
+    attention_mask = batch[0][:,0:max_len_in_batch].to(args.device)
+    inputs = batch[1][:,0:max_len_in_batch].to(args.device)
+    labels = batch[2].to(args.device) ## already in batch_size x num_label
+    labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
+    token_type = batch[4][:,0:max_len_in_batch].to(args.device)
 
-eval_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=True)
-args.eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
-# Note that DistributedSampler samples randomly
-eval_sampler = SequentialSampler(eval_dataset) if args.local_rank == -1 else DistributedSampler(eval_dataset)
-eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size)
+    with torch.no_grad():
+      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
+      lm_loss = outputs[0]
+      eval_loss += lm_loss.mean().item()
+
+    nb_eval_steps += 1
+
+    last_layer_att = outputs[-1].detach().cpu().numpy() ## batch x last_layer_att[layer][head] dim = word x word
+    inputs = batch[1][:,0:max_len_in_batch] ## override so it's redefined on GPU 
+
+    ## because of batch size ... different sequence has different len. how do we align them ??
+    ## has to go through each obs in the batch
+    for obs in range(last_layer_att.shape[0]): # @last_layer_att will be #obs x #head x #word x #word 
+      att_weight = view_util.get_att_weight (last_layer_att[obs], inputs, label_names_in_index, AA_names_in_index ) ## GO-vs-GO GO-vs-Sequence
+
+      # @best_range is dictionary. for each GO, we take what is best-contributing segment from this given input
+      # best_range = view_util.get_best_range (att_weight[1]) ## for GO-vs-Kmer we get best range of Kmer that contributes most to GO names 
+      GO2GO_attention = GO2GO_attention + att_weight 
 
 
-eval_loss = 0.0
-nb_eval_steps = 0
-model.eval()
+  ## average @GO2GO_attention
+  GO2GO_attention = GO2GO_attention / number_sequences
+  df = pd.DataFrame(GO2GO_attention, columns=label_2test_array, index=label_2test_array)
+  df.to_csv (os.path.join(args.output_dir,'GO2GO_attention.csv'),index=None,sep=",") ## later in plotting, from col names we can get row names.
 
 
-for batch in tqdm(eval_dataloader, desc="Evaluating"):
-  # batch = batch.to(args.device)
+if __name__ == "__main__":
+  main()
 
-  max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len
-  attention_mask = batch[0][:,0:max_len_in_batch].to(args.device)
-  inputs = batch[1][:,0:max_len_in_batch].to(args.device)
-  labels = batch[2].to(args.device) ## already in batch_size x num_label
-  labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
-  token_type = batch[4][:,0:max_len_in_batch].to(args.device)
-
-  with torch.no_grad():
-    outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
-    lm_loss = outputs[0]
-    eval_loss += lm_loss.mean().item()
-
-  nb_eval_steps += 1
- 
-  last_layer_att = outputs[-1] ## batch x last_layer_att[layer][head] dim = word x word
-
-  ## because of batch size ... different sequence has different len. how do we align them ?? 
