@@ -31,7 +31,7 @@ def get_att_weight (matrix,input_ids,label_names_in_index,seq_in_index=None):
 
   ## get which @input_ids positions are the GO names, so we extract only these positions
   go_position = np.argwhere(np.in1d(input_ids,label_names_in_index)).transpose()[0]  ## get back which positions are GO names, use .transpose()[0] to get back 1D np array
-  GO2GO = matrix[ np.ix_ ( go_position,go_position ) ]
+  GO2GO = matrix[ np.ix_ ( go_position,go_position ) ] ## extract submatrix that has only GO-vs-GO attention 
   out = ( normalize_to_sum_1(GO2GO) , ) ## tuple
 
   if seq_in_index is not None:

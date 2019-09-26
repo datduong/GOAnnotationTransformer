@@ -1,0 +1,8 @@
+
+head2 separates function interacting with DNA/RNA vs. function where we directly intact with a regulator (indirect DNA binding)
+https://www.ebi.ac.uk/QuickGO/term/GO:0001104
+https://www.ebi.ac.uk/QuickGO/term/GO:0002039
+https://www.ebi.ac.uk/QuickGO/term/GO:0000149
+https://www.ebi.ac.uk/QuickGO/term/GO:0001102
+
+https://www.ebi.ac.uk/QuickGO/term/GO:0000166 counter example 
