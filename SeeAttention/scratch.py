@@ -25,8 +25,13 @@ input_ids2 = tokenizer.encode("Hello, my dog is one")
 input_ids = torch.tensor ( [input_ids1,input_ids2] ) 
 outputs = model(input_ids)
 
-outputs[-1][5][0][11] ## last entry. return 12 heads of the last layer.  from A --> to --> B
-torch.sum(outputs[-1][5][0][11],1) ## row sum to 1. 
+layers = outputs[-1] ## 12 layers
+
+head = layers[4] 
+head.shape ## each layer has 12 heads, head will have num_batch x num_head x word x word 
+
+## last entry. return 12 heads of the last layer.  from A --> to --> B
+torch.sum(head[0][11],1) ## row sum to 1. 
 ## so 1 row, sums to 1, this means that . for row i, we see how much col j contributes to it
 
 prediction_scores, seq_relationship_scores = outputs[:2]
