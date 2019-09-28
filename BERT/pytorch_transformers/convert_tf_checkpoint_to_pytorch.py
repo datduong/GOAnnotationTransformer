@@ -21,7 +21,7 @@ from __future__ import print_function
 import argparse
 import torch
 
-from pytorch_transformers.modeling_bert import BertConfig, BertForPreTraining, load_tf_weights_in_bert
+from pytorch_transformers import BertConfig, BertForPreTraining, load_tf_weights_in_bert
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
                         default = None,
                         type = str,
                         required = True,
-                        help = "Path the TensorFlow checkpoint path.")
+                        help = "Path to the TensorFlow checkpoint path.")
     parser.add_argument("--bert_config_file",
                         default = None,
                         type = str,

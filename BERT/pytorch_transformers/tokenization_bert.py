@@ -22,7 +22,7 @@ import os
 import unicodedata
 from io import open
 
-from .tokenization_utils import PreTrainedTokenizer, clean_up_tokenization
+from .tokenization_utils import PreTrainedTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +63,23 @@ PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {
     'bert-base-cased-finetuned-mrpc': 512,
 }
 
+PRETRAINED_INIT_CONFIGURATION = {
+    'bert-base-uncased': {'do_lower_case': True},
+    'bert-large-uncased': {'do_lower_case': True},
+    'bert-base-cased': {'do_lower_case': False},
+    'bert-large-cased': {'do_lower_case': False},
+    'bert-base-multilingual-uncased': {'do_lower_case': True},
+    'bert-base-multilingual-cased': {'do_lower_case': False},
+    'bert-base-chinese': {'do_lower_case': False},
+    'bert-base-german-cased': {'do_lower_case': False},
+    'bert-large-uncased-whole-word-masking': {'do_lower_case': True},
+    'bert-large-cased-whole-word-masking': {'do_lower_case': False},
+    'bert-large-uncased-whole-word-masking-finetuned-squad': {'do_lower_case': True},
+    'bert-large-cased-whole-word-masking-finetuned-squad': {'do_lower_case': False},
+    'bert-base-cased-finetuned-mrpc': {'do_lower_case': False},
+}
+
+
 def load_vocab(vocab_file):
     """Loads a vocabulary file into a dictionary."""
     vocab = collections.OrderedDict()
@@ -86,7 +103,7 @@ def whitespace_tokenize(text):
 class BertTokenizer(PreTrainedTokenizer):
     r"""
     Constructs a BertTokenizer.
-    :class:`~pytorch_pretrained_bert.BertTokenizer` runs end-to-end tokenization: punctuation splitting + wordpiece
+    :class:`~pytorch_transformers.BertTokenizer` runs end-to-end tokenization: punctuation splitting + wordpiece
 
     Args:
         vocab_file: Path to a one-wordpiece-per-line vocabulary file
@@ -100,6 +117,7 @@ class BertTokenizer(PreTrainedTokenizer):
 
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
+    pretrained_init_configuration = PRETRAINED_INIT_CONFIGURATION
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
 
     def __init__(self, vocab_file, do_lower_case=True, do_basic_tokenize=True, never_split=None,
@@ -119,12 +137,15 @@ class BertTokenizer(PreTrainedTokenizer):
                 Only has an effect when do_basic_tokenize=True
             **tokenize_chinese_chars**: (`optional`) boolean (default True)
                 Whether to tokenize Chinese characters.
-                This should likely be desactivated for Japanese:
+                This should likely be deactivated for Japanese:
                 see: https://github.com/huggingface/pytorch-pretrained-BERT/issues/328
         """
         super(BertTokenizer, self).__init__(unk_token=unk_token, sep_token=sep_token,
                                             pad_token=pad_token, cls_token=cls_token,
                                             mask_token=mask_token, **kwargs)
+        self.max_len_single_sentence = self.max_len - 2  # take into account special tokens
+        self.max_len_sentences_pair = self.max_len - 3  # take into account special tokens
+
         if not os.path.isfile(vocab_file):
             raise ValueError(
                 "Can't find a vocabulary file at path '{}'. To load the vocabulary from a Google pretrained "
@@ -166,11 +187,29 @@ class BertTokenizer(PreTrainedTokenizer):
         out_string = ' '.join(tokens).replace(' ##', '').strip()
         return out_string
 
+    def add_special_tokens_single_sentence(self, token_ids):
+        """
+        Adds special tokens to the a sequence for sequence classification tasks.
+        A BERT sequence has the following format: [CLS] X [SEP]
+        """
+        return [self.cls_token_id] + token_ids + [self.sep_token_id]
+
+    def add_special_tokens_sentences_pair(self, token_ids_0, token_ids_1):
+        """
+        Adds special tokens to a sequence pair for sequence classification tasks.
+        A BERT sequence pair has the following format: [CLS] A [SEP] B [SEP]
+        """
+        sep = [self.sep_token_id]
+        cls = [self.cls_token_id]
+        return cls + token_ids_0 + sep + token_ids_1 + sep
+
     def save_vocabulary(self, vocab_path):
         """Save the tokenizer vocabulary to a directory or file."""
         index = 0
         if os.path.isdir(vocab_path):
             vocab_file = os.path.join(vocab_path, VOCAB_FILES_NAMES['vocab_file'])
+        else:
+            vocab_file = vocab_path
         with open(vocab_file, "w", encoding="utf-8") as writer:
             for token, token_index in sorted(self.vocab.items(), key=lambda kv: kv[1]):
                 if index != token_index:
@@ -180,24 +219,6 @@ class BertTokenizer(PreTrainedTokenizer):
                 writer.write(token + u'\n')
                 index += 1
         return (vocab_file,)
-
-    @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path, *inputs, **kwargs):
-        """ Instantiate a BertTokenizer from pre-trained vocabulary files.
-        """
-        if pretrained_model_name_or_path in PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES:
-            if '-cased' in pretrained_model_name_or_path and kwargs.get('do_lower_case', True):
-                logger.warning("The pre-trained model you are loading is a cased model but you have not set "
-                               "`do_lower_case` to False. We are setting `do_lower_case=False` for you but "
-                               "you may want to check this behavior.")
-                kwargs['do_lower_case'] = False
-            elif '-cased' not in pretrained_model_name_or_path and not kwargs.get('do_lower_case', True):
-                logger.warning("The pre-trained model you are loading is an uncased model but you have set "
-                               "`do_lower_case` to False. We are setting `do_lower_case=True` for you "
-                               "but you may want to check this behavior.")
-                kwargs['do_lower_case'] = True
-
-        return super(BertTokenizer, cls)._from_pretrained(pretrained_model_name_or_path, *inputs, **kwargs)
 
 
 class BasicTokenizer(object):
@@ -214,7 +235,7 @@ class BasicTokenizer(object):
                 List of token not to split.
             **tokenize_chinese_chars**: (`optional`) boolean (default True)
                 Whether to tokenize Chinese characters.
-                This should likely be desactivated for Japanese:
+                This should likely be deactivated for Japanese:
                 see: https://github.com/huggingface/pytorch-pretrained-BERT/issues/328
         """
         if never_split is None:

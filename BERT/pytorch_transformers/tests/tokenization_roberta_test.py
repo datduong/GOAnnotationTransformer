@@ -15,20 +15,19 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import unittest
 import json
+import unittest
 from io import open
 
-from pytorch_transformers.tokenization_gpt2 import GPT2Tokenizer, VOCAB_FILES_NAMES
-
+from pytorch_transformers.tokenization_roberta import RobertaTokenizer, VOCAB_FILES_NAMES
 from .tokenization_tests_commons import CommonTestCases
 
-class GPT2TokenizationTest(CommonTestCases.CommonTokenizerTester):
 
-    tokenizer_class = GPT2Tokenizer
+class RobertaTokenizationTest(CommonTestCases.CommonTokenizerTester):
+    tokenizer_class = RobertaTokenizer
 
     def setUp(self):
-        super(GPT2TokenizationTest, self).setUp()
+        super(RobertaTokenizationTest, self).setUp()
 
         # Adapted from Sennrich et al. 2015 and https://github.com/rsennrich/subword-nmt
         vocab = ["l", "o", "w", "e", "r", "s", "t", "i", "d", "n",
@@ -48,7 +47,7 @@ class GPT2TokenizationTest(CommonTestCases.CommonTokenizerTester):
 
     def get_tokenizer(self, **kwargs):
         kwargs.update(self.special_tokens_map)
-        return GPT2Tokenizer.from_pretrained(self.tmpdirname, **kwargs)
+        return RobertaTokenizer.from_pretrained(self.tmpdirname, **kwargs)
 
     def get_input_output_texts(self):
         input_text = u"lower newer"
@@ -56,7 +55,7 @@ class GPT2TokenizationTest(CommonTestCases.CommonTokenizerTester):
         return input_text, output_text
 
     def test_full_tokenizer(self):
-        tokenizer = GPT2Tokenizer(self.vocab_file, self.merges_file, **self.special_tokens_map)
+        tokenizer = RobertaTokenizer(self.vocab_file, self.merges_file, **self.special_tokens_map)
         text = "lower newer"
         bpe_tokens = ["\u0120low", "er", "\u0120", "n", "e", "w", "er"]
         tokens = tokenizer.tokenize(text)
@@ -66,6 +65,33 @@ class GPT2TokenizationTest(CommonTestCases.CommonTokenizerTester):
         input_bpe_tokens = [14, 15, 10, 9, 3, 2, 15, 19]
         self.assertListEqual(
             tokenizer.convert_tokens_to_ids(input_tokens), input_bpe_tokens)
+
+    def roberta_dict_integration_testing(self):
+        tokenizer = self.get_tokenizer()
+
+        self.assertListEqual(
+            tokenizer.encode('Hello world!'),
+            [0, 31414, 232, 328, 2]
+        )
+        self.assertListEqual(
+            tokenizer.encode('Hello world! cécé herlolip 418'),
+            [0, 31414, 232, 328, 740, 1140, 12695, 69, 46078, 1588, 2]
+        )
+
+    def test_sequence_builders(self):
+        tokenizer = RobertaTokenizer.from_pretrained("roberta-base")
+
+        text = tokenizer.encode("sequence builders")
+        text_2 = tokenizer.encode("multi-sequence build")
+
+        encoded_text_from_decode = tokenizer.encode("sequence builders", add_special_tokens=True)
+        encoded_pair_from_decode = tokenizer.encode("sequence builders", "multi-sequence build", add_special_tokens=True)
+
+        encoded_sentence = tokenizer.add_special_tokens_single_sentence(text)
+        encoded_pair = tokenizer.add_special_tokens_sentences_pair(text, text_2)
+
+        assert encoded_sentence == encoded_text_from_decode
+        assert encoded_pair == encoded_pair_from_decode
 
 
 if __name__ == '__main__':

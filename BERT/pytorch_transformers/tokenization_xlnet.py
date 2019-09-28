@@ -23,7 +23,7 @@ from shutil import copyfile
 import unicodedata
 import six
 
-from .tokenization_utils import PreTrainedTokenizer, clean_up_tokenization
+from .tokenization_utils import PreTrainedTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class XLNetTokenizer(PreTrainedTokenizer):
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
 
-    def __init__(self, vocab_file, max_len=None,
+    def __init__(self, vocab_file,
                  do_lower_case=False, remove_space=True, keep_accents=False,
                  bos_token="<s>", eos_token="</s>", unk_token="<unk>", sep_token="<sep>",
                  pad_token="<pad>", cls_token="<cls>", mask_token="<mask>",
@@ -71,6 +71,10 @@ class XLNetTokenizer(PreTrainedTokenizer):
                                              pad_token=pad_token, cls_token=cls_token,
                                              mask_token=mask_token, additional_special_tokens=
                                              additional_special_tokens, **kwargs)
+
+        self.max_len_single_sentence = self.max_len - 2  # take into account special tokens
+        self.max_len_sentences_pair = self.max_len - 3  # take into account special tokens
+
         try:
             import sentencepiece as spm
         except ImportError:
@@ -176,6 +180,24 @@ class XLNetTokenizer(PreTrainedTokenizer):
         """Converts a sequence of tokens (strings for sub-words) in a single string."""
         out_string = ''.join(tokens).replace(SPIECE_UNDERLINE, ' ').strip()
         return out_string
+
+    def add_special_tokens_single_sentence(self, token_ids):
+        """
+        Adds special tokens to a sequence pair for sequence classification tasks.
+        An XLNet sequence pair has the following format: A [SEP] B [SEP][CLS]
+        """
+        sep = [self.sep_token_id]
+        cls = [self.cls_token_id]
+        return token_ids + sep + cls
+
+    def add_special_tokens_sentences_pair(self, token_ids_0, token_ids_1):
+        """
+        Adds special tokens to a sequence for sequence classification tasks.
+        An XLNet sequence has the following format: X [SEP][CLS]
+        """
+        sep = [self.sep_token_id]
+        cls = [self.cls_token_id]
+        return token_ids_0 + sep + token_ids_1 + sep + cls
 
     def save_vocabulary(self, save_directory):
         """ Save the sentencepiece vocabulary (copy original file) and special tokens file

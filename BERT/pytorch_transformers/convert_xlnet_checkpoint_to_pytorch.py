@@ -22,7 +22,7 @@ import os
 import argparse
 import torch
 
-from pytorch_transformers.modeling_xlnet import (CONFIG_NAME, WEIGHTS_NAME,
+from pytorch_transformers import (CONFIG_NAME, WEIGHTS_NAME,
                                                     XLNetConfig,
                                                     XLNetLMHeadModel, XLNetForQuestionAnswering,
                                                     XLNetForSequenceClassification,
@@ -79,7 +79,7 @@ if __name__ == "__main__":
                         default = None,
                         type = str,
                         required = True,
-                        help = "Path the TensorFlow checkpoint path.")
+                        help = "Path to the TensorFlow checkpoint path.")
     parser.add_argument("--xlnet_config_file",
                         default = None,
                         type = str,
