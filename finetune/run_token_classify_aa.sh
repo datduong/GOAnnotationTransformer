@@ -8,7 +8,7 @@ server='/local/datdb'
 data_dir=$server/'deepgo/data/DataToFinetuneBertTokenPredict/FinetunePhaseData'
 mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 
-for ontology in 'cc' ; do
+for ontology in 'mf' ; do
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/fold_1'$ontology
   output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/fold_1'$ontology
   mkdir $output_dir
@@ -41,10 +41,12 @@ for ontology in 'cc' ; do
 
   eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/train-'$ontology'-aa.csv'
 
-  model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1cc/checkpoint-30000'
-  # model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1mf/checkpoint-35000'
+  # model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1cc/checkpoint-30000'
+  model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1mf/checkpoint-35000'
 
-  CUDA_VISIBLE_DEVICES=0 python3 -u view_weight.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 8 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path > $output_dir/view_weights.txt
+  # CUDA_VISIBLE_DEVICES=0 python3 -u view_weight.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 8 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path > $output_dir/view_weights.txt
+
+  CUDA_VISIBLE_DEVICES=7 python3 -u view_weight_aa.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 6 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path > $output_dir/view_aa_weights.txt
 
 
 done

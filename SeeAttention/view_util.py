@@ -46,6 +46,11 @@ def get_best_prob (matrix,top_k=20) :
   position = np.argsort(matrix, axis=1)[:,::-1] ## use -1 to reverse ordering from largest to smallest
   return position [:,0:top_k] # return only top_k best j that contributes most to i
 
+# def get_best_prob_quantile (matrix,quantile=.95) :
+#   ## return top k hit of col j on the given row i. remember, row adds to 1. so it is how much j contributes to i
+#   cut_off = np.quantile(matrix,axis=1,q=[quantile]) ## get cutoff one segment wrt. many GO
+#   cut_off = np.reshape ( cut_off.repeat(matrix.shape[0]), matrix.shape ) ## repeat same number of GO, reshape into same shape as @matrix 
+#   pass 
 
 from sympy import Interval, Union # https://stackoverflow.com/questions/15273693/python-union-of-multiple-ranges
 def union(data):
@@ -56,15 +61,63 @@ def union(data):
     else list(u.args)
 
 
-def get_best_range (matrix,go_names,expand=5):
+def get_best_range (matrix, go_names, expand=5, max_bound=0):
   # take best position in @matrix, then expand left right by @expand, next we union the ranges
   best_range = {}
   for i in range(matrix.shape[0]): ## for each GO term, we get the best segment 
-    up_range = matrix[i] + expand
+    up_range = matrix[i] + expand ## matrix operation, so we compute for all "best" locations for one GO term, in 1 single row
     low_range = matrix[i] - expand
+    
+    up_range [up_range>max_bound] = max_bound ## must bound these values by AA length
+    low_range [low_range<0] = 0
+
     this_range = union ( [ r for r in zip(low_range,up_range) ] )
     best_range[go_names[i]] = this_range ## note that @go_names must match exact ordering in the vocab.txt
   return best_range
+
+
+def return_best_segment (attention, tokenizer, sequence, go_names, expand, top_k, max_bound ): ## @attention is some weight of seq-vs-GO  
+  ## how do we average or something ?? for 2 given sequences, and the same GO terms ?? 
+  
+  output = {} 
+
+  where_best = get_best_prob ( attention, top_k ) # @where_best is matrix num_sequence x num_GO 
+
+  best_range = get_best_range(where_best,go_names,expand, max_bound)
+
+  ## get the actual sequence ?? 
+  for go in best_range : # @best_range = {go1:RangeList1, go2:RangeList2}
+    best_segment = [] 
+    for start_end in best_range[go]: 
+
+      # @start_end is object @Interval, or it is a @list 
+
+      if isinstance(start_end, list):
+        seg = [ tokenizer._convert_id_to_token (s) for s in sequence[ start_end[0] : start_end[1] ] ] 
+      else: 
+        seg = [ tokenizer._convert_id_to_token (s) for s in sequence[ start_end.left : start_end.right ] ] 
+
+      best_segment.append ( "".join(seg) ) ## convert [(1,10) (30-40)] --> [ ABCXYZ , ]
+
+    ## best segment of this sequence to this go term 
+    output[go] = best_segment
+
+  return output ## this is for 1 sequence and many GO term. AT ONE ATTENTION HEAD. 
+
+
+def get_best_many_head (last_layer_att, tokenizer, sequence, num_head, go_names, expand, top_k) : 
+  ## different sequence has their own unique length. so we can't do batch model or broadcast style. 
+  ## loop over each sample, for each sample, then loop over each head. ?? 
+  # @last_layer_att will be #obs x #head x #word x #word, so we can pass in last_layer_att=last_layer_att[0] or something. 
+  head = {}
+  for head_id in range(num_head) : 
+    head[head_id] = return_best_segment ( last_layer_att[head_id], tokenizer, sequence, go_names, expand, top_k ) 
+  return head 
+
+
+
+
+
 
 
 
