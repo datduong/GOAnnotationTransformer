@@ -285,7 +285,7 @@ def main():
   ## create @label_names_in_index
   ## to test GO-vs-AA, we need to narrow down the set of GO a little bit otherwise, we have too much data that we can't "aggregate"
   ## redefine @label_2test_array
-  label_2test_array = sorted ( ['GO0002039','GO0000287'] ) ## add more later
+  label_2test_array = sorted ( ['GO0002039','GO0000287','GO0000049'] ) ## add more later
   label_names_in_index = view_util.get_word_index_in_array(tokenizer,label_2test_array) ## these are the word_index we will need to extract
 
   letters = 'A, E, I, O, U, B, C, D, F, G, H, J, K, L, M, N, P, Q, R, S, T, V, X, Z, W, Y'.split(',')
@@ -301,6 +301,7 @@ def main():
 
   # get attention head for sequence
   GO2AA_attention = {} ##  { name: {head:[range]} }
+  GO2AA_attention_quantile = {} 
 
   row_counter = 0 # so we can check the row id.
 
@@ -334,6 +335,8 @@ def main():
     for obs in range(last_layer_att.shape[0]): # @last_layer_att will be #obs x #head x #word x #word
 
       GO2AA_attention[row_counter] = {} # init empty for this sequence counter @row_counter
+      GO2AA_attention_quantile[row_counter] = {} 
+
       aa_position = np.argwhere(np.in1d(inputs[obs],AA_names_in_index)).transpose()[0]
       max_bound = len(aa_position)
 
@@ -346,11 +349,15 @@ def main():
         ## @label_2test_array can be shorten
         GO2AA_attention[row_counter][head] = view_util.return_best_segment (att_weight[1], tokenizer, inputs[obs].numpy(), label_2test_array, expand=7, top_k=2, max_bound=max_bound)
 
+        ## compute quantile for each GOvsAA at this given head 
+        GO2AA_attention_quantile[row_counter][head] = view_util.get_quantile (att_weight[1])
+
       ## update next counter, so we move to row2 in the raw text
       row_counter = row_counter + 1
 
   ## save ?? easier to just format this later.
   pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention.pickle"), 'wb') ) 
+  pickle.dump(GO2AA_attention_quantile, open(os.path.join(args.output_dir,"GO2AA_attention_quantile.pickle"), 'wb') ) 
 
 if __name__ == "__main__":
   main()
