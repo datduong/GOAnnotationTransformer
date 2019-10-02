@@ -38,6 +38,11 @@ def get_att_weight (matrix,input_ids,label_names_in_index,seq_in_index=None):
     aa_position = np.argwhere(np.in1d(input_ids,seq_in_index)).transpose()[0]
     ## add into tuple so use (something, )
     out = out + ( normalize_to_sum_1 ( matrix[ np.ix_ ( go_position,aa_position ) ] ) , )  ## row sum to 1, so we see which segment contribute most to this GO
+  
+    ## output a combine GOvsAll 
+    position = np.argwhere(np.in1d(input_ids, seq_in_index+label_names_in_index )).transpose()[0]
+    out = out + ( normalize_to_sum_1 ( matrix[ np.ix_ ( go_position,position ) ] ) , ) 
+
   return out
 
 

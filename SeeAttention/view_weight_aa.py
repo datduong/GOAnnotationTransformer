@@ -285,7 +285,7 @@ def main():
   ## create @label_names_in_index
   ## to test GO-vs-AA, we need to narrow down the set of GO a little bit otherwise, we have too much data that we can't "aggregate"
   ## redefine @label_2test_array
-  label_2test_array = sorted ( ['GO0002039','GO0000287','GO0000049'] ) ## add more later
+  # label_2test_array = sorted ( ['GO0002039','GO0000287','GO0000049'] ) ## add more later
   label_names_in_index = view_util.get_word_index_in_array(tokenizer,label_2test_array) ## these are the word_index we will need to extract
 
   letters = 'A, E, I, O, U, B, C, D, F, G, H, J, K, L, M, N, P, Q, R, S, T, V, X, Z, W, Y'.split(',')
@@ -301,11 +301,12 @@ def main():
 
   # get attention head for sequence
   GO2AA_attention = {} ##  { name: {head:[range]} }
-  GO2AA_attention_quantile = {} 
+  GO2AA_attention_quantile = {}
+  GO2all_attention = {}
 
   row_counter = 0 # so we can check the row id.
 
-  for batch in tqdm(eval_dataloader, desc="Evaluating"):
+  for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len
     attention_mask = batch[0][:,0:max_len_in_batch].cuda()
@@ -332,32 +333,42 @@ def main():
     ## because of batch size ... different sequence has different len. how do we align them ??
     ## has to go through each obs in the batch
 
+    ## !! too much ?? so we have to lower some output
     for obs in range(last_layer_att.shape[0]): # @last_layer_att will be #obs x #head x #word x #word
 
       GO2AA_attention[row_counter] = {} # init empty for this sequence counter @row_counter
-      GO2AA_attention_quantile[row_counter] = {} 
+      GO2AA_attention_quantile[row_counter] = {}
+      GO2all_attention[row_counter] = {}
 
       aa_position = np.argwhere(np.in1d(inputs[obs],AA_names_in_index)).transpose()[0]
       max_bound = len(aa_position)
 
       # @last_layer_att is num_batch x num_head x word x word
       # we get each obs in the batch, and get the #head
-      for head in range(config.num_attention_heads):
+      for head in range (2) : # range(config.num_attention_heads):
 
         ## get the attention head on kmer, may not want to look at ALL labels, so we can shorten the @label_names_in_index
         att_weight = view_util.get_att_weight (last_layer_att[obs][head].detach().cpu().numpy(), inputs[obs], label_names_in_index, AA_names_in_index) ## GO-vs-GO GO-vs-Sequence AA_names_in_index
         ## @label_2test_array can be shorten
-        GO2AA_attention[row_counter][head] = view_util.return_best_segment (att_weight[1], tokenizer, inputs[obs].numpy(), label_2test_array, expand=7, top_k=2, max_bound=max_bound)
+        # GO2AA_attention[row_counter][head] = view_util.return_best_segment (att_weight[1], tokenizer, inputs[obs].numpy(), label_2test_array, expand=7, top_k=2, max_bound=max_bound)
 
-        ## compute quantile for each GOvsAA at this given head 
-        GO2AA_attention_quantile[row_counter][head] = view_util.get_quantile (att_weight[1])
+        GO2AA_attention[row_counter][head] = att_weight[1]
+
+        ## compute quantile for each GOvsAA at this given head
+        # GO2AA_attention_quantile[row_counter][head] = view_util.get_quantile (att_weight[1])
+
+        GO2all_attention[row_counter][head] = att_weight[2]
 
       ## update next counter, so we move to row2 in the raw text
       row_counter = row_counter + 1
 
+    if batch_counter > 10 :
+      break ## must batch 1
+
   ## save ?? easier to just format this later.
-  pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention.pickle"), 'wb') ) 
-  pickle.dump(GO2AA_attention_quantile, open(os.path.join(args.output_dir,"GO2AA_attention_quantile.pickle"), 'wb') ) 
+  pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_H1to2.pickle"), 'wb') )
+  pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_H1to2.pickle"), 'wb') )
+  # pickle.dump(GO2AA_attention_quantile, open(os.path.join(args.output_dir,"GO2AA_attention_quantile.pickle"), 'wb') )
 
 if __name__ == "__main__":
   main()
