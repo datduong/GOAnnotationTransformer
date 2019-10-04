@@ -389,7 +389,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
       torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## test all labels
 
     with torch.no_grad():
-      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
+      outputs = model(0, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
