@@ -168,9 +168,9 @@ def main():
   parser.add_argument("--config_override", action="store_true")
 
   ## Required parameters
-  parser.add_argument("--train_data_file", default=None, type=str, required=True,
+  parser.add_argument("--train_data_file", default=None, type=str,
             help="The input training data file (a text file).")
-  parser.add_argument("--output_dir", default=None, type=str, required=True,
+  parser.add_argument("--output_dir", default=None, type=str,
             help="The output directory where the model predictions and checkpoints will be written.")
 
   ## Other parameters
@@ -292,6 +292,8 @@ def main():
   letters = sorted ( [let.strip() for let in letters] )
   AA_names_in_index = view_util.get_word_index_in_array(tokenizer,letters) ## these are word_index we want. we don't need to extract CLS and SEP ... but they can probably be important ??
 
+  protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf.tsv", dtype=str, sep="\t")
+  protein_name = list ( protein_name['Entry'] )
 
   ## what do we need to keep ??
 
@@ -300,13 +302,22 @@ def main():
   model.eval()
 
   # get attention head for sequence
+  GO2GO_attention = {}
   GO2AA_attention = {} ##  { name: {head:[range]} }
-  GO2AA_attention_quantile = {}
+  # GO2AA_attention_quantile = {}
   GO2all_attention = {}
 
   row_counter = 0 # so we can check the row id.
 
+  start = 0 
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
+
+    ## do only what needed 
+    end = start + batch[1].shape[0]
+    if ('O54992' not in protein_name[start:end]) and ('B3PC73' not in protein_name[start:end]): 
+      row_counter = row_counter + batch[1].shape[0] ## skip all 
+      start = end ## next start 
+      continue 
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len
     attention_mask = batch[0][:,0:max_len_in_batch].cuda()
@@ -336,38 +347,51 @@ def main():
     ## !! too much ?? so we have to lower some output
     for obs in range(last_layer_att.shape[0]): # @last_layer_att will be #obs x #head x #word x #word
 
-      GO2AA_attention[row_counter] = {} # init empty for this sequence counter @row_counter
-      GO2AA_attention_quantile[row_counter] = {}
-      GO2all_attention[row_counter] = {}
+      if (protein_name[row_counter] != 'O54992') and (protein_name[row_counter] != 'B3PC73'): 
+        row_counter = row_counter + 1
+        continue 
+
+      GO2GO_attention[protein_name[row_counter]] = {} 
+      GO2AA_attention[protein_name[row_counter]] = {} # init empty for this sequence counter @row_counter
+      # GO2AA_attention_quantile[protein_name[row_counter]] = {}
+      GO2all_attention[protein_name[row_counter]] = {}
 
       aa_position = np.argwhere(np.in1d(inputs[obs],AA_names_in_index)).transpose()[0]
       max_bound = len(aa_position)
 
       # @last_layer_att is num_batch x num_head x word x word
       # we get each obs in the batch, and get the #head
-      for head in range (2) : # range(config.num_attention_heads):
+      for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
 
         ## get the attention head on kmer, may not want to look at ALL labels, so we can shorten the @label_names_in_index
         att_weight = view_util.get_att_weight (last_layer_att[obs][head].detach().cpu().numpy(), inputs[obs], label_names_in_index, AA_names_in_index) ## GO-vs-GO GO-vs-Sequence AA_names_in_index
         ## @label_2test_array can be shorten
         # GO2AA_attention[row_counter][head] = view_util.return_best_segment (att_weight[1], tokenizer, inputs[obs].numpy(), label_2test_array, expand=7, top_k=2, max_bound=max_bound)
 
-        GO2AA_attention[row_counter][head] = att_weight[1]
+        GO2GO_attention[ protein_name[row_counter] ][head] = att_weight[0]
+        GO2AA_attention[ protein_name[row_counter] ][head] = att_weight[1]
 
         ## compute quantile for each GOvsAA at this given head
         # GO2AA_attention_quantile[row_counter][head] = view_util.get_quantile (att_weight[1])
 
-        GO2all_attention[row_counter][head] = att_weight[2]
+        GO2all_attention[ protein_name[row_counter] ][head] = att_weight[2]
 
       ## update next counter, so we move to row2 in the raw text
       row_counter = row_counter + 1
 
-    if batch_counter > 10 :
-      break ## must batch 1
+  ## save ?? easier to just format this later.
+  pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_B3PC73.pickle"), 'wb') )
+  pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992_B3PC73.pickle"), 'wb') )
+  pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_O54992_B3PC73.pickle"), 'wb') )
+
+  # exit() 
+
+  # if batch_counter > 10 :
+  #   break ## must batch 1
 
   ## save ?? easier to just format this later.
-  pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_H1to2.pickle"), 'wb') )
-  pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_H1to2.pickle"), 'wb') )
+  # pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992.pickle"), 'wb') )
+  # pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_O54992.pickle"), 'wb') )
   # pickle.dump(GO2AA_attention_quantile, open(os.path.join(args.output_dir,"GO2AA_attention_quantile.pickle"), 'wb') )
 
 if __name__ == "__main__":
