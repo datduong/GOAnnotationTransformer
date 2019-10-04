@@ -175,10 +175,10 @@ class BertEmbeddingsAA(nn.Module):
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
   def forward(self, input_ids, token_type_ids=None, position_ids=None):
-    # seq_length = input_ids.size(1)
-    # if position_ids is None:
-    #   position_ids = torch.arange(seq_length, dtype=torch.long, device=input_ids.device)
-    #   position_ids = position_ids.unsqueeze(0).expand_as(input_ids)
+    seq_length = input_ids.size(1)
+    if position_ids is None:
+      position_ids = torch.arange(seq_length, dtype=torch.long, device=input_ids.device)
+      position_ids = position_ids.unsqueeze(0).expand_as(input_ids)
     # if token_type_ids is None:
     #   token_type_ids = torch.zeros_like(input_ids)
 

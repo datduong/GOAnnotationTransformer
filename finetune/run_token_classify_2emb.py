@@ -128,6 +128,11 @@ class TextDataset(Dataset):
         self.input_ids_aa.append( this_aa )
         self.mask_ids_aa.append (mask_aa)
 
+        if counter < 3: 
+          print ('see sample {}'.format(counter))
+          print (this_aa)
+          print (label1hot)
+
         if (len(this_aa) + num_label) > block_size:
           print ('len too long, expand block_size')
           exit()
