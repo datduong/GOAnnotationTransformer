@@ -313,7 +313,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         epoch_iterator.close()
         break
 
-
     ## end 1 epoch
     results = evaluate(args, model, tokenizer,label_2test_array)
     if results['eval_loss'] < eval_loss:
@@ -331,11 +330,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       train_iterator.close()
       print ("**** break early ****")
       break
-
-    # print ('\neval on trainset\n')
-    # true_label = np.array (true_label)
-    # result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-    # evaluation_metric.print_metrics( result )
 
     if args.max_steps > 0 and global_step > args.max_steps:
       train_iterator.close()
@@ -389,25 +383,26 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
       torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## test all labels
 
     with torch.no_grad():
-      outputs = model(0, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
     nb_eval_steps += 1
+    # print ('outputs[1]')
+    # print (outputs[1])
     ## track output
     norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
     norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
     # print (norm_prob.shape)
     if prediction is None:
       ## track predicted probability
-      true_label = batch[2].data.numpy()
-      prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
+      true_label = batch[0].data.numpy()
+      prediction = np.reshape(norm_prob, ( batch[0].shape ) ) ## num actual sample v.s. num label
     else:
-      true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
-      prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
+      true_label = np.vstack ( (true_label, batch[0].data.numpy() ) )
+      prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[0].shape ) ) ) )
 
 
-  true_label = np.array (true_label)
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
   # evaluation_metric.print_metrics( result )
 

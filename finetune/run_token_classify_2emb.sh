@@ -8,7 +8,7 @@ server='/local/datdb'
 data_dir=$server/'deepgo/data/DataToFinetuneBertTokenPredict/FinetunePhaseData'
 mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 
-for ontology in 'mf' ; do
+for ontology in 'cc' ; do
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/fold_1'$ontology'2embRelu'
   output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/fold_1'$ontology'2embRelu'
   mkdir $output_dir
@@ -27,8 +27,7 @@ for ontology in 'mf' ; do
 
   # 5040 batches train
   ## continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=6 python3 -u run_token_classify_2emb.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 8 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 5000 --logging_steps 5000 --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --learning_rate 0.0001 --seed 2019 --fp16 > $output_dir/train_point.txt # --no_cuda
-
+  CUDA_VISIBLE_DEVICES=1 python3 -u run_token_classify_2emb.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 8 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 5000 --logging_steps 5000 --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --learning_rate 0.0001 --seed 2019 --fp16 > $output_dir/train_point.txt # --no_cuda
 
   # ## testing phase
 
