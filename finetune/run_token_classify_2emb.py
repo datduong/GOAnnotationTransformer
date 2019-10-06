@@ -425,7 +425,6 @@ def main():
   parser = argparse.ArgumentParser()
 
   parser.add_argument("--label_2test", type=str, default=None)
-
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
 

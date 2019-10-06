@@ -41,7 +41,7 @@ for ontology in 'mf' ; do
 
   eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/train-'$ontology'-aa.csv'
 
-  # # model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1cc/checkpoint-30000' # 85000 30000
+  # # model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1cc/checkpoint-85000' #
   model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1mf/checkpoint-30000'
 
   # CUDA_VISIBLE_DEVICES=0 python3 -u view_weight.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 8 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path > $output_dir/view_weights.txt
