@@ -3,14 +3,19 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 os.chdir('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/fold_1mf_relu/')
-GO2all = pickle.load(open("GO2GO_attention_O54992_B3PC73.pickle","rb"))
+GO2all = pickle.load(open("GO2all_attention_O54992_B3PC73.pickle","rb"))
 
 go_names = pd.read_csv('/u/scratch/d/datduong/deepgo/data/deepgo.mf.csv',header=None)
 go_names = list(go_names[0])
 
 go = '0002039'
 go_index = go_names.index('GO:'+go) # 0002039
+
+high_cooccur = ["GO:0072509", "GO:0004857", "GO:0032555", "GO:0000166" ,"GO:0005216", "GO:0005525","GO:0050839"]
+high_cooccur = [ go_names.index(h) for h in high_cooccur ]
+
 
 xc = {} 
 z = 'GO:0019901;GO:0019900;GO:0019899;GO:0002039;GO:0005515;GO:0005488;GO:0004674;GO:0004672;GO:0016773;GO:0016301;GO:0016772;GO:0016740;GO:0003824'.split(';')
@@ -25,16 +30,19 @@ for p in ["O54992","B3PC73"]:
   this_obs = GO2all[p]
   for head in range(6) : # range (6) :
     x = this_obs [ head ][go_index]
-    largest_signal_pos = x.argsort()[::-1][:10] ## take the 10 largest signal
-    print ('head {}'.format(head))
+    # x = x[x< np.quantile(x,q=[0.99])]
+    # x = np.delete(x, high_cooccur)
+    # largest_signal_pos = x.argsort()[::-1][0:10] ## take the 10 largest signal... or we can ignore them ?? 
+    # print ('head {}'.format(head))
     # print ( [ go_names[signal_pos] for signal_pos in largest_signal_pos ] ) 
     # print ( [ x[signal_pos] for signal_pos in largest_signal_pos ] ) 
     # print ( np.quantile ( np.round(x,6), q=[.25,.5,.75,.95] ) )
     plt.clf()
     plt.plot(np.arange(len(x)), x , '-')
-    for xc_line in xc[p]: 
-      plt.axvline(x=xc_line,color='r')
-    plt.savefig( 'go2go'+p+"_"+go+"_"+str(head)+'.png' )
+    plt.title('head '+str(head))
+    # for xc_line in xc[p]: 
+    #   plt.axvline(x=xc_line,color='r')
+    plt.savefig( 'go2all'+p+"_"+go+"_"+str(head)+'.png' )
     
 
 

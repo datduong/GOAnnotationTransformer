@@ -19,25 +19,28 @@ get_top_contributor = function (df,row){
 
 # setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/fold_1mf_relu/')
 
-setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/fold_1mf_relu/')
+setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/fold_1mf2embGelu/')
 
-# for (num in 0:5){
-#   # num=5
-#   df = read.csv ( paste0('GO2GO_attention_head',num,'.csv'), header=T )
-#   # df = read.csv ( paste0('GO2GO_attention_ave_head.csv'), header=T )  
-#   df = as.matrix (df)
-#   rownames(df) = paste0('',colnames(df))
-#   # df = df[1:50,1:50] ## subset just to see 
-#   pdf (paste0('Head',num,'.pdf'),height=7,width=8) # first50
-#   heatmap(df,scale="none",col = coul,Colv=NA,main=paste('Head',num))
-#   dev.off() 
-#   # p1 = heatmap(df,scale="none",col = coul,Colv=NA,main=paste('ave',num))
-# }
+high_cooccur = unlist( strsplit ( 'GO:0072509 GO:0004857 GO:0032555 GO:0000166 GO:0004857 GO:0000166 GO:0005216 GO:0004857 GO:0005525 GO:0004857 GO:0050839 GO:0000166', " " ) )
+high_cooccur = gsub(":","",unique(high_cooccur)) 
 
+
+for (num in 0:5){
+  # num=5
+  df = read.csv ( paste0('GO2GO_attention_head',num,'.csv'), header=T )
+  # df = read.csv ( paste0('GO2GO_attention_ave_head.csv'), header=T )  
+  df = as.matrix (df)
+  rownames(df) = paste0('',colnames(df))
+  # df = df[1:50,1:50] ## subset just to see 
+  df = df [ ! rownames(df) %in% high_cooccur , ! colnames(df) %in% high_cooccur ]
+  pdf (paste0('Head',num,'.pdf'),height=7,width=8) # first50
+  heatmap(df,scale="none",col = coul,Colv=NA,main=paste('Head',num))
+  dev.off() 
+  # p1 = heatmap(df,scale="none",col = coul,Colv=NA,main=paste('ave',num))
+}
 
 # rownames(df)[10]
 # get_top_contributor(df,10)
-
 # graphics.off() 
 
 
@@ -48,29 +51,28 @@ cooccur = as.matrix (cooccur)
 rownames(cooccur) = colnames(cooccur)
 cooccur = cooccur / colSums(cooccur) ## R divide down the row
 cooccur[is.nan(cooccur)] = 0 
+cooccur = cooccur [ ! rownames(cooccur) %in% high_cooccur , ! colnames(cooccur) %in% high_cooccur ]
 # cooccur = cooccur[1:50,1:50]
-# pdf (paste0('coocurrFirst50.pdf'),height=7,width=8)
-# heatmap(cooccur,scale="none",col = coul,Colv=NA,main='Co-occurrence')
-# dev.off() 
+pdf (paste0('coocurrFirst50.pdf'),height=7,width=8)
+heatmap(cooccur,scale="none",col = coul,Colv=NA,main='Co-occurrence')
+dev.off() 
+
 cooccur_group = get_cluster(cooccur,4)
 
 
 for (num in c(0:5)) {
-df = read.csv ( paste0('GO2GO_attention_head',num,'.csv'), header=T )
-df = as.matrix (df)
-rownames(df) = paste0('',colnames(df))
-# df = df[1:50,1:50] ## subset just to see 
-df_group = get_cluster(df,4)
-df_group[[2]]
-df_group[[3]]
-
-print (dendlist(as.dendrogram(df_group[[1]]), as.dendrogram(cooccur_group[[1]])) %>% untangle(method = "step1side") %>% entanglement() )
-
-# ent = entanglement (as.dendrogram(df_group[[1]]), as.dendrogram(cooccur_group[[1]]))
-# print (ent)
-
-# print (cor_cophenetic(as.dendrogram(df_group[[1]]), as.dendrogram(cooccur_group[[1]])))
-
+  df = read.csv ( paste0('GO2GO_attention_head',num,'.csv'), header=T )
+  df = as.matrix (df)
+  rownames(df) = paste0('',colnames(df))
+  # df = df[1:50,1:50] ## subset just to see 
+  df_group = get_cluster(df,4)
+  # df_group[[2]]
+  # df_group[[3]]
+  print (paste0('head ',num))
+  print (dendlist(as.dendrogram(df_group[[1]]), as.dendrogram(cooccur_group[[1]])) %>% untangle(method = "step1side") %>% entanglement() )
+  # ent = entanglement (as.dendrogram(df_group[[1]]), as.dendrogram(cooccur_group[[1]]))
+  # print (ent)
+  print (cor_cophenetic(as.dendrogram(df_group[[1]]), as.dendrogram(cooccur_group[[1]])))
 }
 # tanglegram(dl)
 

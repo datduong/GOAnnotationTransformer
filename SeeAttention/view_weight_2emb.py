@@ -283,14 +283,14 @@ def main():
   for batch in tqdm(eval_dataloader, desc="Evaluating"):
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
-    input_ids_aa = batch[1][:,0:max_len_in_batch].to(args.device)
-    input_ids_label = batch[2].to(args.device)
-    attention_mask = torch.cat( (batch[3][:,0:max_len_in_batch] , torch.ones(input_ids_label.shape,dtype=torch.long) ), dim=1 ).to(args.device)
+    input_ids_aa = batch[1][:,0:max_len_in_batch].cuda()
+    input_ids_label = batch[2].cuda()
+    attention_mask = torch.cat( (batch[3][:,0:max_len_in_batch] , torch.ones(input_ids_label.shape,dtype=torch.long) ), dim=1 ).cuda()
 
-    labels = batch[0].to(args.device) ## already in batch_size x num_label
+    labels = batch[0].cuda() ## already in batch_size x num_label
     ## must append 0 positions to the front, so that we mask out AA
     labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
-      torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## test all labels
+      torch.ones(input_ids_label.shape)),dim=1).cuda() ## test all labels
 
     with torch.no_grad():
       outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
@@ -305,7 +305,7 @@ def main():
     ## get layer 12, last layer, so use [-1], we may change the num of layer
     last_layer_att = outputs[-1][-1] ## return all the heads of last layer. this is a tuple.
 
-    inputs = batch[1][:,0:max_len_in_batch] ## override so it's redefined on GPU
+    # inputs = batch[1][:,0:max_len_in_batch] ## override so it's redefined on GPU
 
     ## because of batch size ... different sequence has different len. how do we align them ??
     ## has to go through each obs in the batch
@@ -313,12 +313,15 @@ def main():
 
       # @last_layer_att is num_batch x num_head x word x word
       # we get each obs in the batch, and get the #head
+      this_obs = last_layer_att[obs].detach().cpu().numpy()
+
       for head in range(config.num_attention_heads):
 
-        att_weight = view_util.get_att_weight (last_layer_att[obs][head].detach().cpu().numpy(), inputs[obs], label_names_in_index) ## GO-vs-GO GO-vs-Sequence AA_names_in_index
+        # att_weight = view_util.get_att_weight (last_layer_att[obs][head].detach().cpu().numpy(), inputs[obs], label_names_in_index) ## GO-vs-GO GO-vs-Sequence AA_names_in_index
         # @best_range is dictionary. for each GO, we take what is best-contributing segment from this given input
         # best_range = view_util.get_best_range (att_weight[1]) ## for GO-vs-Kmer we get best range of Kmer that contributes most to GO names
-        GO2GO_attention[head] = GO2GO_attention[head] + att_weight [0]
+
+        GO2GO_attention[head] = GO2GO_attention[head] + this_obs[head][max_len_in_batch::, :][:, max_len_in_batch::] # notice we need only GO2GO block
 
 
   ## average @GO2GO_attention

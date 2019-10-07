@@ -298,14 +298,14 @@ def main():
       continue 
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
-    input_ids_aa = batch[1][:,0:max_len_in_batch].to(args.device)
-    input_ids_label = batch[2].to(args.device)
-    attention_mask = torch.cat( (batch[3][:,0:max_len_in_batch] , torch.ones(input_ids_label.shape,dtype=torch.long) ), dim=1 ).to(args.device)
+    input_ids_aa = batch[1][:,0:max_len_in_batch].cuda()
+    input_ids_label = batch[2].cuda()
+    attention_mask = torch.cat( (batch[3][:,0:max_len_in_batch] , torch.ones(input_ids_label.shape,dtype=torch.long) ), dim=1 ).cuda()
 
-    labels = batch[0].to(args.device) ## already in batch_size x num_label
+    labels = batch[0].cuda() ## already in batch_size x num_label
     ## must append 0 positions to the front, so that we mask out AA
     labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
-      torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## test all labels
+      torch.ones(input_ids_label.shape)),dim=1).cuda() ## test all labels
 
     with torch.no_grad():
       outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
