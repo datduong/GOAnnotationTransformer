@@ -141,6 +141,7 @@ def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--pretrained_label_path", type=str, default=None)
   parser.add_argument("--label_2test", type=str, default=None)
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
@@ -231,7 +232,15 @@ def main():
   parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
   args = parser.parse_args()
 
+
   ## does weight make sense ?
+
+  # read in labels to be testing
+  label_2test_array = pd.read_csv(args.label_2test,header=None)
+  label_2test_array = sorted(list( label_2test_array[0] ))
+  label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
+  num_label = len(label_2test_array)
+
 
   config = BertConfig.from_pretrained(args.model_name_or_path)
   config.output_attentions=True ## override @config
@@ -245,12 +254,6 @@ def main():
 
   ## create dataset again.
   ## must respect the ordering of GO terms.
-
-  # read in labels to be testing
-  label_2test_array = pd.read_csv(args.label_2test,header=None)
-  label_2test_array = sorted(list( label_2test_array[0] ))
-  label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
-  num_label = len(label_2test_array)
 
   eval_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=True)
   args.eval_batch_size = args.per_gpu_eval_batch_size ## just use 1 gpu
@@ -314,55 +317,38 @@ def main():
 
     nb_eval_steps += 1
 
-    # layer = 1 ## just try it
-    # head = 1
+ 
+
     # @last_layer_att is num_batch x num_head x word x word
     ## get layer 12, last layer, so use [-1], we may change the num of layer
-    last_layer_att = outputs[-1][-1] ## return all the heads of last layer. this is a tuple.
+    layer_att = outputs[-1] # [-1] ## return all the heads of last layer. this is a tuple.
+    for layer in range (config.num_hidden_layers): 
+      this_layer_att = layer_att[layer].detach().cpu().numpy()
 
-    inputs = batch[1][:,0:max_len_in_batch] ## override so it's redefined on GPU
+      for obs in range(input_ids_aa.shape[0]): # @last_layer_att will be #obs x #head x #word x #word
 
-    ## because of batch size ... different sequence has different len. how do we align them ??
-    ## has to go through each obs in the batch
+        if (protein_name[row_counter] != 'O54992') and (protein_name[row_counter] != 'B3PC73'): 
+          row_counter = row_counter + 1
+          continue 
 
-    ## !! too much ?? so we have to lower some output
-    for obs in range(last_layer_att.shape[0]): # @last_layer_att will be #obs x #head x #word x #word
+        GO2GO_attention[protein_name[row_counter]] = {} 
+        GO2AA_attention[protein_name[row_counter]] = {} # init empty for this sequence counter @row_counter
+        GO2all_attention[protein_name[row_counter]] = {}
 
-      if (protein_name[row_counter] != 'O54992') and (protein_name[row_counter] != 'B3PC73'): 
+        # @last_layer_att is num_batch x num_head x word x word
+        # we get each obs in the batch, and get the #head
+        
+        for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
+          GO2all_attention[ protein_name[row_counter] ][head] = {} 
+          GO2all_attention[ protein_name[row_counter] ][head][layer] = layer_att[head][layer]
+
+  
+        ## update next counter, so we move to row2 in the raw text
         row_counter = row_counter + 1
-        continue 
-
-      GO2GO_attention[protein_name[row_counter]] = {} 
-      GO2AA_attention[protein_name[row_counter]] = {} # init empty for this sequence counter @row_counter
-      # GO2AA_attention_quantile[protein_name[row_counter]] = {}
-      GO2all_attention[protein_name[row_counter]] = {}
-
-      aa_position = np.argwhere(np.in1d(inputs[obs],AA_names_in_index)).transpose()[0]
-      max_bound = len(aa_position)
-
-      # @last_layer_att is num_batch x num_head x word x word
-      # we get each obs in the batch, and get the #head
-      for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
-
-        ## get the attention head on kmer, may not want to look at ALL labels, so we can shorten the @label_names_in_index
-        att_weight = view_util.get_att_weight (last_layer_att[obs][head].detach().cpu().numpy(), inputs[obs], label_names_in_index, AA_names_in_index) ## GO-vs-GO GO-vs-Sequence AA_names_in_index
-        ## @label_2test_array can be shorten
-        # GO2AA_attention[row_counter][head] = view_util.return_best_segment (att_weight[1], tokenizer, inputs[obs].numpy(), label_2test_array, expand=7, top_k=2, max_bound=max_bound)
-
-        GO2GO_attention[ protein_name[row_counter] ][head] = att_weight[0]
-        GO2AA_attention[ protein_name[row_counter] ][head] = att_weight[1]
-
-        ## compute quantile for each GOvsAA at this given head
-        # GO2AA_attention_quantile[row_counter][head] = view_util.get_quantile (att_weight[1])
-
-        GO2all_attention[ protein_name[row_counter] ][head] = att_weight[2]
-
-      ## update next counter, so we move to row2 in the raw text
-      row_counter = row_counter + 1
 
   ## save ?? easier to just format this later.
-  pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_B3PC73.pickle"), 'wb') )
-  pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992_B3PC73.pickle"), 'wb') )
+  # pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_B3PC73.pickle"), 'wb') )
+  # pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992_B3PC73.pickle"), 'wb') )
   pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_O54992_B3PC73.pickle"), 'wb') )
 
   # exit() 
