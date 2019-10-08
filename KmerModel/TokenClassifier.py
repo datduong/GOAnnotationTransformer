@@ -158,7 +158,6 @@ class BertForTokenClassification1hotPpi (BertForTokenClassification1hot) :
     return outputs  # (loss), scores, (hidden_states), (attentions)
 
 
-
 class BertEmbeddingsAA(nn.Module):
   """Construct the embeddings from word, position and token_type embeddings.
   """
@@ -335,7 +334,7 @@ class BertModel2Emb(BertPreTrainedModel):
 
 class BertForTokenClassification2Emb (BertPreTrainedModel):
 
-  def __init__(self, config):
+  def __init__(self, config, args):
     super(BertForTokenClassification2Emb, self).__init__(config)
     self.num_labels = 2 # config.num_labels ## for us, each output vector is "yes/no", so we should keep this at self.num_labels=2 to avoid any strange error later
 
@@ -345,6 +344,14 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
 
     # self.apply(self.init_weights)
     self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
+
+    if args is not None: ## some stupid legacy
+      if args.pretrained_label: 
+        self.init_label_emb(args.pretrained_label_path)
+
+  def init_label_emb(self,pretrained_weight): 
+    self.bert.embeddings_label.word_embeddings.weight.data.copy_(torch.from_numpy(pretrained_weight))
+    self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
         position_ids=None, head_mask=None, attention_mask_label=None):
