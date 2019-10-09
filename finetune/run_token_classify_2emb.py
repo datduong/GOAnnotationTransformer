@@ -515,6 +515,8 @@ def main():
   parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
   args = parser.parse_args()
 
+  print (args)
+  
   if args.model_type in ["bert", "roberta"] and not args.mlm:
     raise ValueError("BERT and RoBERTa do not have LM heads but masked LM heads. They must be run using the --mlm "
              "flag (masked language modeling).")

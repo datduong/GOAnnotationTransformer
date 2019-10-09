@@ -294,10 +294,14 @@ def main():
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
     batch_size = batch[1].shape[0] ## do only what needed
-    end = row_counter + batch_size
+
+    if (batch_counter*batch_size) != row_counter: 
+      print ('check @row_counter for @batch_counter {} should see this message only at the last batch'.format(batch_counter))
+
+    end = row_counter + batch_size 
     if ('O54992' not in protein_name[row_counter:end]) and ('B3PC73' not in protein_name[row_counter:end]):
       ## suppose we don't enter this @if, then we will update @row_counter at the end, before we call "@for batch_counter...."
-      row_counter = row_counter + batch_size ## skip all, start at new positions
+      row_counter = end ## skip all, start at new positions of next batch
       continue
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
@@ -318,6 +322,8 @@ def main():
     nb_eval_steps += 1
 
 
+    attention_mask = attention_mask.detach().cpu().numpy()
+
     layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention. 
     print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple 
 
@@ -331,19 +337,22 @@ def main():
 
         this_prot_name = protein_name[row_counter+obs]
 
-        if (this_prot_name != 'O54992') and (this_prot_name != 'B3PC73'):
-          continue
+        if (this_prot_name == 'O54992') or (this_prot_name == 'B3PC73'):
 
-        if this_prot_name not in GO2all_attention:
-          GO2all_attention[this_prot_name] = {}
+          where_not_mask = attention_mask[obs]==1
 
-        GO2all_attention[ this_prot_name ][layer] = {}
+          if this_prot_name not in GO2all_attention:
+            GO2all_attention[this_prot_name] = {}
 
-        for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
-          GO2all_attention[ this_prot_name ][layer][head] = this_layer_att[obs][head]
+          GO2all_attention[ this_prot_name ][layer] = {}
+
+          for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
+            save = this_layer_att[obs][head]
+            ## must use masking to get back correct values 
+            GO2all_attention[ this_prot_name ][layer][head] = save [ :, where_not_mask ] [ where_not_mask, : ]
 
     ## update next counter, so we move to batch#2 in the raw text
-    row_counter = row_counter + batch_size
+    row_counter = end
 
   ## save ?? easier to just format this later.
   # pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_B3PC73.pickle"), 'wb') )
