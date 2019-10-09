@@ -103,7 +103,7 @@ class TextDataset(Dataset):
         self.input_ids_aa.append( this_aa )
         self.mask_ids_aa.append (mask_aa)
 
-        if counter < 3: 
+        if counter < 3:
           print ('see sample {}'.format(counter))
           print (this_aa)
           print (label1hot)
@@ -129,7 +129,7 @@ class TextDataset(Dataset):
   def __getitem__(self, item):
     return (torch.LongTensor(self.label1hot[item]),
             torch.tensor(self.input_ids_aa[item]),
-            torch.tensor(self.input_ids_label[item]), 
+            torch.tensor(self.input_ids_label[item]),
             torch.tensor(self.mask_ids_aa[item]) )
 
 
@@ -290,15 +290,15 @@ def main():
 
   row_counter = 0 # so we can check the row id.
 
-  start = 0 
+  start = 0
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
-    ## do only what needed 
-    end = start + batch[1].shape[0]
-    if ('O54992' not in protein_name[start:end]) and ('B3PC73' not in protein_name[start:end]): 
-      row_counter = row_counter + batch[1].shape[0] ## skip all 
-      start = end ## next start 
-      continue 
+    batch_size = batch[1].shape[0] ## do only what needed
+    end = row_counter + batch_size
+    if ('O54992' not in protein_name[row_counter:end]) and ('B3PC73' not in protein_name[row_counter:end]):
+      ## suppose we don't enter this @if, then we will update @row_counter at the end, before we call "@for batch_counter...."
+      row_counter = row_counter + batch_size ## skip all, start at new positions
+      continue
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
     input_ids_aa = batch[1][:,0:max_len_in_batch].cuda()
@@ -317,41 +317,40 @@ def main():
 
     nb_eval_steps += 1
 
- 
 
-    # @last_layer_att is num_batch x num_head x word x word
-    ## get layer 12, last layer, so use [-1], we may change the num of layer
-    layer_att = outputs[-1] # [-1] ## return all the heads of last layer. this is a tuple.
-    for layer in range (config.num_hidden_layers): 
-      this_layer_att = layer_att[layer].detach().cpu().numpy()
+    layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention. 
+    print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple 
 
-      for obs in range(input_ids_aa.shape[0]): # @last_layer_att will be #obs x #head x #word x #word
+    for layer in range (config.num_hidden_layers):
 
-        if (protein_name[row_counter] != 'O54992') and (protein_name[row_counter] != 'B3PC73'): 
-          row_counter = row_counter + 1
-          continue 
+      this_layer_att = layer_att[layer].detach().cpu().numpy() ## @layer_att is a tuple 
 
-        GO2GO_attention[protein_name[row_counter]] = {} 
-        GO2AA_attention[protein_name[row_counter]] = {} # init empty for this sequence counter @row_counter
-        GO2all_attention[protein_name[row_counter]] = {}
+      # num_batch x num_head x word x word
+      # we get each obs in the batch, and get the #head
+      for obs in range(batch_size): # will be #obs x #head x #word x #word
 
-        # @last_layer_att is num_batch x num_head x word x word
-        # we get each obs in the batch, and get the #head
-        
+        this_prot_name = protein_name[row_counter+obs]
+
+        if (this_prot_name != 'O54992') and (this_prot_name != 'B3PC73'):
+          continue
+
+        if this_prot_name not in GO2all_attention:
+          GO2all_attention[this_prot_name] = {}
+
+        GO2all_attention[ this_prot_name ][layer] = {}
+
         for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
-          GO2all_attention[ protein_name[row_counter] ][head] = {} 
-          GO2all_attention[ protein_name[row_counter] ][head][layer] = layer_att[head][layer]
+          GO2all_attention[ this_prot_name ][layer][head] = this_layer_att[obs][head]
 
-  
-        ## update next counter, so we move to row2 in the raw text
-        row_counter = row_counter + 1
+    ## update next counter, so we move to batch#2 in the raw text
+    row_counter = row_counter + batch_size
 
   ## save ?? easier to just format this later.
   # pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_B3PC73.pickle"), 'wb') )
   # pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992_B3PC73.pickle"), 'wb') )
   pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_O54992_B3PC73.pickle"), 'wb') )
 
-  # exit() 
+  # exit()
 
   # if batch_counter > 10 :
   #   break ## must batch 1
