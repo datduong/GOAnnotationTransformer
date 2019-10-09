@@ -25,7 +25,7 @@ for (layer in 0:9){
     fin = melt(fin)
     p1 = ggplot(data = fin, aes(x=Var1, y=Var2, fill=value)) + geom_tile() +
     ggtitle(paste0(p , 'layer' , layer, 'head',head)) +
-    scale_fill_brewer(palette = "PRGn") +
+    scale_colour_gradient(low = "white", high = "black") +
     theme(legend.title = element_blank(),axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank(),axis.ticks = element_blank()) 
     png (file = paste0(p,'H',head,'L',layer,'.png'),width=16, height=16, units='in', res = 500)
     print (p1)
