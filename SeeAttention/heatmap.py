@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm 
 import pickle,re,sys,os
 
-os.chdir('/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1mf2embGeluE768H4L10I768')
+os.chdir('/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1mf2embGeluE768H4L10I1024PretrainLabelLr10-4')
 attention = pickle.load (open("GO2all_attention_O54992_B3PC73.pickle","rb"))
 
 prot = list ( attention.keys() ) 

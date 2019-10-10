@@ -11,7 +11,7 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear768.Layer12/label_vector.pickle'
 
 choice='GeluE768H4L10I1024PretrainLabelLr10-4'
-for ontology in 'mf' ; do
+for ontology in 'cc' ; do
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/fold_1'$ontology'2emb'$choice
   output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/fold_1'$ontology'2emb'$choice
   mkdir $output_dir
@@ -45,12 +45,12 @@ for ontology in 'mf' ; do
   # cd $server/BertGOAnnotation/SeeAttention/
   # eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-aa.csv'
 
-  # model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1mf2emb'$choice'/checkpoint-80000'
+  # model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1mf2emb'$choice'/checkpoint-105000'
   # model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1cc2emb'$choice'/checkpoint-105000' # 
 
-  # CUDA_VISIBLE_DEVICES=6 python3 -u view_weight_2emb.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 6 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path > $output_dir/view_weights.txt
+  # CUDA_VISIBLE_DEVICES=6 python3 -u view_weight_2emb.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 6 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path > $output_dir/view_weights.txt
 
-  # CUDA_VISIBLE_DEVICES=6 python3 -u view_weight_aa_2emb.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 6 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path > $output_dir/view_aa_weights.txt
+  # CUDA_VISIBLE_DEVICES=1 python3 -u view_weight_aa_2emb.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 6 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path > $output_dir/view_aa_weights.txt
 
 
 done
