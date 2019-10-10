@@ -197,6 +197,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   """ Train the model """
 
   num_labels = len(label_2test_array)
+  print ("\nnum_labels {}\n".format(num_labels))
 
   if args.local_rank in [-1, 0]:
     tb_writer = SummaryWriter()
@@ -537,6 +538,8 @@ def main():
   parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
   args = parser.parse_args()
 
+  print (args)
+  
   if args.model_type in ["bert", "roberta"] and not args.mlm:
     raise ValueError("BERT and RoBERTa do not have LM heads but masked LM heads. They must be run using the --mlm "
              "flag (masked language modeling).")
@@ -595,7 +598,7 @@ def main():
 
   # Prepare model
   if args.config_override:
-    config = BertConfig.from_pretrained(args.config_name)
+    # config = BertConfig.from_pretrained(args.config_name)
     model = model_class(config)
   else:
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
