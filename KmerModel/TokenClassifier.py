@@ -334,7 +334,7 @@ class BertModel2Emb(BertPreTrainedModel):
 
 class BertForTokenClassification2Emb (BertPreTrainedModel):
 
-  def __init__(self, config, args):
+  def __init__(self, config):
     super(BertForTokenClassification2Emb, self).__init__(config)
     self.num_labels = 2 # config.num_labels ## for us, each output vector is "yes/no", so we should keep this at self.num_labels=2 to avoid any strange error later
 
@@ -345,9 +345,9 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
     # self.apply(self.init_weights)
     self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
-    if args is not None: ## some stupid legacy
-      if args.pretrained_label: 
-        self.init_label_emb(args.pretrained_label_path)
+    # if args is not None: ## some stupid legacy
+    #   if args.pretrained_label_path is not None: 
+    #     self.init_label_emb(args.pretrained_label_path)
 
   def init_label_emb(self,pretrained_weight): 
     self.bert.embeddings_label.word_embeddings.weight.data.copy_(torch.from_numpy(pretrained_weight))

@@ -424,6 +424,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--pretrained_label_path", type=str, default=None)
   parser.add_argument("--label_2test", type=str, default=None)
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
@@ -514,6 +515,8 @@ def main():
   parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
   args = parser.parse_args()
 
+  print (args)
+  
   if args.model_type in ["bert", "roberta"] and not args.mlm:
     raise ValueError("BERT and RoBERTa do not have LM heads but masked LM heads. They must be run using the --mlm "
              "flag (masked language modeling).")
@@ -557,6 +560,7 @@ def main():
   label_2test_array = pd.read_csv(args.label_2test,header=None)
   label_2test_array = sorted(list( label_2test_array[0] ))
   label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
+  num_labels = len(label_2test_array)
 
   # Load pretrained model and tokenizer
   if args.local_rank not in [-1, 0]:
@@ -582,6 +586,18 @@ def main():
   else:
     config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
+
+
+  ## load pretrain label vectors ? 
+  if args.pretrained_label_path is not None: 
+    print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
+    ## have a pickle right now. 
+    pretrained_label_vec = np.zeros((num_labels,768))
+    temp = pickle.load(open(args.pretrained_label_path,"rb"))
+    for counter, lab in enumerate( label_2test_array ):
+      pretrained_label_vec[counter] = temp[re.sub("GO","GO:",lab)]
+    #
+    model.init_label_emb(pretrained_label_vec)
 
   model.to(args.device)
 
