@@ -155,14 +155,14 @@ class TextDataset(Dataset):
           label_mask [ WHERE_KMER_END:(WHERE_KMER_END+num_label) ] = 1 ## set to 1 so we can pull these out later, ALL LABELS WILL NEED 1, NOT JUST THE TRUE LABEL
           self.label_mask.append(label_mask)
 
+          if counter < 3:
+            print ('\nsee input text\n {}'.format(tokens))
+
         else:
           print ( 'too long, code unable to split long sentence ... infact we should not split ... block {} len {}'.format(block_size,len(tokenized_text)) )
           exit()
-          # while len(tokenized_text) >= block_size:  # Truncate in block of block_size
-          #   self.examples.append(tokenizer.add_special_tokens_single_sentence(tokenized_text[:block_size]))
-          #   tokenized_text = tokenized_text[block_size:]
-          #   attention_indicator = [1]*block_size
-          #   self.attention_mask.append(attention_indicator)
+
+
 
       ## save at end
       logger.info("To save read/write time... Saving features into cached file %s", cached_features_file)

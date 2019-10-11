@@ -10,10 +10,10 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear768.Layer12/label_vector.pickle'
 
-choice='GeluE768H4L10I1024PretrainLabelLr10-4'
-for ontology in 'cc' ; do
-  last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/fold_1'$ontology'2emb'$choice
-  output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/fold_1'$ontology'2emb'$choice
+choice='2embGeluE768H6L8I768PretrainLabelDrop0.2'
+for ontology in 'mf' ; do
+  last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1/'$choice
+  output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1/'$choice
   mkdir $output_dir
 
   # bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12Kmer2016/vocab+3kmer+GO.txt'
