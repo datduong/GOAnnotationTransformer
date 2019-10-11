@@ -65,7 +65,7 @@ class TextDataset(Dataset):
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
-    logger.info ('cached_features_file %s', cached_features_file) 
+    logger.info ('cached_features_file %s', cached_features_file)
 
     label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet
     num_label = len(label_2test_array)
@@ -74,7 +74,7 @@ class TextDataset(Dataset):
     label_index_map = { name : index for index,name in enumerate(label_2test_array) }
     label_string = " ".join(label_2test_array)
 
-    if os.path.exists(cached_features_file+'examples'): ## take 1 thing to test if it exists 
+    if os.path.exists(cached_features_file+'examples'): ## take 1 thing to test if it exists
       logger.info("Loading features from cached file %s", cached_features_file)
       with open(cached_features_file+'examples', 'rb') as handle:
         self.examples = pickle.load(handle)
@@ -265,11 +265,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   last_best = 0
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
-  for _ in train_iterator:
-
-    # prediction = None ## not track to save some time
-    # true_label = None
-
+  for epoch_counter in train_iterator:
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
       # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
@@ -298,20 +294,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
-
-
-      ## (batch*num_label) x 2, because 0/1 construction for labels, so we take [:,1] to get the vote on "yes"
-      # print (outputs[1].shape) ## label x 2
-      # norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
-      # norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
-      # # print (norm_prob.shape)
-      # if prediction is None:
-      #   ## track predicted probability
-      #   true_label = batch[2].data.numpy()
-      #   prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
-      # else:
-      #   true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
-      #   prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
 
       if args.n_gpu > 1:
         loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -352,14 +334,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
             results = evaluate(args, model, tokenizer,label_2test_array)
             for key, value in results.items():
               tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-            if results['eval_loss'] < eval_loss:
-              eval_loss = results['eval_loss']
-              last_best = step
-            else:
-              ## break counter
-              if step - last_best > 5 :
-                print ("**** break early ****")
-                break ## break early
 
           tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
           tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
@@ -371,10 +345,23 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         break
 
     ## end 1 epoch
-    # print ('\neval on trainset\n')
-    # true_label = np.array (true_label)
-    # result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-    # evaluation_metric.print_metrics( result )
+    results = evaluate(args, model, tokenizer,label_2test_array)
+    if results['eval_loss'] < eval_loss:
+      eval_loss = results['eval_loss']
+      last_best = epoch_counter
+      break_early = False
+      print ('\nupdate lowest loss on epoch {}, {}\nreset break_early to False, see break_early variable {}'.format(epoch_counter,eval_loss,break_early))
+    else:
+      if epoch_counter - last_best > 5 : ## break counter after 5 epoch
+        # break ## break early
+        break_early = True
+        print ('epoch {} set break_early to True, see break_early variable {}'.format(epoch_counter,break_early))
+
+    if break_early:
+      train_iterator.close()
+      print ("**** break early ****")
+      break
+
 
     if args.max_steps > 0 and global_step > args.max_steps:
       train_iterator.close()
@@ -467,7 +454,6 @@ def main():
   parser = argparse.ArgumentParser()
 
   parser.add_argument("--label_2test", type=str, default=None)
-
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
 

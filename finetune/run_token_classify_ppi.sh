@@ -8,9 +8,10 @@ server='/local/datdb'
 data_dir=$server/'deepgo/data/DataToFinetuneBertTokenPredict/FinetunePhaseData'
 mkdir $server/'deepgo/data/BertNotFtAAseqGO'
 
-for ontology in 'bp'  ; do 
-  last_save=$server/'deepgo/data/BertNotFtAAseqGO/fold_1_ppi_'$ontology
-  output_dir=$server/'deepgo/data/BertNotFtAAseqGO/fold_1_ppi_'$ontology
+choice='GeluE768H4L10I1024PretrainLabel'
+for ontology in 'mf' 'cc' ; do 
+  last_save=$server/'deepgo/data/BertNotFtAAseqGO/fold_1'$ontology$choice
+  output_dir=$server/'deepgo/data/BertNotFtAAseqGO/fold_1'$ontology$choice
   mkdir $output_dir
 
   # bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12Kmer2016/vocab+3kmer+GO.txt'
@@ -24,15 +25,17 @@ for ontology in 'bp'  ; do
 
   cd $server/BertGOAnnotation/finetune/
 
-  # 5040 batches train
+  # 5040 batches train 2048
   ## continue training 
-  CUDA_VISIBLE_DEVICES=7 python3 -u run_token_classify_ppi.py --block_size 2048 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 25 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 6 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 4000 --logging_steps 4000 --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override # --no_cuda
+  CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_ppi.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 50 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 6 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps 5000 --logging_steps 5000 --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override # --no_cuda
 
 
   ## testing phase 
   
-  eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/test-'$ontology'-ppi.csv'
-  CUDA_VISIBLE_DEVICES=7 python3 -u run_token_classify_ppi.py --block_size 2048 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 25 --per_gpu_eval_batch_size 12 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints > $output_dir/eval_all_check_point.txt
+  for test_data in 'dev' 'test'; do
+  eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/'$test_data'-'$ontology'-ppi.csv'
+  CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_ppi.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 8 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints > $output_dir/eval_all_check_point.txt
+  done 
 
 done 
 
