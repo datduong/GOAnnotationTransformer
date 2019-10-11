@@ -110,7 +110,7 @@ class BertForTokenClassification1hotPpi (BertForTokenClassification1hot) :
 
     # self.args = args
     # self.classifier = nn.Linear(config.hidden_size, config.num_labels)
-    self.classifier = nn.Sequential( nn.Linear(config.hidden_size+256, config.hidden_size), nn.Relu(), nn.Linear(config.hidden_size, config.num_labels) )
+    self.classifier = nn.Sequential( nn.Linear(config.hidden_size+256, config.hidden_size), nn.ReLU(), nn.Linear(config.hidden_size, config.num_labels) )
 
     # self.apply(self.init_weights)
     self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19

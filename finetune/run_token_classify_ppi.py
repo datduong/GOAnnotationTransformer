@@ -114,7 +114,6 @@ class TextDataset(Dataset):
         ### !!!! now we append the protein-network vector
         self.ppi_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
 
-
         kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
         num_kmer_text = len(kmer_text)
         this_label = text[1].split() ## by space
@@ -542,6 +541,8 @@ def main():
   parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
   parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
   args = parser.parse_args()
+
+  print (args)
 
   if args.model_type in ["bert", "roberta"] and not args.mlm:
     raise ValueError("BERT and RoBERTa do not have LM heads but masked LM heads. They must be run using the --mlm "
