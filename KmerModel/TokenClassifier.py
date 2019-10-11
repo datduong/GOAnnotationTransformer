@@ -109,11 +109,11 @@ class BertForTokenClassification1hotPpi (BertForTokenClassification1hot) :
     super(BertForTokenClassification1hotPpi, self).__init__(config)
 
     # self.args = args
-    self.classifier = nn.Linear(config.hidden_size+256, config.num_labels) ## just for testing
+    # self.classifier = nn.Linear(config.hidden_size, config.num_labels)
+    self.classifier = nn.Sequential( nn.Linear(config.hidden_size+256, config.hidden_size), nn.ReLU(), nn.Linear(config.hidden_size, config.num_labels) )
 
     # self.apply(self.init_weights)
     self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
-
 
   def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
         position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None):
@@ -124,14 +124,12 @@ class BertForTokenClassification1hotPpi (BertForTokenClassification1hot) :
               attention_mask=attention_mask, head_mask=head_mask)
 
     sequence_output = outputs[0] ## last layer.
-    sequence_output = self.dropout(sequence_output)
 
     ## @sequence_output is something like batch x num_label x dim_out(should be 768)
     ## append the prot_vec
     ## @prot_vec should be batch x 1 x dim so that we can broadcast append ?
+    sequence_output = self.dropout(sequence_output)
     sequence_output = torch.cat((sequence_output, prot_vec), dim=2)
-    # print (sequence_output.shape)
-    # exit() ## testing 
 
     logits = self.classifier(sequence_output)
 
@@ -153,6 +151,7 @@ class BertForTokenClassification1hotPpi (BertForTokenClassification1hot) :
         loss = loss_fct(active_logits, active_labels)
       else:
         loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+
       outputs = (loss,active_logits,) + outputs
 
     return outputs  # (loss), scores, (hidden_states), (attentions)
@@ -322,7 +321,7 @@ class BertModel2Emb(BertPreTrainedModel):
 
     # @embedding_output is just some type of embedding, the @encoder will apply attention weights
     encoder_outputs = self.encoder(embedding_output,
-                                   extended_attention_mask, ## must mask using the entire set of sequence + label input 
+                                   extended_attention_mask, ## must mask using the entire set of sequence + label input
                                    head_mask=head_mask)
 
     sequence_output = encoder_outputs[0]
@@ -346,10 +345,10 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
     self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
     # if args is not None: ## some stupid legacy
-    #   if args.pretrained_label_path is not None: 
+    #   if args.pretrained_label_path is not None:
     #     self.init_label_emb(args.pretrained_label_path)
 
-  def init_label_emb(self,pretrained_weight): 
+  def init_label_emb(self,pretrained_weight):
     self.bert.embeddings_label.word_embeddings.weight.data.copy_(torch.from_numpy(pretrained_weight))
     self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
 
@@ -357,7 +356,7 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
         position_ids=None, head_mask=None, attention_mask_label=None):
 
     ## !! add @attention_mask_label
-    ## !! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side. 
+    ## !! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side.
 
     outputs = self.bert(input_ids, input_ids_aa, input_ids_label, position_ids=position_ids, token_type_ids=token_type_ids,
               attention_mask=attention_mask, head_mask=head_mask)
