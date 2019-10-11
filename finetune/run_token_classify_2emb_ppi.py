@@ -55,48 +55,50 @@ import evaluation_metric
 MODEL_CLASSES = {
   'gpt2': (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer),
   'openai-gpt': (OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer),
-  'bert': (BertConfig, TokenClassifier.BertForTokenClassification1hotPpi, BertTokenizer), ## replace the standard @BertForTokenClassification
+  'bert': (BertConfig, TokenClassifier.BertForTokenClassification2EmbPPI, BertTokenizer), ## replace the standard @BertForTokenClassification
   'roberta': (RobertaConfig, RobertaForMaskedLM, RobertaTokenizer)
 }
 
 
 class TextDataset(Dataset):
-  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512):
+  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024):
+    # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
+
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
+    directory = os.path.join(directory , 'aa_ppi_cache')
+    if not os.path.exists(directory): 
+      os.mkdir(directory)
+
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
-    logger.info ('cached_features_file %s', cached_features_file)
 
-    label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet
-    num_label = len(label_2test_array)
-    print ('num label {}'.format(num_label))
-    ## faster look up
-    label_index_map = { name : index for index,name in enumerate(label_2test_array) }
-    label_string = " ".join(label_2test_array)
-
-    if os.path.exists(cached_features_file+'examples'): ## take 1 thing to test if it exists
+    if os.path.exists(cached_features_file+'label1hot'): ## take 1 thing to test if it exists
       logger.info("Loading features from cached file %s", cached_features_file)
-      with open(cached_features_file+'examples', 'rb') as handle:
-        self.examples = pickle.load(handle)
-      with open(cached_features_file+'attention_mask', 'rb') as handle:
-        self.attention_mask = pickle.load(handle)
       with open(cached_features_file+'label1hot', 'rb') as handle:
         self.label1hot = pickle.load(handle)
-      with open(cached_features_file+'label_mask', 'rb') as handle:
-        self.label_mask = pickle.load(handle)
-      with open(cached_features_file+'token_type', 'rb') as handle:
-        self.token_type = pickle.load(handle)
+      with open(cached_features_file+'input_ids_aa', 'rb') as handle:
+        self.input_ids_aa = pickle.load(handle)
+      with open(cached_features_file+'input_ids_label', 'rb') as handle:
+        self.input_ids_label = pickle.load(handle)
+      with open(cached_features_file+'mask_ids_aa', 'rb') as handle:
+        self.mask_ids_aa = pickle.load(handle)
       with open(cached_features_file+'ppi_vec', 'rb') as handle:
         self.ppi_vec = pickle.load(handle)
 
     else:
+
+      label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet
+      num_label = len(label_2test_array)
+      print ('num label {}'.format(num_label))
+      label_index_map = { name : index for index,name in enumerate(label_2test_array) } ## faster look up
+      # label_string = " ".join(label_2test_array)
+
       logger.info("Creating features from dataset file at %s", directory)
 
-      self.attention_mask = []
-      self.examples = []
       self.label1hot = [] ## take 1 hot (should short labels by alphabet)
-      self.label_mask = []
-      self.token_type = []
+      self.input_ids_aa = []
+      self.input_ids_label = []
+      self.mask_ids_aa = []
       self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
 
       fin = open(file_path,"r",encoding='utf-8')
@@ -107,6 +109,11 @@ class TextDataset(Dataset):
         if len(text) == 0: ## skip blank ??
           continue
 
+        ## we test all the labels in 1 single call, so we have to always get all the labels.
+        ## notice we shift 1+ so that we can have padding at 0.
+        # self.input_ids_label.append ( list((1+np.arange(num_label+1))) )  ## add a SEP to end of label side ??? Okay, add SEP
+        self.input_ids_label.append ( np.arange(num_label).tolist() )  ## add a SEP to end of label side ??? Okay, add SEP
+
         ## split at \t ?? [seq \t label]
         text = text.split("\t") ## position 0 is kmer sequence, position 1 is list of labels
 
@@ -114,78 +121,56 @@ class TextDataset(Dataset):
         ### !!!! now we append the protein-network vector
         self.ppi_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
 
-        kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
-        num_kmer_text = len(kmer_text)
-        this_label = text[1].split() ## by space
-
+        ## create a gold-standard label 1-hot vector.
         ## convert label into 1-hot style
         label1hot = np.zeros(num_label) ## 1D array
+        this_label = text[1].strip().split() ## by space
         index_as1 = [label_index_map[label] for label in this_label]
         label1hot [ index_as1 ] = 1
         self.label1hot.append( label1hot )
 
-        ## create token_type
-        token_type = [0]*(num_kmer_text+2) + [1]*(num_label+1) ## add 2 because of cls and sep, ## add 1 because of sep
-        WHERE_KMER_END = num_kmer_text + 2 ## add 2 because of sep cls , so we can mask out Kmer, because we will only predict the labels
+        # kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
+        ## GET THE AA INDEXING '[CLS] ' + text[0] + ' [SEP]'
+        this_aa = tokenizer.convert_tokens_to_ids ( tokenizer.tokenize ('[CLS] ' + text[0] + ' [SEP]') )
 
-        ## combine the labels back with the kmer text ??
-        ## want kmer + ALL LABELS
-        ## ok to use @text[0] because we will tokenize, so we will remove the space
-        text = text[0] + " [SEP] " + label_string ## add all the labels
-        text_split = tokenizer.tokenize(text)
-        tokenized_text = tokenizer.convert_tokens_to_ids(text_split) ## the tab won't matter here ## split at \t ?? [seq \t label]
+        ## pad @this_aa to max len
+        mask_aa = [1] * len(this_aa) + [0] * ( max_aa_len - len(this_aa) ) ## attend to non-pad
+        this_aa = this_aa + [0] * ( max_aa_len - len(this_aa) ) ## padding
+        self.input_ids_aa.append( this_aa )
+        self.mask_ids_aa.append (mask_aa)
 
-        if len(tokenized_text) < block_size : ## short enough, so just use it
-          ## add padding to match block_size
-          tokens = tokenizer.add_special_tokens_single_sentence(tokenized_text) ## [CLS] something [SEP]
-          attention_indicator = [1]*len(tokens) + [0]*(block_size-len(tokens))
-          tokens = tokens + [0]*(block_size-len(tokens)) ## add padding 0
+        if counter < 3: 
+          print ('see sample {}'.format(counter))
+          print (this_aa)
+          print (label1hot)
+          print (self.ppi_vec[counter])
 
-          assert len(tokens) == block_size
-          assert len(attention_indicator) == block_size
-
-          self.examples.append(tokens)
-          self.attention_mask.append(attention_indicator)
-
-          token_type = token_type + [0]* (block_size-len(token_type)) ## zero here, because we use mask anyway, so doesn't matter ... add 0-padding to the token types
-          self.token_type.append(token_type)
-
-          ## get label_mask, so we test only on labels we want, and not some random tokens
-          label_mask = np.zeros( block_size ) ## 0--> not attend to
-          label_mask [ WHERE_KMER_END:(WHERE_KMER_END+num_label) ] = 1 ## set to 1 so we can pull these out later, ALL LABELS WILL NEED 1, NOT JUST THE TRUE LABEL
-          self.label_mask.append(label_mask)
-
-          if counter < 3:
-            print ('\nsee input text\n {}'.format(tokens))
-
-        else:
-          print ( 'too long, code unable to split long sentence ... infact we should not split ... block {} len {}'.format(block_size,len(tokenized_text)) )
+        if (len(this_aa) + num_label) > block_size:
+          print ('len too long, expand block_size')
           exit()
-
-
 
       ## save at end
       logger.info("To save read/write time... Saving features into cached file %s", cached_features_file)
-      with open(cached_features_file+'examples', 'wb') as handle:
-        pickle.dump(self.examples, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      with open(cached_features_file+'attention_mask', 'wb') as handle:
-        pickle.dump(self.attention_mask, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'label1hot', 'wb') as handle:
         pickle.dump(self.label1hot, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      with open(cached_features_file+'label_mask', 'wb') as handle:
-        pickle.dump(self.label_mask, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      with open(cached_features_file+'token_type', 'wb') as handle:
-        pickle.dump(self.token_type, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'input_ids_aa', 'wb') as handle:
+        pickle.dump(self.input_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'input_ids_label', 'wb') as handle:
+        pickle.dump(self.input_ids_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'mask_ids_aa', 'wb') as handle:
+        pickle.dump(self.mask_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'ppi_vec', 'wb') as handle:
           pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
   def __len__(self):
-    return len(self.examples)
+    return len(self.input_ids_aa)
 
   def __getitem__(self, item):
-    return (torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]),
-            torch.LongTensor(self.label1hot[item]), torch.tensor(self.label_mask[item]),
-            torch.tensor(self.token_type[item]), torch.tensor(self.ppi_vec[item]) )
+    return (torch.LongTensor(self.label1hot[item]),
+            torch.tensor(self.input_ids_aa[item]),
+            torch.tensor(self.input_ids_label[item]), 
+            torch.tensor(self.mask_ids_aa[item]), 
+            torch.tensor(self.ppi_vec[item]) )
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
@@ -205,6 +190,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   """ Train the model """
 
   num_labels = len(label_2test_array)
+  print ('num_labels {}'.format(num_labels))
 
   if args.local_rank in [-1, 0]:
     tb_writer = SummaryWriter()
@@ -212,6 +198,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   args.train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
   train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
   train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
+
 
   if args.max_steps > 0:
     t_total = args.max_steps
@@ -262,27 +249,29 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   ## track best loss on eval set ??
   eval_loss = np.inf
   last_best = 0
+  break_early = False
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
+
   for epoch_counter in train_iterator:
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
       # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
       ## !!!  WE ARE NOT GOING TO TRAIN MASKED-LM
 
-      ## also, the batch will have this ordering
-      # return (torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]),
-      #       torch.LongTensor(self.label1hot[item]), torch.LongTensor(self.label_mask[item]),
-      #       torch.tensor(self.token_type[item]) )
+      max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
+      input_ids_aa = batch[1][:,0:max_len_in_batch].to(args.device)
+      input_ids_label = batch[2].to(args.device) ## also pass in SEP
+      attention_mask = torch.cat( (batch[3][:,0:max_len_in_batch] , torch.ones(input_ids_label.shape, dtype=torch.long) ), dim=1 ).to(args.device)
 
-      max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len
-      attention_mask = batch[0][:,0:max_len_in_batch].to(args.device)
-      inputs = batch[1][:,0:max_len_in_batch].to(args.device)
-      labels = batch[2].to(args.device) ## already in batch_size x num_label
-      labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
-      token_type = batch[4][:,0:max_len_in_batch].to(args.device)
+      labels = batch[0].to(args.device) ## already in batch_size x num_label
+      ## must append 0 positions to the front, so that we mask out AA
+      labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
+        torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## SEP is at last position on label size ??? should there be one ??
+      # labels_mask[:,-1] = 0 ## must mask SEP in the label side
+      # labels_mask = labels_mask.to(args.device) ## test all labels
 
-      ppi_vec = batch[5].unsqueeze(1).expand(inputs.shape[0],max_len_in_batch,256).to(args.device) ## make 3D batchsize x 1 x dim
+      ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
 
       model.train()
 
@@ -290,7 +279,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
 
-      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
@@ -316,8 +305,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         model.zero_grad()
         global_step += 1
 
-
-        if args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
+        if (epoch_counter>0) and args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
           # Save model checkpoint
           output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
           if not os.path.exists(output_dir):
@@ -337,7 +325,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
           tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
           tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
           logging_loss = tr_loss
-
 
       if args.max_steps > 0 and global_step > args.max_steps:
         epoch_iterator.close()
@@ -360,7 +347,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       train_iterator.close()
       print ("**** break early ****")
       break
-
 
     if args.max_steps > 0 and global_step > args.max_steps:
       train_iterator.close()
@@ -403,37 +389,38 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
   for batch in tqdm(eval_dataloader, desc="Evaluating"):
     # batch = batch.to(args.device)
 
-    max_len_in_batch = int( torch.max ( torch.sum(batch[0],1) ) ) ## only need max len
-    attention_mask = batch[0][:,0:max_len_in_batch].to(args.device)
-    inputs = batch[1][:,0:max_len_in_batch].to(args.device)
-    labels = batch[2].to(args.device) ## already in batch_size x num_label
-    labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
-    token_type = batch[4][:,0:max_len_in_batch].to(args.device)
+    max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
+    input_ids_aa = batch[1][:,0:max_len_in_batch].to(args.device)
+    input_ids_label = batch[2].to(args.device)
+    attention_mask = torch.cat( (batch[3][:,0:max_len_in_batch] , torch.ones(input_ids_label.shape,dtype=torch.long) ), dim=1 ).to(args.device)
 
-    ppi_vec = batch[5].unsqueeze(1).expand(inputs.shape[0],max_len_in_batch,256).to(args.device) ## make 3D batchsize x 1 x dim
+    labels = batch[0].to(args.device) ## already in batch_size x num_label
+    ## must append 0 positions to the front, so that we mask out AA
+    labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
+      torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## test all labels
 
+    ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 
 
     with torch.no_grad():
-      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
     nb_eval_steps += 1
-
+   
     ## track output
     norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
     norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
-    # print (norm_prob.shape)
+   
     if prediction is None:
       ## track predicted probability
-      true_label = batch[2].data.numpy()
-      prediction = np.reshape(norm_prob, ( batch[1].shape[0], num_labels ) )## num actual sample v.s. num label
+      true_label = batch[0].data.numpy()
+      prediction = np.reshape(norm_prob, ( batch[0].shape ) ) ## num actual sample v.s. num label
     else:
-      true_label = np.vstack ( (true_label, batch[2].data.numpy() ) )
-      prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[1].shape[0], num_labels )  ) )  )
+      true_label = np.vstack ( (true_label, batch[0].data.numpy() ) )
+      prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[0].shape ) ) ) )
 
 
-  true_label = np.array (true_label)
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
   # evaluation_metric.print_metrics( result )
 
@@ -446,6 +433,8 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     writer.write("\n***** Eval results {} *****".format(prefix))
     for key in sorted(result.keys()):
       print( "  {} = {}".format( key, str(result[key]) ) )
+      # writer.write("%s = %s\n" % (key, str(result[key])))
+
 
   return result
 
@@ -453,6 +442,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--pretrained_label_path", type=str, default=None)
   parser.add_argument("--label_2test", type=str, default=None)
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
@@ -544,7 +534,7 @@ def main():
   args = parser.parse_args()
 
   print (args)
-
+  
   if args.model_type in ["bert", "roberta"] and not args.mlm:
     raise ValueError("BERT and RoBERTa do not have LM heads but masked LM heads. They must be run using the --mlm "
              "flag (masked language modeling).")
@@ -584,12 +574,17 @@ def main():
   # Set seed
   set_seed(args)
 
+  # read in labels to be testing
+  label_2test_array = pd.read_csv(args.label_2test,header=None)
+  label_2test_array = sorted(list( label_2test_array[0] ))
+  label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
+  num_labels = len(label_2test_array)
+
   # Load pretrained model and tokenizer
   if args.local_rank not in [-1, 0]:
     torch.distributed.barrier()  # Barrier to make sure only the first process in distributed training download model & vocab
 
   config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
-  config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
 
   if args.bert_vocab is None:
     tokenizer = tokenizer_class.from_pretrained(args.tokenizer_name if args.tokenizer_name else args.model_name_or_path, do_lower_case=args.do_lower_case)
@@ -603,10 +598,24 @@ def main():
 
   # Prepare model
   if args.config_override:
-    config = BertConfig.from_pretrained(args.config_name)
+    config = BertConfig.from_pretrained(args.config_name) ## should we always override
+    config.label_size = len(label_2test_array) ## make sure we really get correct label
     model = model_class(config)
   else:
+    config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
+
+
+  ## load pretrain label vectors ? 
+  if args.pretrained_label_path is not None: 
+    print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
+    ## have a pickle right now. 
+    pretrained_label_vec = np.zeros((num_labels,768))
+    temp = pickle.load(open(args.pretrained_label_path,"rb"))
+    for counter, lab in enumerate( label_2test_array ):
+      pretrained_label_vec[counter] = temp[re.sub("GO","GO:",lab)]
+    #
+    model.init_label_emb(pretrained_label_vec)
 
   model.to(args.device)
 
@@ -615,10 +624,6 @@ def main():
 
   logger.info("Training/evaluation parameters %s", args)
 
-  # read in labels to be testing
-  label_2test_array = pd.read_csv(args.label_2test,header=None)
-  label_2test_array = sorted(list( label_2test_array[0] ))
-  label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
 
   # Training
   if args.do_train:

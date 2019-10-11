@@ -278,6 +278,6 @@ def print_metrics(metrics):
 
   print ('hamming loss {0:.4f}'.format(metrics['hamming loss']))
   print ('fmax score {0:.4f}'.format(metrics['fmax score']))
-  print ('macro average prec {0:.4f}'.format(metrics['macro average prec']))
-  print ('micro average prec {0:.4f}'.format(metrics['micro average prec']))
-  print()
+  # print ('macro average prec {0:.4f}'.format(metrics['macro average prec']))
+  # print ('micro average prec {0:.4f}'.format(metrics['micro average prec']))
+  # print()

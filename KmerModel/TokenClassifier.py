@@ -388,3 +388,53 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
 
     return outputs  # (loss), scores, (hidden_states), (attentions)
 
+
+
+class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
+
+  def __init__(self, config):
+    super(BertForTokenClassification2EmbPPI, self).__init__(config)
+
+    self.classifier = nn.Sequential( nn.Linear(config.hidden_size+256, config.hidden_size), nn.ReLU(), nn.Linear(config.hidden_size, config.num_labels) )
+
+  def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
+        position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None):
+
+    ## !! add @attention_mask_label
+    ## !! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side.
+
+    outputs = self.bert(input_ids, input_ids_aa, input_ids_label, position_ids=position_ids, token_type_ids=token_type_ids,
+              attention_mask=attention_mask, head_mask=head_mask)
+
+    sequence_output = outputs[0] ## last layer.
+    
+    ## @sequence_output is something like batch x num_label x dim_out(should be 768)
+    ## append the prot_vec
+    ## @prot_vec should be batch x 1 x dim so that we can broadcast append ?
+    sequence_output = self.dropout(sequence_output)
+    sequence_output = torch.cat((sequence_output, prot_vec), dim=2)
+
+    logits = self.classifier(sequence_output)
+
+    outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
+    if labels is not None:
+      loss_fct = CrossEntropyLoss()
+
+      ## must extract only the label side (i.e. 2nd sentence)
+      ## last layer outputs is batch_num x len_sent x dim
+      ## we can restrict where the label start. and where it ends ??
+      ## notice, @attention_mask is used to avoid padding in the @active_loss
+      ## so we need to only create another @attention_mask_label to pay attention to labels only
+
+      # Only keep active parts of the loss
+      if attention_mask_label is not None: ## change @attention_mask --> @attention_mask_label
+        active_loss = attention_mask_label.view(-1) == 1
+        active_logits = logits.view(-1, self.num_labels)[active_loss]
+        active_labels = labels.view(-1) # [active_loss] ## do not need to extract labels ?? we can pass in the exact true label
+        loss = loss_fct(active_logits, active_labels)
+      else:
+        loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+      outputs = (loss,active_logits,) + outputs
+
+    return outputs  # (loss), scores, (hidden_states), (attentions)
+
