@@ -389,7 +389,6 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
     return outputs  # (loss), scores, (hidden_states), (attentions)
 
 
-
 class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
 
   def __init__(self, config):
@@ -407,7 +406,7 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
               attention_mask=attention_mask, head_mask=head_mask)
 
     sequence_output = outputs[0] ## last layer.
-    
+
     ## @sequence_output is something like batch x num_label x dim_out(should be 768)
     ## append the prot_vec
     ## @prot_vec should be batch x 1 x dim so that we can broadcast append ?
