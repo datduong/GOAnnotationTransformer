@@ -97,11 +97,11 @@ for data_type in ['train','dev','test']:
 
       new_seq = row['Sequence']
 
-      for aa in new_seq:
-        if aa not in AA_type:
-          AA_type[aa] = 1
-        else:
-          pass
+      # for aa in new_seq:
+      #   if aa not in AA_type:
+      #     AA_type[aa] = 1
+      #   else:
+      #     pass
 
       aa_type = [aa_type_emb(aa) for aa in new_seq]
       go_list = re.sub(r":","",row['Gene ontology IDs'])

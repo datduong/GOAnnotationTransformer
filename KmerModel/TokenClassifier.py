@@ -322,7 +322,7 @@ class BertModel2Emb(BertPreTrainedModel):
       head_mask = [None] * self.config.num_hidden_layers
 
     ## need to split the @input_ids into AA side and label side, @input_ids_aa @input_ids_label
-    embedding_output = self.embeddings(input_ids_aa, position_ids=position_ids, token_type_ids=None)
+    embedding_output = self.embeddings(input_ids_aa, position_ids=position_ids, token_type_ids=token_type_ids)
     embedding_output_label = self.embeddings_label(input_ids_label, position_ids=None, token_type_ids=None)
 
     # concat into the original embedding
