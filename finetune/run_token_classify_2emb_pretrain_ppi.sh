@@ -10,11 +10,11 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear768.Layer12/label_vector.pickle'
 
-choice='2embPpiGeluE768H6L8I768PretrainLabelDrop0.2Lr5e-5' # Lr5e-5
+choice='2embPpiAAtokGeluE768H6L8I768PreLabDrop0.2Lr5e-5' # Lr5e-5
 block_size=2048 # mf and cc 1792 but bp has more term  2048
-save_every=14000 # 9500
+save_every=9500 # 9500
 
-for ontology in 'bp' ; do
+for ontology in 'mf' ; do
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
   output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
   mkdir $output_dir
@@ -33,7 +33,7 @@ for ontology in 'bp' ; do
 
   # 5040 batches train
   ## continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_2emb_ppi.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 2 --per_gpu_eval_batch_size 6 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --learning_rate 5e-5 --seed 2019 --fp16 --pretrained_label_path $pretrained_label_path > $output_dir/train_point.txt # --no_cuda
+  CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_2emb_ppi.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 3 --per_gpu_eval_batch_size 8 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --learning_rate 5e-5 --seed 2019 --fp16 --pretrained_label_path $pretrained_label_path > $output_dir/train_point.txt # --no_cuda
 
   # ## testing phase
 

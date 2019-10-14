@@ -61,8 +61,10 @@ MODEL_CLASSES = {
 
 
 class TextDataset(Dataset):
-  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024):
+  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
     # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
+
+    self.args = args 
 
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
@@ -84,6 +86,9 @@ class TextDataset(Dataset):
         self.mask_ids_aa = pickle.load(handle)
       with open(cached_features_file+'ppi_vec', 'rb') as handle:
         self.ppi_vec = pickle.load(handle)
+      if args.aa_type_emb: 
+        with open(cached_features_file+'aa_type_emb', 'rb') as handle:
+          self.aa_type_emb = pickle.load(handle)
 
     else:
 
@@ -100,6 +105,8 @@ class TextDataset(Dataset):
       self.input_ids_label = []
       self.mask_ids_aa = []
       self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
+      if args.aa_type_emb: 
+        self.aa_type_emb = []
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
@@ -139,6 +146,10 @@ class TextDataset(Dataset):
         self.input_ids_aa.append( this_aa )
         self.mask_ids_aa.append (mask_aa)
 
+        if args.aa_type_emb: 
+          ### !!! also need to get token type emb 
+          self.aa_type_emb.append ( [0] + [s for s in text[3].split()] + [0] * ( max_aa_len + 1 - len(this_aa) ) ) ## 0 for CLS SEP PAD
+
         if counter < 3: 
           print ('see sample {}'.format(counter))
           print (this_aa)
@@ -161,16 +172,28 @@ class TextDataset(Dataset):
         pickle.dump(self.mask_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'ppi_vec', 'wb') as handle:
           pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      
+      if args.aa_type_emb: 
+        with open(cached_features_file+'ppi_vec', 'wb') as handle:
+          pickle.dump(self.aa_type_emb, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
   def __len__(self):
     return len(self.input_ids_aa)
 
   def __getitem__(self, item):
-    return (torch.LongTensor(self.label1hot[item]),
+    if self.args.aa_type_emb: 
+      return (torch.LongTensor(self.label1hot[item]),
             torch.tensor(self.input_ids_aa[item]),
             torch.tensor(self.input_ids_label[item]), 
             torch.tensor(self.mask_ids_aa[item]), 
-            torch.tensor(self.ppi_vec[item]) )
+            torch.tensor(self.ppi_vec[item]),
+            torch.tensor(self.aa_type_emb[item]))
+    else: 
+      return (torch.LongTensor(self.label1hot[item]),
+              torch.tensor(self.input_ids_aa[item]),
+              torch.tensor(self.input_ids_label[item]), 
+              torch.tensor(self.mask_ids_aa[item]), 
+              torch.tensor(self.ppi_vec[item]) )
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
