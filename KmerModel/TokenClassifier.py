@@ -165,7 +165,11 @@ class BertEmbeddingsAA(nn.Module):
     self.word_embeddings = nn.Embedding(config.vocab_size, config.hidden_size, padding_idx=0)
     # label should not need to have ordering ?
     self.position_embeddings = nn.Embedding(config.max_position_embeddings, config.hidden_size)
-    # self.token_type_embeddings = nn.Embedding(config.type_vocab_size, config.hidden_size)
+
+    self.aa_type_emb = config.aa_type_emb ## may see error for some legacy call ??
+    if self.aa_type_emb:
+      ## okay to say 4 groups + 1 extra , we need special token to map to all 0, so CLS SEP PAD --> group 0
+      self.token_type_embeddings = nn.Embedding(5, config.hidden_size, padding_idx=0) ## 20 major amino acids --> 4 major groups
 
     # self.LayerNorm is not snake-cased to stick with TensorFlow model variable name and be able to load
     # any TensorFlow checkpoint file
@@ -182,9 +186,14 @@ class BertEmbeddingsAA(nn.Module):
 
     words_embeddings = self.word_embeddings(input_ids)
     position_embeddings = self.position_embeddings(position_ids)
-    # token_type_embeddings = self.token_type_embeddings(token_type_ids)
 
-    embeddings = words_embeddings + position_embeddings  # + token_type_embeddings
+    if self.aa_type_emb:
+      token_type_embeddings = self.token_type_embeddings(token_type_ids)
+      embeddings = words_embeddings + position_embeddings  + token_type_embeddings
+
+    else:
+      embeddings = words_embeddings + position_embeddings  # + token_type_embeddings
+
     embeddings = self.LayerNorm(embeddings)
     embeddings = self.dropout(embeddings)
     return embeddings
