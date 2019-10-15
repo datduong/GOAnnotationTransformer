@@ -166,7 +166,11 @@ class BertEmbeddingsAA(nn.Module):
     # label should not need to have ordering ?
     self.position_embeddings = nn.Embedding(config.max_position_embeddings, config.hidden_size)
 
-    self.aa_type_emb = config.aa_type_emb ## may see error for some legacy call ??
+    try: 
+      self.aa_type_emb = config.aa_type_emb ## may see error for some legacy call ??
+    except: 
+      self.aa_type_emb = False 
+      
     if self.aa_type_emb:
       ## okay to say 4 groups + 1 extra , we need special token to map to all 0, so CLS SEP PAD --> group 0
       self.token_type_embeddings = nn.Embedding(5, config.hidden_size, padding_idx=0) ## 20 major amino acids --> 4 major groups

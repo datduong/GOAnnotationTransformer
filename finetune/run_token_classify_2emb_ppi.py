@@ -64,12 +64,15 @@ class TextDataset(Dataset):
   def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
     # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
 
-    self.args = args 
+    self.args = args
 
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
-    directory = os.path.join(directory , 'aa_ppi_cache')
-    if not os.path.exists(directory): 
+    if args.aa_type_emb:
+      directory = os.path.join(directory , 'aa_token_type_ppi_cache')
+    else:
+      directory = os.path.join(directory , 'aa_ppi_cache')
+    if not os.path.exists(directory):
       os.mkdir(directory)
 
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
@@ -86,7 +89,7 @@ class TextDataset(Dataset):
         self.mask_ids_aa = pickle.load(handle)
       with open(cached_features_file+'ppi_vec', 'rb') as handle:
         self.ppi_vec = pickle.load(handle)
-      if args.aa_type_emb: 
+      if args.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'rb') as handle:
           self.aa_type_emb = pickle.load(handle)
 
@@ -105,7 +108,7 @@ class TextDataset(Dataset):
       self.input_ids_label = []
       self.mask_ids_aa = []
       self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
-      if args.aa_type_emb: 
+      if args.aa_type_emb:
         self.aa_type_emb = []
 
       fin = open(file_path,"r",encoding='utf-8')
@@ -139,18 +142,19 @@ class TextDataset(Dataset):
         # kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
         ## GET THE AA INDEXING '[CLS] ' + text[0] + ' [SEP]'
         this_aa = tokenizer.convert_tokens_to_ids ( tokenizer.tokenize ('[CLS] ' + text[0] + ' [SEP]') )
+        len_withClsSep = len(this_aa)
 
         ## pad @this_aa to max len
-        mask_aa = [1] * len(this_aa) + [0] * ( max_aa_len - len(this_aa) ) ## attend to non-pad
-        this_aa = this_aa + [0] * ( max_aa_len - len(this_aa) ) ## padding
+        mask_aa = [1] * len_withClsSep + [0] * ( max_aa_len - len_withClsSep ) ## attend to non-pad
+        this_aa = this_aa + [0] * ( max_aa_len - len_withClsSep ) ## padding
         self.input_ids_aa.append( this_aa )
         self.mask_ids_aa.append (mask_aa)
 
-        if args.aa_type_emb: 
-          ### !!! also need to get token type emb 
-          self.aa_type_emb.append ( [0] + [s for s in text[3].split()] + [0] * ( max_aa_len + 1 - len(this_aa) ) ) ## 0 for CLS SEP PAD
+        if args.aa_type_emb:
+          ### !!! also need to get token type emb
+          self.aa_type_emb.append ( [0] + [int(s) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
 
-        if counter < 3: 
+        if counter < 3:
           print ('see sample {}'.format(counter))
           print (this_aa)
           print (label1hot)
@@ -172,32 +176,32 @@ class TextDataset(Dataset):
         pickle.dump(self.mask_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'ppi_vec', 'wb') as handle:
           pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      
-      if args.aa_type_emb: 
-        with open(cached_features_file+'ppi_vec', 'wb') as handle:
+
+      if args.aa_type_emb:
+        with open(cached_features_file+'aa_type_emb', 'wb') as handle:
           pickle.dump(self.aa_type_emb, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
   def __len__(self):
     return len(self.input_ids_aa)
 
   def __getitem__(self, item):
-    if self.args.aa_type_emb: 
+    if self.args.aa_type_emb:
       return (torch.LongTensor(self.label1hot[item]),
             torch.tensor(self.input_ids_aa[item]),
-            torch.tensor(self.input_ids_label[item]), 
-            torch.tensor(self.mask_ids_aa[item]), 
+            torch.tensor(self.input_ids_label[item]),
+            torch.tensor(self.mask_ids_aa[item]),
             torch.tensor(self.ppi_vec[item]),
-            torch.tensor(self.aa_type_emb[item]))
-    else: 
+            torch.LongTensor(self.aa_type_emb[item]))
+    else:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
-              torch.tensor(self.input_ids_label[item]), 
-              torch.tensor(self.mask_ids_aa[item]), 
+              torch.tensor(self.input_ids_label[item]),
+              torch.tensor(self.mask_ids_aa[item]),
               torch.tensor(self.ppi_vec[item]) )
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
-  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size)
+  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args)
   return dataset
 
 
@@ -296,13 +300,18 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
       ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
 
+      if args.aa_type_emb:
+        aa_type = batch[5][:,0:max_len_in_batch].to(args.device)
+      else:
+        aa_type = None
+
       model.train()
 
       # call to the @model
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
 
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
@@ -328,33 +337,52 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         model.zero_grad()
         global_step += 1
 
-        if (epoch_counter>0) and args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
-          # Save model checkpoint
-          output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
-          if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-          model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
-          model_to_save.save_pretrained(output_dir)
-          torch.save(args, os.path.join(output_dir, 'training_args.bin'))
-          logger.info("Saving model checkpoint to %s", output_dir)
+        # if (epoch_counter>0) and args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
+        #   # Save model checkpoint
+        #   output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
+        #   if not os.path.exists(output_dir):
+        #     os.makedirs(output_dir)
+        #   model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+        #   model_to_save.save_pretrained(output_dir)
+        #   torch.save(args, os.path.join(output_dir, 'training_args.bin'))
+        #   logger.info("Saving model checkpoint to %s", output_dir)
 
-        if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
-          # Log metrics
-          if args.local_rank == -1 and args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
-            results = evaluate(args, model, tokenizer,label_2test_array)
-            for key, value in results.items():
-              tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
+        # if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
+        #   # Log metrics
+        #   if args.local_rank == -1 and args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
+        #     results = evaluate(args, model, tokenizer,label_2test_array)
+        #     for key, value in results.items():
+        #       tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
 
-          tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-          tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
-          logging_loss = tr_loss
+        #   tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
+        #   tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
+        #   logging_loss = tr_loss
 
       if args.max_steps > 0 and global_step > args.max_steps:
         epoch_iterator.close()
         break
 
     ## end 1 epoch
+    print ('\n\neval end epoch {}'.format(epoch_counter))
+
+    ## to save some time, let's just save at end of epoch
+
+    output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
+    if not os.path.exists(output_dir):
+      os.makedirs(output_dir)
+    model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+    model_to_save.save_pretrained(output_dir)
+    torch.save(args, os.path.join(output_dir, 'training_args.bin'))
+    logger.info("Saving model checkpoint to %s", output_dir)
+
     results = evaluate(args, model, tokenizer,label_2test_array)
+    # for key, value in results.items():
+    #   tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
+
+    # tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
+    # tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
+    # logging_loss = tr_loss
+
     if results['eval_loss'] < eval_loss:
       eval_loss = results['eval_loss']
       last_best = epoch_counter
@@ -422,19 +450,24 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
       torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## test all labels
 
-    ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 
+    ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make
+
+    if args.aa_type_emb:
+      aa_type = batch[5][:,0:max_len_in_batch].to(args.device)
+    else:
+      aa_type = None
 
     with torch.no_grad():
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
     nb_eval_steps += 1
-   
+
     ## track output
     norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
     norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
-   
+
     if prediction is None:
       ## track predicted probability
       true_label = batch[0].data.numpy()
@@ -469,6 +502,7 @@ def main():
   parser.add_argument("--label_2test", type=str, default=None)
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
+  parser.add_argument("--aa_type_emb", action="store_true", default=False)
 
   ## Required parameters
   parser.add_argument("--train_data_file", default=None, type=str, required=True,
@@ -557,7 +591,7 @@ def main():
   args = parser.parse_args()
 
   print (args)
-  
+
   if args.model_type in ["bert", "roberta"] and not args.mlm:
     raise ValueError("BERT and RoBERTa do not have LM heads but masked LM heads. They must be run using the --mlm "
              "flag (masked language modeling).")
@@ -619,20 +653,22 @@ def main():
   args.block_size = min(args.block_size, tokenizer.max_len_single_sentence)
 
 
+  config = BertConfig.from_pretrained(args.config_name) ## should we always override
+
   # Prepare model
   if args.config_override:
-    config = BertConfig.from_pretrained(args.config_name) ## should we always override
+    # config = BertConfig.from_pretrained(args.config_name) ## should we always override
     config.label_size = len(label_2test_array) ## make sure we really get correct label
     model = model_class(config)
   else:
-    config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
+    # config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
 
-  ## load pretrain label vectors ? 
-  if args.pretrained_label_path is not None: 
+  ## load pretrain label vectors ?
+  if args.pretrained_label_path is not None:
     print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
-    ## have a pickle right now. 
+    ## have a pickle right now.
     pretrained_label_vec = np.zeros((num_labels,768))
     temp = pickle.load(open(args.pretrained_label_path,"rb"))
     for counter, lab in enumerate( label_2test_array ):
