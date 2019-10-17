@@ -375,7 +375,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
     logger.info("Saving model checkpoint to %s", output_dir)
 
-    results = evaluate(args, model, tokenizer,label_2test_array)
+    results = evaluate(args, model, tokenizer,label_2test_array, prefix=str(global_step))
     # for key, value in results.items():
     #   tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
 
