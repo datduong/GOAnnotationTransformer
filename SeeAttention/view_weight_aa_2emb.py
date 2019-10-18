@@ -36,11 +36,20 @@ logger = logging.getLogger(__name__)
 
 
 class TextDataset(Dataset):
-  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024):
+  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
     # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
+
+    self.args = args
 
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
+    if args.aa_type_emb:
+      directory = os.path.join(directory , 'aa_token_type_ppi_cache')
+    else:
+      directory = os.path.join(directory , 'aa_ppi_cache')
+    if not os.path.exists(directory):
+      os.mkdir(directory)
+
     cached_features_file = os.path.join(directory, f'cached_lm_{block_size}_{filename}')
 
     if os.path.exists(cached_features_file+'label1hot'): ## take 1 thing to test if it exists
@@ -53,6 +62,11 @@ class TextDataset(Dataset):
         self.input_ids_label = pickle.load(handle)
       with open(cached_features_file+'mask_ids_aa', 'rb') as handle:
         self.mask_ids_aa = pickle.load(handle)
+      with open(cached_features_file+'ppi_vec', 'rb') as handle:
+        self.ppi_vec = pickle.load(handle)
+      if args.aa_type_emb:
+        with open(cached_features_file+'aa_type_emb', 'rb') as handle:
+          self.aa_type_emb = pickle.load(handle)
 
     else:
 
@@ -68,6 +82,9 @@ class TextDataset(Dataset):
       self.input_ids_aa = []
       self.input_ids_label = []
       self.mask_ids_aa = []
+      self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
+      if args.aa_type_emb:
+        self.aa_type_emb = []
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
@@ -85,6 +102,10 @@ class TextDataset(Dataset):
         ## split at \t ?? [seq \t label]
         text = text.split("\t") ## position 0 is kmer sequence, position 1 is list of labels
 
+        ### !!!!
+        ### !!!! now we append the protein-network vector
+        self.ppi_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
+
         ## create a gold-standard label 1-hot vector.
         ## convert label into 1-hot style
         label1hot = np.zeros(num_label) ## 1D array
@@ -96,17 +117,23 @@ class TextDataset(Dataset):
         # kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
         ## GET THE AA INDEXING '[CLS] ' + text[0] + ' [SEP]'
         this_aa = tokenizer.convert_tokens_to_ids ( tokenizer.tokenize ('[CLS] ' + text[0] + ' [SEP]') )
+        len_withClsSep = len(this_aa)
 
         ## pad @this_aa to max len
-        mask_aa = [1] * len(this_aa) + [0] * ( max_aa_len - len(this_aa) ) ## attend to non-pad
-        this_aa = this_aa + [0] * ( max_aa_len - len(this_aa) ) ## padding
+        mask_aa = [1] * len_withClsSep + [0] * ( max_aa_len - len_withClsSep ) ## attend to non-pad
+        this_aa = this_aa + [0] * ( max_aa_len - len_withClsSep ) ## padding
         self.input_ids_aa.append( this_aa )
         self.mask_ids_aa.append (mask_aa)
+
+        if args.aa_type_emb:
+          ### !!! also need to get token type emb
+          self.aa_type_emb.append ( [0] + [int(s) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
 
         if counter < 3:
           print ('see sample {}'.format(counter))
           print (this_aa)
           print (label1hot)
+          print (self.ppi_vec[counter])
 
         if (len(this_aa) + num_label) > block_size:
           print ('len too long, expand block_size')
@@ -122,19 +149,34 @@ class TextDataset(Dataset):
         pickle.dump(self.input_ids_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'mask_ids_aa', 'wb') as handle:
         pickle.dump(self.mask_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'ppi_vec', 'wb') as handle:
+          pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+      if args.aa_type_emb:
+        with open(cached_features_file+'aa_type_emb', 'wb') as handle:
+          pickle.dump(self.aa_type_emb, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
   def __len__(self):
     return len(self.input_ids_aa)
 
   def __getitem__(self, item):
-    return (torch.LongTensor(self.label1hot[item]),
+    if self.args.aa_type_emb:
+      return (torch.LongTensor(self.label1hot[item]),
             torch.tensor(self.input_ids_aa[item]),
             torch.tensor(self.input_ids_label[item]),
-            torch.tensor(self.mask_ids_aa[item]) )
+            torch.tensor(self.mask_ids_aa[item]),
+            torch.tensor(self.ppi_vec[item]),
+            torch.LongTensor(self.aa_type_emb[item]))
+    else:
+      return (torch.LongTensor(self.label1hot[item]),
+              torch.tensor(self.input_ids_aa[item]),
+              torch.tensor(self.input_ids_label[item]),
+              torch.tensor(self.mask_ids_aa[item]),
+              torch.tensor(self.ppi_vec[item]) )
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
-  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size)
+  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args)
   return dataset
 
 
@@ -145,6 +187,7 @@ def main():
   parser.add_argument("--label_2test", type=str, default=None)
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
+  parser.add_argument("--aa_type_emb", action="store_true", default=False)
 
   ## Required parameters
   parser.add_argument("--train_data_file", default=None, type=str,
@@ -239,7 +282,7 @@ def main():
   label_2test_array = pd.read_csv(args.label_2test,header=None)
   label_2test_array = sorted(list( label_2test_array[0] ))
   label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
-  num_label = len(label_2test_array)
+  num_labels = len(label_2test_array)
 
 
   config = BertConfig.from_pretrained(args.model_name_or_path)
@@ -248,7 +291,7 @@ def main():
 
   tokenizer = BertTokenizer.from_pretrained(args.bert_vocab, do_lower_case=args.do_lower_case)
 
-  model = TokenClassifier.BertForTokenClassification2Emb.from_pretrained(args.model_name_or_path, config=config) ## use @config=config to override the default @config
+  model = TokenClassifier.BertForTokenClassification2EmbPPI.from_pretrained(args.model_name_or_path, config=config) ## use @config=config to override the default @config
 
   model.cuda() ## ?? do we need to send to gpu
 
@@ -283,8 +326,8 @@ def main():
   model.eval()
 
   # get attention head for sequence
-  GO2GO_attention = {}
-  GO2AA_attention = {} ##  { name: {head:[range]} }
+  # GO2GO_attention = {}
+  # GO2AA_attention = {} ##  { name: {head:[range]} }
   # GO2AA_attention_quantile = {}
   GO2all_attention = {}
 
@@ -299,7 +342,7 @@ def main():
       print ('check @row_counter for @batch_counter {} should see this message only at the last batch'.format(batch_counter))
 
     end = row_counter + batch_size 
-    if ('O54992' not in protein_name[row_counter:end]) and ('B3PC73' not in protein_name[row_counter:end]):
+    if ('O54992' not in protein_name[row_counter:end]) and ('P23109' not in protein_name[row_counter:end]):
       ## suppose we don't enter this @if, then we will update @row_counter at the end, before we call "@for batch_counter...."
       row_counter = end ## skip all, start at new positions of next batch
       continue
@@ -314,15 +357,21 @@ def main():
     labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
       torch.ones(input_ids_label.shape)),dim=1).cuda() ## test all labels
 
+    ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).cuda() ## make
+
+    if args.aa_type_emb:
+      aa_type = batch[5][:,0:max_len_in_batch].cuda()
+    else:
+      aa_type = None
+
     with torch.no_grad():
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask )
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
     nb_eval_steps += 1
 
-
-    attention_mask = attention_mask.detach().cpu().numpy()
+    attention_mask = attention_mask.detach().cpu().numpy() ## used to get back only important positions 
 
     layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention. 
     print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple 
@@ -337,7 +386,7 @@ def main():
 
         this_prot_name = protein_name[row_counter+obs]
 
-        if (this_prot_name == 'O54992') or (this_prot_name == 'B3PC73'):
+        if (this_prot_name == 'O54992') or (this_prot_name == 'P23109'):
 
           where_not_mask = attention_mask[obs]==1
 
@@ -355,9 +404,9 @@ def main():
     row_counter = end
 
   ## save ?? easier to just format this later.
-  # pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_B3PC73.pickle"), 'wb') )
-  # pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992_B3PC73.pickle"), 'wb') )
-  pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_O54992_B3PC73.pickle"), 'wb') )
+  # pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_P23109.pickle"), 'wb') )
+  # pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992_P23109.pickle"), 'wb') )
+  pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_O54992_P23109.pickle"), 'wb') )
 
   # exit()
 

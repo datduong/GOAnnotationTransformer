@@ -20,7 +20,6 @@ from pytorch_transformers import WEIGHTS_NAME, CONFIG_NAME, BertConfig
 from pytorch_transformers.modeling_bert import *
 from pytorch_transformers.tokenization_bert import BertTokenizer
 
-
 class BertForTokenClassification1hot (BertPreTrainedModel):
 
   ## !! we change this to do 1-hot prediction

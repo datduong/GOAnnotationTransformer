@@ -4,15 +4,15 @@ import matplotlib.pyplot as plt
 from matplotlib import cm 
 import pickle,re,sys,os
 
-os.chdir('/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1mf2embGeluE768H4L10I1024PretrainLabelLr10-4')
-attention = pickle.load (open("GO2all_attention_O54992_B3PC73.pickle","rb"))
+os.chdir('/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1')
+attention = pickle.load (open("GO2all_attention_O54992_P23109.pickle","rb")) # P23109
 
 prot = list ( attention.keys() ) 
 print (prot)
 
 for p in prot: 
-  for layer in range(10): 
-    for head in range (4): 
+  for layer in range(12): 
+    for head in range (1): 
       matrix = attention[p] [layer] [head]
       np.savetxt ( p + 'layer' + str(layer) + 'head' + str(head)+'.csv', matrix, delimiter=',')
 
