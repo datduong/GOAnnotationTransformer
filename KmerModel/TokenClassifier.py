@@ -20,6 +20,7 @@ from pytorch_transformers import WEIGHTS_NAME, CONFIG_NAME, BertConfig
 from pytorch_transformers.modeling_bert import *
 from pytorch_transformers.tokenization_bert import BertTokenizer
 
+
 class BertForTokenClassification1hot (BertPreTrainedModel):
 
   ## !! we change this to do 1-hot prediction
@@ -172,7 +173,9 @@ class BertEmbeddingsAA(nn.Module):
       
     if self.aa_type_emb:
       ## okay to say 4 groups + 1 extra , we need special token to map to all 0, so CLS SEP PAD --> group 0
-      self.token_type_embeddings = nn.Embedding(5, config.hidden_size, padding_idx=0) ## 20 major amino acids --> 4 major groups
+      ## 20 major amino acids --> 4 major groups
+      ## or... we have mutation/not --> 2 major groups. set not mutation = 0 as base case
+      self.token_type_embeddings = nn.Embedding(config.type_vocab_size, config.hidden_size, padding_idx=0) 
 
     # self.LayerNorm is not snake-cased to stick with TensorFlow model variable name and be able to load
     # any TensorFlow checkpoint file

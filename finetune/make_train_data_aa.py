@@ -73,17 +73,28 @@ def aa_type_emb (one_aa):
   return 0
 
 
+fin = '/u/scratch/d/donle225/mutagenesis/output_files/train-mf.tsv'
+# df = pd.read_csv(fin,sep="\t",index_col=0)
+
+
+
 AA_type = {}
 
+## record where the protein have change sequence 
+prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0' 
+
 for data_type in ['train','dev','test']:
-  for ontology in ['cc','bp','mf']:
+  for ontology in ['mf']: # 'cc','bp',
 
     long_count = 0
 
-    fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/"+data_type+"-"+ontology+".tsv"
-    fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/"+data_type+"-"+ontology+"-aa.csv"
+    # fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/"+data_type+"-"+ontology+".tsv"
+    fin = '/u/scratch/d/donle225/mutagenesis/output_files/'+data_type+"-"+ontology+'.tsv'
+    fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/"+data_type+"-"+ontology+"-aa-mut.csv"
 
-    df = pd.read_csv(fin,sep="\t")
+    # df = pd.read_csv(fin,sep="\t")
+    df = pd.read_csv(fin,sep="\t",index_col=0)
+
     print (fin)
     print ( df.shape )
 
@@ -92,8 +103,12 @@ for data_type in ['train','dev','test']:
 
     fout = open(fout,'w')
     for index,row in df.iterrows():
+
       if (len(row['Sequence'])> 1024):
         long_count = long_count+1
+
+      if row['Entry'] in prot_change: 
+        continue
 
       new_seq = row['Sequence']
 
@@ -103,10 +118,18 @@ for data_type in ['train','dev','test']:
       #   else:
       #     pass
 
-      aa_type = [aa_type_emb(aa) for aa in new_seq]
+      # aa_type = [aa_type_emb(aa) for aa in new_seq]
+      aa_type = row['Mutagenesis']
+      aa_type_np = np.zeros(len(new_seq)) ## maximum length filled with zeros for now
+      if aa_type is not np.nan: 
+        where1 = sorted(aa_type.split(";"))
+        where1 = np.array ( [int(w)-1 for w in where1] ) ## NOTICE, SHIFT BACK 1, BECAUSE PYTHON INDEXING STARTS AT 0. 
+        ## update 1-hot 
+        aa_type_np[where1] = 1
+
       go_list = re.sub(r":","",row['Gene ontology IDs'])
       go_list = sorted(go_list.split(";"))
-      fout.write(" ".join(new_seq) + "\t" + " ".join(go_list)+ "\t" + " ".join(row['Prot Emb'].strip().split(';')) + "\t"+' '.join(str(aa) for aa in aa_type) + "\n")
+      fout.write(" ".join(new_seq) + "\t" + " ".join(go_list)+ "\t" + " ".join(row['Prot Emb'].strip().split(';')) + "\t"+' '.join(str(aa) for aa in aa_type_np) + "\n")
 
     fout.close()
     print ('long seq counter {}'.format(long_count))

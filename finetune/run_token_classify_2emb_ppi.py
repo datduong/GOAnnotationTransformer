@@ -69,7 +69,7 @@ class TextDataset(Dataset):
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     if args.aa_type_emb:
-      directory = os.path.join(directory , 'aa_token_type_ppi_cache')
+      directory = os.path.join(directory , 'aa_mut_ppi_cache')
     else:
       directory = os.path.join(directory , 'aa_ppi_cache')
     if not os.path.exists(directory):
@@ -152,7 +152,7 @@ class TextDataset(Dataset):
 
         if args.aa_type_emb:
           ### !!! also need to get token type emb
-          self.aa_type_emb.append ( [0] + [int(s) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
+          self.aa_type_emb.append ( [0] + [int(float(s)) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
 
         if counter < 3:
           print ('see sample {}'.format(counter))
