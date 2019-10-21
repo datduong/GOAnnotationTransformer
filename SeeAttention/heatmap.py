@@ -30,3 +30,4 @@ for p in prot:
       plt.savefig( p + 'layer' + str(layer) + 'head' + str(head)+'.png' )
 
 
+GO:0019239;GO:0016814;GO:0016810;GO:0016787;GO:0003824

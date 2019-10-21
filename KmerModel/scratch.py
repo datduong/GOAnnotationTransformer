@@ -11,7 +11,7 @@ class BertSelfAttention(nn.Module):
 
     self.num_attention_heads = config.num_attention_heads
     self.attention_head_size = int(config.hidden_size / config.num_attention_heads)
-    self.all_head_size = self.num_attention_heads * self.attention_head_size
+    self.all_head_size = self.num_attention_heads * self.attention_head_size ## compute for all the heads in 1 single function call 
 
     self.query = nn.Linear(config.hidden_size, self.all_head_size)
     self.key = nn.Linear(config.hidden_size, self.all_head_size)
@@ -58,7 +58,6 @@ class BertSelfAttention(nn.Module):
 
     outputs = (context_layer, attention_probs) if self.output_attentions else (context_layer,)
     return outputs
-
 
 
 class BertEmbeddingsLabel(nn.Module):

@@ -9,11 +9,13 @@ library('RColorBrewer')
 ave_downward = function(fin,num_label){
   ## compute some summary statistics on best "aa"
   total_len = nrow(fin) 
-  down = rowMeans ( fin [ 1:(total_len-num_label), ] )  ## don't need the rest
+  # down = rowMeans ( fin [ 1:(total_len-num_label), ] )  ## don't need the rest
+  down = rowMeans ( fin )
   highQ = quantile(down,0.7)
+  print (dim(fin))
   print (length((down)))
   print (summary(down))
-  return (sort ( which (down > highQ) ) )
+  return ( list (down, sort ( which (down > highQ) ) ) ) 
 }
 
 
@@ -23,44 +25,68 @@ coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25)
 setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1')
 
 num_label = 589
-p = 'P23109' # B3PC73 O54992 P23109
+prot = 'B3PC73 O54992 P23109'# 'P23109' # B3PC73 O54992 P23109
+prot = strsplit(prot,"\\s+")[[1]] 
 
-plot_list = list() 
-counter = 1
-for (layer in 0:11){ 
-  for (head in 0:0){
-    fin = read.csv( paste0(p , 'layer' , layer, 'head',head,'.csv'), header=F )
+
+# for (p in prot) {
+#   plot_list = list() 
+#   counter = 1
+#   for (layer in 0:11){ 
+#     for (head in 0:0){
+#       fin = read.csv( paste0(p , 'layer' , layer, 'head',head,'.csv'), header=F )
+#       fin = as.matrix(fin)
+#       total_len = nrow(fin) 
+#       colnames(fin) = 1:nrow(fin)
+#       fin = t(fin) ## easier ... so that we know row add to 1. 
+#       fin = log ( fin * 1000 )
+#       ## remove CLS and SEP ?? 
+#       # heatmap(fin,scale="none",col = coul,Colv=NA,main=paste('Layer',layer,'Head',head))
+#       fin = melt(fin)
+#       total_median = quantile ( fin[,3], 0.5 ) 
+#       print (total_median)
+#       total_max = max(fin[,3])
+#       p1 = ggplot(data = fin, aes(x=Var1, y=Var2, fill=value)) + geom_tile() +
+#       geom_vline(xintercept=total_len-num_label) +
+#       geom_hline(yintercept=total_len-num_label) +
+#       ggtitle(paste0(p , 'layer' , layer, 'head',head)) +
+#       scale_fill_gradient2(low = "blue", high = "red") + # midpoint = total_median, limit = c(0,total_max)
+#       theme(legend.title = element_blank()) #,axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank()) 
+#       png (file = paste0(p,'H',head,'L',layer,'.png'),width=10, height=10, units='in', res = 500)
+#       print (p1)
+#       dev.off() 
+#       # plot_list[[counter]] = p1 
+#       counter = counter + 1 
+#     }
+#   }
+# }
+
+
+# p='P23109'
+layer = 0 
+num_label = 589
+prot = 'B3PC73 O54992 P23109'# 'P23109' # B3PC73 O54992 P23109
+prot = strsplit(prot,"\\s+")[[1]] 
+for (p in prot){
+  pdf(paste0(p,'layer.pdf'),width=10, height=12)
+  par(mfrow=c(6,4))
+  for (layer in 0:11) {
+    fin = read.csv( paste0(p , 'layer' , layer, 'head',0,'.csv'), header=F )
     fin = as.matrix(fin)
-    total_len = nrow(fin) 
-    colnames(fin) = 1:nrow(fin)
-    fin = t(fin) ## easier ... so that we know row add to 1. 
+    num_aa = nrow(fin)-num_label-2 ## CLS and SEP
+    fin = fin [2:(nrow(fin)-num_label-1), (nrow(fin)-num_label+1):nrow(fin) ] ## get contribution toward protein side
     fin = log ( fin * 1000 )
-    ## remove CLS and SEP ?? 
-    # heatmap(fin,scale="none",col = coul,Colv=NA,main=paste('Layer',layer,'Head',head))
-    fin = melt(fin)
-    total_median = quantile ( fin[,3], 0.5 ) 
-    print (total_median)
-    total_max = max(fin[,3])
-    p1 = ggplot(data = fin, aes(x=Var1, y=Var2, fill=value)) + geom_tile() +
-    geom_vline(xintercept=total_len-num_label) +
-    geom_hline(yintercept=total_len-num_label) +
-    ggtitle(paste0(p , 'layer' , layer, 'head',head)) +
-    scale_fill_gradient2(low = "blue", high = "red") + # midpoint = total_median, limit = c(0,total_max)
-    theme(legend.title = element_blank()) #,axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank()) 
-    png (file = paste0(p,'H',head,'L',layer,'.png'),width=10, height=10, units='in', res = 500)
-    print (p1)
-    dev.off() 
-    # plot_list[[counter]] = p1 
-    counter = counter + 1 
+    z = ave_downward (fin,num_label)
+    print (p)
+    # print (z[[2]])
+    # plot(1:nrow(fin), z[[1]], pch=16,cex=.5, main=p)
+    hist(z[[2]],breaks=15,main=paste(p,'layer',layer),xlab='position')
+    qqplot(z[[2]]/num_aa, runif(num_aa),main='qqplot',xlab='uniform',ylab='observe',pch=16,cex=1)
+    abline(0,1)
   }
+  dev.off() 
 }
 
-
-p='P23109'
-fin = read.csv( paste0(p , 'layer' , 11, 'head',0,'.csv'), header=F )
-fin = as.matrix(fin)
-fin = log ( fin * 1000 )
-z = ave_downward (fin,num_label)
 
 # png (file = paste0(p,'h0h1.png'),width=30, height=10, units='in', res = 400)
 # grid.arrange(grobs = plot_list, ncol=10, nrow=2) ## display plot
@@ -68,7 +94,7 @@ z = ave_downward (fin,num_label)
 # dev.off() 
 
 
-B3PC73
+B3PC73 732
 s="MSTFARLFLCLVFFASLQPAMAQTEDGYDMWLRYQPIADQTLLKTYQKQIRHLHVAGDSPTINAAAAELQRGLSGLLNKPIVARDEKLKDYSLVIGTPDNSPLIASLNLGERLQALGAEGYLLEQTRINKRHVVIVAANSDVGVLYGSFHLLRLIQTQHALEKLSLSSAPRLQHRVVNHWDNLNRVVERGYAGLSLWDWGSLPNYLAPRYTDYARINASLGINGTVINNVNADPRVLSDQFLQKIAALADAFRPYGIKMYLSINFNSPRAFGDVDTADPLDPRVQQWWKTRAQKIYSYIPDFGGFLVKADSEGQPGPQGYGRDHAEGANMLAAALKPFGGVVFWRAFVYHPDIEDRFRGAYDEFMPLDGKFADNVILQIKNGPIDFQPREPFSALFAGMSRTNMMMEFQITQEYFGFATHLAYQGPLFEESLKTETHARGEGSTIGNILEGKVFKTRHTGMAGVINPGTDRNWTGHPFVQSSWYAFGRMAWDHQISAATAADEWLRMTFSNQPAFIEPVKQMMLVSREAGVNYRSPLGLTHLYSQGDHYGPAPWTDDLPRADWTAVYYHRASKTGIGFNRTKTGSNALAQYPEPIAKAWGDLNSVPEDLILWFHHLSWDHRMQSGRNLWQELVHKYYQGVEQVRAMQRTWDQQEAYVDAARFAQVKALLQVQEREAVRWRNSCVLYFQSVAGRPIPANYEQPEHDLEYYKMLARTTYVPEPWHPASSSRVLK"
 
 s[0:250]
@@ -93,12 +119,24 @@ p = strsplit(p,"\\s+")[[1]]
 hist(as.numeric(p),breaks=15)
 
 
-
+473
 s = """
 MSEDSDMEKAIKETSILEEYSINWTQKLGAGISGPVRVCVKKSTQERFALKILLDRPKARNEVRLHMMCATHPNIVQIIEVFANSVQFPHESSPRARLLIVMEMMEGGELFHRISQHRHFTEKQASQVTKQIALALQHCHLLNIAHRDLKPENLLFKDNSLDAPVKLCDFGFAKVDQGDLMTPQFTPYYVAPQVLEAQRRHQKEKSGIIPTSPTPYTYNKSCDLWSLGVIIYVMLCGYPPFYSKHHSRTIPKDMRKKIMTGSFEFPEEEWSQISEMAKDVVRKLLKVKPEERLTIEGVLDHPWLNSTEALDNVLPSAQLMMDKAVVAGIQQAHAEQLANMRIQDLKVSLKPLHSVNNPILRKRKLLGTKPKDGIYIHDHENGTEDSNVALEKLRDVIAQCILPQAGKGENEDEKLNEVMQEAWKYNRECKLLRDALQSFSWNGRGFTDKVDRLKLAEVVKQVIEEQTLPHEPQ
 """.strip() 
-s[0:250]
+import numpy as np
+import re
+s = re.sub(r"\n","",s)
+for i in np.arange(0,473,100): 
+  # print ('\n'+str(i))
+  if i+100 < 473:
+    print(">a{}".format(i))
+    print(s[i:i+100])
+  else:
+    print(">a{}".format(i))
+    print (s[i:473])
 
+
+s[0:250]
 s[250::]
 
 >>> s[0:250]
@@ -119,11 +157,11 @@ d = "1   5   6  10  12  21  30  32  33  37  51  52  58  71  73  74  77  80
  347 354 356 358 360 361 363 366 371 372 374 375 376 377 382 383 386 389
  390 392 396 397 398 399 402 406 407 409 413 415 417 419 420 421 423 424
  425 426 430 431 436 439 442 443 449 455 457 459 460 461 463 464 470    "
-d = strsplit(d,"\\s+")[[1]]
-hist(as.numeric(d),breaks=15)
+d = as.numeric(strsplit(d,"\\s+")[[1]])
+hist(d,breaks=15)
 
 
-P23109
+P23109 780
 s="""MNVRIFYSVSQSPHSLLSLLFYCAILESRISATMPLFKLPAEEKQIDDAMRNFAEKVFAS
 EVKDEGGRQEISPFDVDEICPISHHEMQAHIFHLETLSTSTEARRKKRFQGRKTVNLSIP
 LSETSSTKLSHIDEYISSSPTYQTVPDFQRVQITGDYASGVTVEDFEIVCKGLYRALCIR
@@ -137,8 +175,15 @@ GFDSVDDESKHSGHMFSSKSPKPQEWTLEKNPSYTYYAYYMYANIMVLNSLRKERGMNTF
 LFRPHCGEAGALTHLMTAFMIADDISHGLNLKKSPVLQYLFFLAQIPIAMSPLSNNSLFL
 EYAKNPFLDFLQKGLMISLSTDDPMQFHFTKEPLMEEYAIAAQVFKLSTCDMCEVARNSV
 LQCGISHEEKVKFLGDNYLEEGPAGNDIRRTNVAQIRMAYRYETWCYELNLIAEGLKSTE"""
+import numpy as np
 import re
 s = re.sub(r"\n","",s)
+for i in np.arange(0,700,50): 
+  print ('\n'+str(i))
+  if i+50 < 780:
+    print(s[i:i+50])
+  else:
+    print (s[i:780])
 
 d = "5   8  10  23  27  35  36  54  77  80  82  83  91  93 104 108 110 113
 121 132 133 134 140 141 143 152 156 158 162 163 164 166 168 169 179 180
@@ -154,5 +199,7 @@ d = "5   8  10  23  27  35  36  54  77  80  82  83  91  93 104 108 110 113
 608 616 617 619 621 629 630 633 639 640 641 647 662 666 667 674 675 679
 683 685 688 700 717 718 719 721 725 732 746 754 755 761 766 768 773 776
 782"
-d = strsplit(d,"\\s+")[[1]]
-hist(as.numeric(d),breaks=15)                                                 
+d = as.numeric(strsplit(d,"\\s+")[[1]])
+windows()
+hist(d,breaks=15)                                                 
+
