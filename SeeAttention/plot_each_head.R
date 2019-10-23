@@ -6,44 +6,31 @@ library('gridExtra')
 library('dendextend')
 library('RColorBrewer')
 
-ave_downward = function(fin,num_label){
-  ## compute some summary statistics on best "aa"
-  total_len = nrow(fin) 
-  # down = rowMeans ( fin [ 1:(total_len-num_label), ] )  ## don't need the rest
-  down = rowMeans ( fin )
-  highQ = quantile(down,0.7)
-  print (dim(fin))
-  print (length((down)))
-  print (summary(down))
-  return ( list (down, sort ( which (down > highQ) ) ) ) 
-}
-
-
-# graphics.off() 
+# graphics.off()
 coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25)
 
-setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1')
+# setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1')
+setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiMutGeluE768H1L12I768PreLabDrop0.1')
 
 num_label = 589
-prot = 'B3PC73 O54992 P23109'# 'P23109' # B3PC73 O54992 P23109
-prot = strsplit(prot,"\\s+")[[1]] 
-
+prot = 'O54992 P23109 P9WNC3' # 'O54992 P23109 P9WNC3'# 'P23109' # B3PC73 O54992 P23109
+prot = strsplit(prot,"\\s+")[[1]]
 
 # for (p in prot) {
-#   plot_list = list() 
+#   plot_list = list()
 #   counter = 1
-#   for (layer in 0:11){ 
+#   for (layer in 0:11){
 #     for (head in 0:0){
 #       fin = read.csv( paste0(p , 'layer' , layer, 'head',head,'.csv'), header=F )
 #       fin = as.matrix(fin)
-#       total_len = nrow(fin) 
+#       total_len = nrow(fin)
 #       colnames(fin) = 1:nrow(fin)
-#       fin = t(fin) ## easier ... so that we know row add to 1. 
+#       fin = t(fin) ## easier ... so that we know row add to 1.
 #       fin = log ( fin * 1000 )
-#       ## remove CLS and SEP ?? 
+#       ## remove CLS and SEP ??
 #       # heatmap(fin,scale="none",col = coul,Colv=NA,main=paste('Layer',layer,'Head',head))
 #       fin = melt(fin)
-#       total_median = quantile ( fin[,3], 0.5 ) 
+#       total_median = quantile ( fin[,3], 0.5 )
 #       print (total_median)
 #       total_max = max(fin[,3])
 #       p1 = ggplot(data = fin, aes(x=Var1, y=Var2, fill=value)) + geom_tile() +
@@ -51,51 +38,91 @@ prot = strsplit(prot,"\\s+")[[1]]
 #       geom_hline(yintercept=total_len-num_label) +
 #       ggtitle(paste0(p , 'layer' , layer, 'head',head)) +
 #       scale_fill_gradient2(low = "blue", high = "red") + # midpoint = total_median, limit = c(0,total_max)
-#       theme(legend.title = element_blank()) #,axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank()) 
+#       theme(legend.title = element_blank()) #,axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank())
 #       png (file = paste0(p,'H',head,'L',layer,'.png'),width=10, height=10, units='in', res = 500)
 #       print (p1)
-#       dev.off() 
-#       # plot_list[[counter]] = p1 
-#       counter = counter + 1 
+#       dev.off()
+#       # plot_list[[counter]] = p1
+#       counter = counter + 1
 #     }
 #   }
 # }
 
 
-# p='P23109'
-layer = 0 
-num_label = 589
-prot = 'B3PC73 O54992 P23109'# 'P23109' # B3PC73 O54992 P23109
-prot = strsplit(prot,"\\s+")[[1]] 
-for (p in prot){
-  pdf(paste0(p,'layer.pdf'),width=10, height=12)
-  par(mfrow=c(6,4))
-  for (layer in 0:11) {
-    fin = read.csv( paste0(p , 'layer' , layer, 'head',0,'.csv'), header=F )
-    fin = as.matrix(fin)
-    num_aa = nrow(fin)-num_label-2 ## CLS and SEP
-    fin = fin [2:(nrow(fin)-num_label-1), (nrow(fin)-num_label+1):nrow(fin) ] ## get contribution toward protein side
-    fin = log ( fin * 1000 )
-    z = ave_downward (fin,num_label)
-    print (p)
-    # print (z[[2]])
-    # plot(1:nrow(fin), z[[1]], pch=16,cex=.5, main=p)
-    hist(z[[2]],breaks=15,main=paste(p,'layer',layer),xlab='position')
-    qqplot(z[[2]]/num_aa, runif(num_aa),main='qqplot',xlab='uniform',ylab='observe',pch=16,cex=1)
-    abline(0,1)
-  }
-  dev.off() 
+
+ave_downward = function(fin,num_label,direction){
+  ## compute some summary statistics on best "aa"
+  total_len = nrow(fin)
+  down = apply(fin,direction,quantile,c(0.25,.5,.75))
+  return (down)
 }
+
+# p='P23109'
+layer = 0
+num_label = 589
+# prot = 'O54992 P23109 P9WNC3' # 'B3PC73 O54992 P23109'# 'P23109' # B3PC73 O54992 P23109
+# prot = strsplit(prot,"\\s+")[[1]]
+prot = 'O54992 P23109 P9WNC3'
+prot = strsplit(prot,"\\s+")[[1]]
+for (name in c('layerAA2AA','layerAA2all')){ # ,'layerAA2all','layerAA2GO'
+  for (p in prot){
+    pdf(paste0(p,name,'_JtoI.pdf'),width=18, height=12)
+    # par(mfrow=c(6,4))
+    par(mfrow=c(4,3))
+    for (layer in 0:11) {
+      fin = read.csv( paste0(p , 'layer' , layer, 'head',0,'.csv'), header=F )
+      fin = as.matrix(fin)
+      num_aa = nrow(fin)-num_label-2 ## CLS and SEP
+      fin = fin [,-1*c(1,num_aa+2)] ## remove the weights toward CLS and SEP ?
+      fin = fin [-1*c(1,num_aa+2),] ## remove the weights by CLS and SEP ?
+
+      # fin = log ( fin * 1000 )
+
+      if (name == 'layerAA2AA'){
+        fin = fin [1:num_aa, 1:num_aa] ## get contribution of aa toward all the aa itself
+        z = ave_downward (fin,num_label,2)
+      } else if ( name=='layerAA2GO') {
+        fin = fin [1:num_aa, (num_aa+1):ncol(fin) ] ## get contribution AA --> GO
+      } else if ( name=='layerAA2all') {
+        fin = fin [1:num_aa, ] ## get contribution toward all the signals
+        z = ave_downward (fin,num_label,2)
+      } else {
+        fin = fin [(num_aa+1):nrow(fin), ] ## when look at labels, what contribute the most ?
+        z = ave_downward (fin,num_label,2)
+      }
+
+      print (p)
+
+      if (layer==0){
+        plot(1:ncol(z), z[2,], pch=16,cex=.5, type='l', main=paste(p,'layer',layer), xlab='index',ylab='prob',ylim=c(0,1/(num_aa+num_label)+.01))
+      } else {
+        plot(1:ncol(z), z[2,], pch=16,cex=.5, type='l', main=paste(p,'layer',layer), xlab='index',ylab='prob')
+      }
+      abline(h = 1/(num_aa+num_label), col='blue' ) 
+      abline(v = c(51,115,182,337), col='red', lty=2 ) 
+      abline(v = num_aa+1, col='green', lty=2 ) 
+
+    }
+    dev.off()
+  }
+}
+
+## 
+
+
 
 
 # png (file = paste0(p,'h0h1.png'),width=30, height=10, units='in', res = 400)
 # grid.arrange(grobs = plot_list, ncol=10, nrow=2) ## display plot
 # # ggsave(file = paste0(p,'.png'), arrangeGrob(grobs = plot_list, ncol=4, nrow=10), width=30, height=10, units='in')  ## save plot
-# dev.off() 
+# dev.off()
 
 
 B3PC73 732
 s="MSTFARLFLCLVFFASLQPAMAQTEDGYDMWLRYQPIADQTLLKTYQKQIRHLHVAGDSPTINAAAAELQRGLSGLLNKPIVARDEKLKDYSLVIGTPDNSPLIASLNLGERLQALGAEGYLLEQTRINKRHVVIVAANSDVGVLYGSFHLLRLIQTQHALEKLSLSSAPRLQHRVVNHWDNLNRVVERGYAGLSLWDWGSLPNYLAPRYTDYARINASLGINGTVINNVNADPRVLSDQFLQKIAALADAFRPYGIKMYLSINFNSPRAFGDVDTADPLDPRVQQWWKTRAQKIYSYIPDFGGFLVKADSEGQPGPQGYGRDHAEGANMLAAALKPFGGVVFWRAFVYHPDIEDRFRGAYDEFMPLDGKFADNVILQIKNGPIDFQPREPFSALFAGMSRTNMMMEFQITQEYFGFATHLAYQGPLFEESLKTETHARGEGSTIGNILEGKVFKTRHTGMAGVINPGTDRNWTGHPFVQSSWYAFGRMAWDHQISAATAADEWLRMTFSNQPAFIEPVKQMMLVSREAGVNYRSPLGLTHLYSQGDHYGPAPWTDDLPRADWTAVYYHRASKTGIGFNRTKTGSNALAQYPEPIAKAWGDLNSVPEDLILWFHHLSWDHRMQSGRNLWQELVHKYYQGVEQVRAMQRTWDQQEAYVDAARFAQVKALLQVQEREAVRWRNSCVLYFQSVAGRPIPANYEQPEHDLEYYKMLARTTYVPEPWHPASSSRVLK"
+s[0 : 732//2]
+s[732//2 : 732]
+
 
 s[0:250]
 'MSTFARLFLCLVFFASLQPAMAQTEDGYDMWLRYQPIADQTLLKTYQKQIRHLHVAGDSPTINAAAAELQRGLSGLLNKPIVARDEKLKDYSLVIGTPDNSPLIASLNLGERLQALGAEGYLLEQTRINKRHVVIVAANSDVGVLYGSFHLLRLIQTQHALEKLSLSSAPRLQHRVVNHWDNLNRVVERGYAGLSLWDWGSLPNYLAPRYTDYARINASLGINGTVINNVNADPRVLSDQFLQKIAALAD'
@@ -122,11 +149,11 @@ hist(as.numeric(p),breaks=15)
 473
 s = """
 MSEDSDMEKAIKETSILEEYSINWTQKLGAGISGPVRVCVKKSTQERFALKILLDRPKARNEVRLHMMCATHPNIVQIIEVFANSVQFPHESSPRARLLIVMEMMEGGELFHRISQHRHFTEKQASQVTKQIALALQHCHLLNIAHRDLKPENLLFKDNSLDAPVKLCDFGFAKVDQGDLMTPQFTPYYVAPQVLEAQRRHQKEKSGIIPTSPTPYTYNKSCDLWSLGVIIYVMLCGYPPFYSKHHSRTIPKDMRKKIMTGSFEFPEEEWSQISEMAKDVVRKLLKVKPEERLTIEGVLDHPWLNSTEALDNVLPSAQLMMDKAVVAGIQQAHAEQLANMRIQDLKVSLKPLHSVNNPILRKRKLLGTKPKDGIYIHDHENGTEDSNVALEKLRDVIAQCILPQAGKGENEDEKLNEVMQEAWKYNRECKLLRDALQSFSWNGRGFTDKVDRLKLAEVVKQVIEEQTLPHEPQ
-""".strip() 
+""".strip()
 import numpy as np
 import re
 s = re.sub(r"\n","",s)
-for i in np.arange(0,473,100): 
+for i in np.arange(0,473,100):
   # print ('\n'+str(i))
   if i+100 < 473:
     print(">a{}".format(i))
@@ -183,7 +210,7 @@ LQCGISHEEKVKFLGDNYLEEGPAGNDIRRTNVAQIRMAYRYETWCYELNLIAEGLKSTE"""
 import numpy as np
 import re
 s = re.sub(r"\n","",s)
-for i in np.arange(0,700,50): 
+for i in np.arange(0,700,50):
   print ('\n'+str(i))
   if i+50 < 780:
     print(s[i:i+50])
@@ -206,5 +233,5 @@ d = "5   8  10  23  27  35  36  54  77  80  82  83  91  93 104 108 110 113
 782"
 d = as.numeric(strsplit(d,"\\s+")[[1]])
 windows()
-hist(d,breaks=15)                                                 
+hist(d,breaks=15)
 

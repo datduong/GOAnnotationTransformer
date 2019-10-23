@@ -35,6 +35,7 @@ import view_util
 logger = logging.getLogger(__name__)
 
 
+
 class TextDataset(Dataset):
   def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
     # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
@@ -44,7 +45,7 @@ class TextDataset(Dataset):
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     if args.aa_type_emb:
-      directory = os.path.join(directory , 'aa_token_type_ppi_cache')
+      directory = os.path.join(directory , 'aa_mut_ppi_cache')
     else:
       directory = os.path.join(directory , 'aa_ppi_cache')
     if not os.path.exists(directory):
@@ -127,7 +128,7 @@ class TextDataset(Dataset):
 
         if args.aa_type_emb:
           ### !!! also need to get token type emb
-          self.aa_type_emb.append ( [0] + [int(s) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
+          self.aa_type_emb.append ( [0] + [int(float(s)) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
 
         if counter < 3:
           print ('see sample {}'.format(counter))
@@ -317,7 +318,10 @@ def main():
   AA_names_in_index = view_util.get_word_index_in_array(tokenizer,letters) ## these are word_index we want. we don't need to extract CLS and SEP ... but they can probably be important ??
 
   protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf.tsv", dtype=str, sep="\t")
+  # protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf-mut.tsv", dtype=str, sep="\t",index_col=0)
   protein_name = list ( protein_name['Entry'] )
+  prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split() 
+  protein_name = [p for p in protein_name if p not in prot_change]
 
   ## what do we need to keep ??
 
@@ -333,16 +337,16 @@ def main():
 
   row_counter = 0 # so we can check the row id.
 
-  start = 0
+  list_prot_to_get = ['O54992','P23109','P9WNC3']
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
     batch_size = batch[1].shape[0] ## do only what needed
 
-    if (batch_counter*batch_size) != row_counter: 
+    if (batch_counter*batch_size) != row_counter:
       print ('check @row_counter for @batch_counter {} should see this message only at the last batch'.format(batch_counter))
 
-    end = row_counter + batch_size 
-    if ('O54992' not in protein_name[row_counter:end]) and ('P23109' not in protein_name[row_counter:end]):
+    end = row_counter + batch_size
+    if len( set(protein_name[row_counter:end]).intersection( set(list_prot_to_get) ) ) == 0 :
       ## suppose we don't enter this @if, then we will update @row_counter at the end, before we call "@for batch_counter...."
       row_counter = end ## skip all, start at new positions of next batch
       continue
@@ -371,14 +375,14 @@ def main():
 
     nb_eval_steps += 1
 
-    attention_mask = attention_mask.detach().cpu().numpy() ## used to get back only important positions 
+    attention_mask = attention_mask.detach().cpu().numpy() ## used to get back only important positions
 
-    layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention. 
-    print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple 
+    layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention.
+    print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
 
     for layer in range (config.num_hidden_layers):
 
-      this_layer_att = layer_att[layer].detach().cpu().numpy() ## @layer_att is a tuple 
+      this_layer_att = layer_att[layer].detach().cpu().numpy() ## @layer_att is a tuple
 
       # num_batch x num_head x word x word
       # we get each obs in the batch, and get the #head
@@ -386,7 +390,10 @@ def main():
 
         this_prot_name = protein_name[row_counter+obs]
 
-        if (this_prot_name == 'O54992') or (this_prot_name == 'P23109'):
+        if this_prot_name in list_prot_to_get:
+
+          print (this_prot_name)
+          print (max_len_in_batch)
 
           where_not_mask = attention_mask[obs]==1
 
@@ -397,8 +404,9 @@ def main():
 
           for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
             save = this_layer_att[obs][head]
-            ## must use masking to get back correct values 
+            ## must use masking to get back correct values
             GO2all_attention[ this_prot_name ][layer][head] = save [ :, where_not_mask ] [ where_not_mask, : ]
+            print (GO2all_attention[ this_prot_name ][layer][head].shape )
 
     ## update next counter, so we move to batch#2 in the raw text
     row_counter = end
@@ -406,17 +414,9 @@ def main():
   ## save ?? easier to just format this later.
   # pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_P23109.pickle"), 'wb') )
   # pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992_P23109.pickle"), 'wb') )
-  pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_O54992_P23109.pickle"), 'wb') )
+  pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_"+"_".join(s for s in list_prot_to_get)+".pickle"), 'wb') )
 
-  # exit()
 
-  # if batch_counter > 10 :
-  #   break ## must batch 1
-
-  ## save ?? easier to just format this later.
-  # pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992.pickle"), 'wb') )
-  # pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_O54992.pickle"), 'wb') )
-  # pickle.dump(GO2AA_attention_quantile, open(os.path.join(args.output_dir,"GO2AA_attention_quantile.pickle"), 'wb') )
 
 if __name__ == "__main__":
   main()
