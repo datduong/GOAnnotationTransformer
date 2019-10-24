@@ -320,8 +320,8 @@ def main():
   protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf.tsv", dtype=str, sep="\t")
   # protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf-mut.tsv", dtype=str, sep="\t",index_col=0)
   protein_name = list ( protein_name['Entry'] )
-  prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split() 
-  protein_name = [p for p in protein_name if p not in prot_change]
+  # prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split() 
+  # protein_name = [p for p in protein_name if p not in prot_change]
 
   ## what do we need to keep ??
 
@@ -329,15 +329,21 @@ def main():
   nb_eval_steps = 0
   model.eval()
 
+  if not os.path.exists( os.path.join(args.output_dir,"ManualValidate") )  : 
+    os.mkdir ( os.path.join(args.output_dir,"ManualValidate") )
+    
   # get attention head for sequence
   # GO2GO_attention = {}
   # GO2AA_attention = {} ##  { name: {head:[range]} }
   # GO2AA_attention_quantile = {}
-  GO2all_attention = {}
+  # GO2all_attention = {}
 
   row_counter = 0 # so we can check the row id.
 
-  list_prot_to_get = ['O54992','P23109','P9WNC3']
+  # list_prot_to_get = ['O54992','P23109','P9WNC3']
+  list_prot_to_get = np.random.choice(protein_name, size=100, replace=False, p=None).tolist()
+  list_prot_to_get = list( set ( sorted (list_prot_to_get) + ['O54992'] ) ) ## seem kinda stupid 
+  
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
     batch_size = batch[1].shape[0] ## do only what needed
@@ -380,6 +386,8 @@ def main():
     layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention.
     print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
 
+    GO2all_attention = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
+    
     for layer in range (config.num_hidden_layers):
 
       this_layer_att = layer_att[layer].detach().cpu().numpy() ## @layer_att is a tuple
@@ -392,29 +400,37 @@ def main():
 
         if this_prot_name in list_prot_to_get:
 
-          print (this_prot_name)
-          print (max_len_in_batch)
+          if layer == 0: ## sanity check
+            print ("\n")
+            print (this_prot_name)
+            print (max_len_in_batch)
 
           where_not_mask = attention_mask[obs]==1
 
           if this_prot_name not in GO2all_attention:
             GO2all_attention[this_prot_name] = {}
-
+          
+          # do not need to do this again 
           GO2all_attention[ this_prot_name ][layer] = {}
 
           for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
             save = this_layer_att[obs][head]
             ## must use masking to get back correct values
             GO2all_attention[ this_prot_name ][layer][head] = save [ :, where_not_mask ] [ where_not_mask, : ]
-            print (GO2all_attention[ this_prot_name ][layer][head].shape )
+            print (GO2all_attention[ this_prot_name ][layer][head].shape[0] - 2 - num_labels) # quality check
 
+
+    for k in GO2all_attention:
+      out = {}
+      out[k] = GO2all_attention[k]
+      if len(out[k])!=12: 
+        print ('fail {}'.format(k))
+      else: 
+        pickle.dump(out, open(os.path.join(args.output_dir,"ManualValidate/attention_"+k+".pickle"), 'wb') )
+      
     ## update next counter, so we move to batch#2 in the raw text
     row_counter = end
 
-  ## save ?? easier to just format this later.
-  # pickle.dump(GO2GO_attention, open(os.path.join(args.output_dir,"GO2GO_attention_O54992_P23109.pickle"), 'wb') )
-  # pickle.dump(GO2AA_attention, open(os.path.join(args.output_dir,"GO2AA_attention_O54992_P23109.pickle"), 'wb') )
-  pickle.dump(GO2all_attention, open(os.path.join(args.output_dir,"GO2all_attention_"+"_".join(s for s in list_prot_to_get)+".pickle"), 'wb') )
 
 
 

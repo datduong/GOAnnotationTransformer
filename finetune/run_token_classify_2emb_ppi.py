@@ -152,6 +152,7 @@ class TextDataset(Dataset):
 
         if args.aa_type_emb:
           ### !!! also need to get token type emb
+          ### [CLS] [position0 position1 position2 in 1-hot style] [SEP] [PAD] 
           self.aa_type_emb.append ( [0] + [int(float(s)) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
 
         if counter < 3:

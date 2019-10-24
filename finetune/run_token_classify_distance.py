@@ -56,6 +56,15 @@ MODEL_CLASSES = {
   'bert': (BertConfig, TokenClassifier.BertForTokenClassification2EmbPPI, BertTokenizer) ## replace the standard @BertForTokenClassification
 }
 
+def make_relation_matrix(num_aa,mutation_pos):
+  zeros = np.zeros((num_aa,num_aa))
+  where = np.array ( mutation_pos )
+  where = np.where(where==1)[0] ## where the 1-hot is "active"... really just get position of the 1
+  if np.sum(where)>0: 
+    print (where)
+    where = where + 1 ## shift +1 because CLS will take spot 0
+    zeros [ : , where ] = 1 ## column because if we use a_ij, then it is j-->i
+  return zeros
 
 class TextDataset(Dataset):
   def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
@@ -66,7 +75,7 @@ class TextDataset(Dataset):
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     if args.aa_type_emb:
-      directory = os.path.join(directory , 'aa_mut_ppi_cache')
+      directory = os.path.join(directory , 'aa_relative_mut_cache')
     else:
       directory = os.path.join(directory , 'aa_ppi_cache')
     if not os.path.exists(directory):
@@ -107,11 +116,11 @@ class TextDataset(Dataset):
       self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
       if args.aa_type_emb:
         self.aa_type_emb = []
-      
+
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
-        # if counter > 100 :
-        #   break
+        if counter > 100 :
+          break
         text = text.strip()
         if len(text) == 0: ## skip blank ??
           continue
@@ -148,8 +157,11 @@ class TextDataset(Dataset):
         self.mask_ids_aa.append (mask_aa)
 
         if args.aa_type_emb:
-          ### !!! also need to get token type emb
-          self.aa_type_emb.append ( [0] + [int(float(s)) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
+          ### !!! create a relationship matrix for both AA + GO
+          ### want to model the effect of a mutated AA
+          mutation = np.array ( [int(float(s)) for s in text[3].split()] ) ## notice, we read a 1-hot
+          zeros = make_relation_matrix ( len(this_aa), mutation ) ## column because if we use a_ij, then it is j-->i
+          self.aa_type_emb.append ( zeros )
 
         if counter < 3:
           print ('see sample {}'.format(counter))
@@ -188,7 +200,7 @@ class TextDataset(Dataset):
             torch.tensor(self.input_ids_label[item]),
             torch.tensor(self.mask_ids_aa[item]),
             torch.tensor(self.ppi_vec[item]),
-            torch.LongTensor(self.aa_type_emb[item]))
+            torch.tensor(self.aa_type_emb[item]))
     else:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
@@ -301,6 +313,12 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         aa_type = batch[5][:,0:max_len_in_batch].to(args.device)
       else:
         aa_type = None
+
+      print ('aa_type')
+      print (aa_type.shape)
+      print (aa_type[0])
+      print (aa_type[1])
+      exit() 
 
       model.train()
 
