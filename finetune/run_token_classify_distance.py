@@ -51,11 +51,12 @@ logger = logging.getLogger(__name__)
 
 sys.path.append("/local/datdb/BertGOAnnotation")
 import KmerModel.TokenClassifier as TokenClassifier
+import KmerModel.TokenClassifierDistance as TokenClassifierDistance
 import evaluation_metric
 
 
 MODEL_CLASSES = {
-  'bert': (BertConfig, TokenClassifier.BertForTokenClsDistance, BertTokenizer) ## replace the standard @BertForTokenClassification
+  'bert': (BertConfig, TokenClassifierDistance.BertForTokenClsDistance, BertTokenizer) ## replace the standard @BertForTokenClassification
 }
 
 def make_relation_matrix(num_aa,mutation_pos):
@@ -204,7 +205,7 @@ class TextDataset(Dataset):
             torch.tensor(self.input_ids_label[item]),
             torch.tensor(self.mask_ids_aa[item]),
             torch.tensor(self.ppi_vec[item]),
-            torch.tensor(self.aa_type_emb[item].toarray()) )
+            torch.LongTensor(self.aa_type_emb[item].toarray()) )
     else:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
@@ -314,7 +315,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
 
       if args.aa_type_emb:
-        word_word_relation = batch[5][:,0:max_len_in_batch][0:max_len_in_batch,:].to(args.device) ## truncate the 2x2 matrix
+        print ('max_len_in_batch')
+        print (max_len_in_batch)
+        word_word_relation = batch[5][:,:,0:(max_len_in_batch+num_labels)][:,0:(max_len_in_batch+num_labels),:].to(args.device) ## truncate the 2x2 matrix
+        print (word_word_relation.shape)
       else:
         word_word_relation = None
 

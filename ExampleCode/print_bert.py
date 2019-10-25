@@ -1,7 +1,7 @@
 
 import torch
 from torch import nn
-
+import numpy as np
 
 from pytorch_transformers import (WEIGHTS_NAME, AdamW, WarmupLinearSchedule,
                   BertConfig, BertForMaskedLM, BertTokenizer, BertForPreTraining,
@@ -28,9 +28,9 @@ input_ids = torch.tensor ( [input_ids1,input_ids2] )
 outputs = model(input_ids)
 
 
-word_dot_distance = torch.randn(2,4,3) ## 2 batch
-word_word_relation = torch.LongTensor ( np.round ( np.random.uniform(size=(2,4,4),low=0,high=2) ) ) 
-out = torch.gather( word_dot_distance, dim=2, index=word_word_relation )
+word_dot_distance = torch.randn(2,1,4,3) ## 2 batch
+word_word_relation = torch.LongTensor ( np.round ( np.random.uniform(size=(2,1,4,4),low=0,high=2) ) ) 
+out = torch.gather( word_dot_distance, dim=3, index=word_word_relation )
 
 
 distance_type = nn.Embedding(3,5,padding_idx=0)

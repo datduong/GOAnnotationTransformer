@@ -38,7 +38,7 @@ class BertSelfAttentionDistance(nn.Module):
     self.dropout = nn.Dropout(config.attention_probs_dropout_prob)
 
     ## add in the distance-type weights. for example, distance 0-->0 , [1-5]-->1 , [6-10]-->2
-    self.distance_vector = nn.Embedding(config.distance_type,config.hidden_size,padding_ix=0) ## distance 0 --> type 0 --> vector 0
+    self.distance_vector = nn.Embedding(config.distance_type,config.hidden_size,padding_idx=0) ## distance 0 --> type 0 --> vector 0
 
   def transpose_for_scores(self, x):
     new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
@@ -59,10 +59,12 @@ class BertSelfAttentionDistance(nn.Module):
 
     # now we have to add in the extra distance-type
     # @query_layer is head x batch x word x dim
-    word_dot_distance = torch.matmul(query_layer,self.weight.transpose(0,1))
+    word_dot_distance = torch.matmul(query_layer,self.distance_vector.weight.transpose(0,1))
     # extract hidden_dot_distance using word-word-position distance matrix
     # use torch.gather https://stackoverflow.com/questions/50999977/what-does-the-gather-function-do-in-pytorch-in-layman-terms
-    word_word_distance_att = torch.gather( word_dot_distance, dim=3, index=word_word_relation )
+    print (word_dot_distance.shape)
+    print (word_word_relation.unsqueeze(1).shape)
+    word_word_distance_att = torch.gather( word_dot_distance, dim=3, index=word_word_relation.unsqueeze(1) )
 
     ## add to the traditional @attention_scores
     attention_scores = (attention_scores + word_word_distance_att) / math.sqrt(self.attention_head_size)
@@ -286,54 +288,58 @@ class BertModelDistance(BertPreTrainedModel):
 
 class BertForTokenClsDistance (BertPreTrainedModel):
 
-	def __init__(self, config):
-		super(BertForTokenClsDistance, self).__init__(config)
+  def __init__(self, config):
+    super(BertForTokenClsDistance, self).__init__(config)
 
-		self.num_labels = 2 # config.num_labels ## for us, each output vector is "yes/no", so we should keep this at self.num_labels=2 to avoid any strange error later
+    self.num_labels = 2 # config.num_labels ## for us, each output vector is "yes/no", so we should keep this at self.num_labels=2 to avoid any strange error later
 
-		self.bert = BertModelDistance(config)
-		self.dropout = nn.Dropout(config.hidden_dropout_prob)
+    self.bert = BertModelDistance(config)
+    self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-		# self.apply(self.init_weights)
-		self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
+    # self.apply(self.init_weights)
+    self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
-		self.classifier = nn.Linear(config.hidden_size, config.num_labels)
+    self.classifier = nn.Linear(config.hidden_size, config.num_labels)
 
-	def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
-				position_ids=None, head_mask=None, attention_mask_label=None, word_word_relation=None):
+  def init_label_emb(self,pretrained_weight):
+    self.bert.embeddings_label.word_embeddings.weight.data.copy_(torch.from_numpy(pretrained_weight))
+    self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
 
-		## !! add @attention_mask_label
-		## !! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side.
+  def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
+        position_ids=None, head_mask=None, attention_mask_label=None, word_word_relation=None):
 
-		outputs = self.bert(input_ids, input_ids_aa, input_ids_label, position_ids=position_ids, token_type_ids=token_type_ids,
-							attention_mask=attention_mask, head_mask=head_mask, word_word_relation=word_word_relation)
+    ## !! add @attention_mask_label
+    ## !! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side.
 
-		sequence_output = outputs[0] ## last layer.
+    outputs = self.bert(input_ids, input_ids_aa, input_ids_label, position_ids=position_ids, token_type_ids=token_type_ids,
+              attention_mask=attention_mask, head_mask=head_mask, word_word_relation=word_word_relation)
 
-		## @sequence_output is something like batch x num_label x dim_out(should be 768)
-		sequence_output = self.dropout(sequence_output)
+    sequence_output = outputs[0] ## last layer.
 
-		logits = self.classifier(sequence_output)
+    ## @sequence_output is something like batch x num_label x dim_out(should be 768)
+    sequence_output = self.dropout(sequence_output)
 
-		outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
-		if labels is not None:
-			loss_fct = CrossEntropyLoss()
+    logits = self.classifier(sequence_output)
 
-			## must extract only the label side (i.e. 2nd sentence)
-			## last layer outputs is batch_num x len_sent x dim
-			## we can restrict where the label start. and where it ends ??
-			## notice, @attention_mask is used to avoid padding in the @active_loss
-			## so we need to only create another @attention_mask_label to pay attention to labels only
+    outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
+    if labels is not None:
+      loss_fct = CrossEntropyLoss()
 
-			# Only keep active parts of the loss
-			if attention_mask_label is not None: ## change @attention_mask --> @attention_mask_label
-				active_loss = attention_mask_label.view(-1) == 1
-				active_logits = logits.view(-1, self.num_labels)[active_loss]
-				active_labels = labels.view(-1) # [active_loss] ## do not need to extract labels ?? we can pass in the exact true label
-				loss = loss_fct(active_logits, active_labels)
-			else:
-				loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-			outputs = (loss,active_logits,) + outputs
+      ## must extract only the label side (i.e. 2nd sentence)
+      ## last layer outputs is batch_num x len_sent x dim
+      ## we can restrict where the label start. and where it ends ??
+      ## notice, @attention_mask is used to avoid padding in the @active_loss
+      ## so we need to only create another @attention_mask_label to pay attention to labels only
 
-		return outputs  # (loss), scores, (hidden_states), (attentions)
+      # Only keep active parts of the loss
+      if attention_mask_label is not None: ## change @attention_mask --> @attention_mask_label
+        active_loss = attention_mask_label.view(-1) == 1
+        active_logits = logits.view(-1, self.num_labels)[active_loss]
+        active_labels = labels.view(-1) # [active_loss] ## do not need to extract labels ?? we can pass in the exact true label
+        loss = loss_fct(active_logits, active_labels)
+      else:
+        loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+      outputs = (loss,active_logits,) + outputs
+
+    return outputs  # (loss), scores, (hidden_states), (attentions)
 
