@@ -62,8 +62,8 @@ class BertSelfAttentionDistance(nn.Module):
     word_dot_distance = torch.matmul(query_layer,self.distance_vector.weight.transpose(0,1))
     # extract hidden_dot_distance using word-word-position distance matrix
     # use torch.gather https://stackoverflow.com/questions/50999977/what-does-the-gather-function-do-in-pytorch-in-layman-terms
-    print (word_dot_distance.shape)
-    print (word_word_relation.unsqueeze(1).shape)
+    # print (word_dot_distance.shape)
+    # print (word_word_relation.unsqueeze(1).shape)
     word_word_distance_att = torch.gather( word_dot_distance, dim=3, index=word_word_relation.unsqueeze(1) )
 
     ## add to the traditional @attention_scores

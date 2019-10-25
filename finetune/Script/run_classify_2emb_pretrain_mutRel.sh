@@ -35,7 +35,7 @@ for ontology in 'mf' ; do
 
   # 5040 batches train
   ## continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=6 python3 -u run_token_classify_distance.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 10 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 10 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --learning_rate 0.0001 --seed 2019 --fp16 --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/train_point.txt # --no_cuda
+  CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_distance.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 10 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 10 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --learning_rate 0.0001 --seed 2019 --fp16 --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/train_point.txt # --no_cuda
 
   # ## testing phase
 
