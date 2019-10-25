@@ -37,6 +37,8 @@ from torch.utils.data.distributed import DistributedSampler
 from tensorboardX import SummaryWriter
 from tqdm import tqdm, trange
 
+from scipy.sparse import coo_matrix
+
 from pytorch_transformers import (WEIGHTS_NAME, AdamW, WarmupLinearSchedule,
                   BertConfig, BertForMaskedLM, BertTokenizer,
                   GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
@@ -53,18 +55,17 @@ import evaluation_metric
 
 
 MODEL_CLASSES = {
-  'bert': (BertConfig, TokenClassifier.BertForTokenClassification2EmbPPI, BertTokenizer) ## replace the standard @BertForTokenClassification
+  'bert': (BertConfig, TokenClassifier.BertForTokenClsDistance, BertTokenizer) ## replace the standard @BertForTokenClassification
 }
 
 def make_relation_matrix(num_aa,mutation_pos):
   zeros = np.zeros((num_aa,num_aa))
   where = np.array ( mutation_pos )
   where = np.where(where==1)[0] ## where the 1-hot is "active"... really just get position of the 1
-  if np.sum(where)>0: 
-    print (where)
+  if len(where)>0: ## there is a 1 somewhere, then we update
     where = where + 1 ## shift +1 because CLS will take spot 0
     zeros [ : , where ] = 1 ## column because if we use a_ij, then it is j-->i
-  return zeros
+  return coo_matrix(zeros)
 
 class TextDataset(Dataset):
   def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
@@ -159,8 +160,9 @@ class TextDataset(Dataset):
         if args.aa_type_emb:
           ### !!! create a relationship matrix for both AA + GO
           ### want to model the effect of a mutated AA
+          ### need a block_size x block_size because of padding
           mutation = np.array ( [int(float(s)) for s in text[3].split()] ) ## notice, we read a 1-hot
-          zeros = make_relation_matrix ( len(this_aa), mutation ) ## column because if we use a_ij, then it is j-->i
+          zeros = make_relation_matrix ( block_size, mutation ) ## column because if we use a_ij, then it is j-->i
           self.aa_type_emb.append ( zeros )
 
         if counter < 3:
@@ -168,6 +170,8 @@ class TextDataset(Dataset):
           print (this_aa)
           print (label1hot)
           print (self.ppi_vec[counter])
+          print (mutation)
+          print (np.sum(zeros.toarray()))
 
         if (len(this_aa) + num_label) > block_size:
           print ('len too long, expand block_size')
@@ -200,7 +204,7 @@ class TextDataset(Dataset):
             torch.tensor(self.input_ids_label[item]),
             torch.tensor(self.mask_ids_aa[item]),
             torch.tensor(self.ppi_vec[item]),
-            torch.tensor(self.aa_type_emb[item]))
+            torch.tensor(self.aa_type_emb[item].toarray()) )
     else:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
@@ -310,15 +314,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
 
       if args.aa_type_emb:
-        aa_type = batch[5][:,0:max_len_in_batch].to(args.device)
+        word_word_relation = batch[5][:,0:max_len_in_batch][0:max_len_in_batch,:].to(args.device) ## truncate the 2x2 matrix
       else:
-        aa_type = None
+        word_word_relation = None
 
-      print ('aa_type')
-      print (aa_type.shape)
-      print (aa_type[0])
-      print (aa_type[1])
-      exit() 
 
       model.train()
 
@@ -326,7 +325,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
 
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, word_word_relation=word_word_relation )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
@@ -468,12 +467,13 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make
 
     if args.aa_type_emb:
-      aa_type = batch[5][:,0:max_len_in_batch].to(args.device)
+      word_word_relation = batch[5][:,0:max_len_in_batch].to(args.device)
     else:
-      aa_type = None
+      word_word_relation = None
 
     with torch.no_grad():
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
+      outputs = model( 0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, word_word_relation=word_word_relation )
+      
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 

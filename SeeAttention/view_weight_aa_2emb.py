@@ -317,11 +317,16 @@ def main():
   letters = sorted ( [let.strip() for let in letters] )
   AA_names_in_index = view_util.get_word_index_in_array(tokenizer,letters) ## these are word_index we want. we don't need to extract CLS and SEP ... but they can probably be important ??
 
-  protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf.tsv", dtype=str, sep="\t")
-  # protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf-mut.tsv", dtype=str, sep="\t",index_col=0)
-  protein_name = list ( protein_name['Entry'] )
-  # prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split() 
-  # protein_name = [p for p in protein_name if p not in prot_change]
+
+  if args.aa_type_emb: # model mutation
+    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf-mut.tsv", dtype=str, sep="\t",index_col=0)
+    protein_name = list ( protein_name['Entry'] )
+    prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split()
+    protein_name = [p for p in protein_name if p not in prot_change]
+  else:
+    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf.tsv", dtype=str, sep="\t")
+    protein_name = list ( protein_name['Entry'] )
+
 
   ## what do we need to keep ??
 
@@ -329,9 +334,9 @@ def main():
   nb_eval_steps = 0
   model.eval()
 
-  if not os.path.exists( os.path.join(args.output_dir,"ManualValidate") )  : 
+  if not os.path.exists( os.path.join(args.output_dir,"ManualValidate") )  :
     os.mkdir ( os.path.join(args.output_dir,"ManualValidate") )
-    
+
   # get attention head for sequence
   # GO2GO_attention = {}
   # GO2AA_attention = {} ##  { name: {head:[range]} }
@@ -341,9 +346,40 @@ def main():
   row_counter = 0 # so we can check the row id.
 
   # list_prot_to_get = ['O54992','P23109','P9WNC3']
-  list_prot_to_get = np.random.choice(protein_name, size=100, replace=False, p=None).tolist()
-  list_prot_to_get = list( set ( sorted (list_prot_to_get) + ['O54992'] ) ) ## seem kinda stupid 
+  # list_prot_to_get = np.random.choice(protein_name, size=100, replace=False, p=None).tolist()
+  # list_prot_to_get = list( set ( sorted (list_prot_to_get) + ['O54992'] ) ) ## seem kinda stupid
   
+  list_prot_to_get = """O35730
+  O35730
+  O35730
+  O54992
+  O54992
+  O54992
+  P0A812
+  P0A812
+  P0A812
+  Q5VV41
+  Q5VV41
+  Q5VV41
+  Q6FJA3
+  Q6FJA3
+  Q6FJA3
+  Q6X632
+  Q6X632
+  Q6X632
+  Q96B01
+  Q96B01
+  Q96B01
+  Q9HWK6
+  Q9HWK6
+  Q9HWK6
+  Q9S9K9
+  Q9S9K9
+  Q9S9K9"""
+  list_prot_to_get = list ( set ( re.sub(r"\n"," ",list_prot_to_get).split() ) ) 
+
+
+
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
     batch_size = batch[1].shape[0] ## do only what needed
@@ -387,7 +423,7 @@ def main():
     print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
 
     GO2all_attention = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
-    
+
     for layer in range (config.num_hidden_layers):
 
       this_layer_att = layer_att[layer].detach().cpu().numpy() ## @layer_att is a tuple
@@ -409,8 +445,8 @@ def main():
 
           if this_prot_name not in GO2all_attention:
             GO2all_attention[this_prot_name] = {}
-          
-          # do not need to do this again 
+
+          # do not need to do this again
           GO2all_attention[ this_prot_name ][layer] = {}
 
           for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
@@ -423,11 +459,11 @@ def main():
     for k in GO2all_attention:
       out = {}
       out[k] = GO2all_attention[k]
-      if len(out[k])!=12: 
+      if len(out[k])!=12:
         print ('fail {}'.format(k))
-      else: 
+      else:
         pickle.dump(out, open(os.path.join(args.output_dir,"ManualValidate/attention_"+k+".pickle"), 'wb') )
-      
+
     ## update next counter, so we move to batch#2 in the raw text
     row_counter = end
 

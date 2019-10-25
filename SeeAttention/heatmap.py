@@ -4,13 +4,22 @@ import matplotlib.pyplot as plt
 from matplotlib import cm 
 import pickle,re,sys,os
 
-path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1/ManualValidate/'
+# path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1/ManualValidate/'
+
+path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiMutGeluE768H1L12I768PreLabDrop0.1/ManualValidate/'
+
+list_prot_to_get = ['Q6FJA3', 'O54992', 'P0A812', 'Q6X632', 'Q5VV41', 'O35730', 'Q9S9K9', 'Q96B01', 'Q9HWK6']
 
 os.chdir(path)
-
 to_load = os.listdir(path)
-
 for name in to_load: 
+  if 'pickle' not in name: 
+    continue
+  protn = re.sub('attention_','',name)
+  protn = re.sub(r'\.pickle','',protn)
+  if protn not in list_prot_to_get:
+    continue
+  #
   attention = pickle.load (open(name,"rb")) # P23109
   #
   prot = list ( attention.keys() ) ## just 1 thing by itself 

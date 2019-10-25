@@ -11,9 +11,9 @@ library('RColorBrewer')
 # graphics.off()
 coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25)
 
-setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1/ManualValidate')
+# setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1/ManualValidate')
 
-# setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiMutGeluE768H1L12I768PreLabDrop0.1/ManualValidate')
+setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiMutGeluE768H1L12I768PreLabDrop0.1/ManualValidate')
 
 
 ave_sideway = function(fin,num_label){
@@ -33,16 +33,16 @@ ave_sideway = function(fin,num_label){
 
 layer = 0
 num_label = 589
-prot = 'Q5VV41'
+prot = 'O54992 Q6X632 P0A812 Q96B01 Q5VV41 Q6FJA3 Q9HWK6' # Q6X632 P0A812 Q96B01 Q5VV41 Q6FJA3 Q9HWK6
 prot = strsplit(prot,"\\s+")[[1]]
 
-for (name in c('layerAA2AA','layerAA2GO','layerAA2all')){ # ,'layerAA2all','layerAA2GO'
+for (name in c('layerAA2all','layerAA2GO')){ # ,'layerAA2all','layerAA2GO' 'layerAA2AA'
   for (p in prot){
 
     pdf(paste0(p,name,'_i2j.pdf'),width=8, height=12)
     par(mfrow=c(6,4))
 
-    for (layer in 0:11) {
+    for (layer in 1:11) {
       fin = read.csv( paste0(p, '/', p , 'layer' , layer, 'head',0,'.csv'), header=F )
       fin = as.matrix(fin)
       num_aa = nrow(fin)-num_label-2 ## CLS and SEP
