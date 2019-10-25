@@ -121,8 +121,8 @@ class TextDataset(Dataset):
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
-        if counter > 100 :
-          break
+        # if counter > 100 :
+        #   break
         text = text.strip()
         if len(text) == 0: ## skip blank ??
           continue
@@ -315,10 +315,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
 
       if args.aa_type_emb:
-        print ('max_len_in_batch')
-        print (max_len_in_batch)
+        # print ('max_len_in_batch')
+        # print (max_len_in_batch)
         word_word_relation = batch[5][:,:,0:(max_len_in_batch+num_labels)][:,0:(max_len_in_batch+num_labels),:].to(args.device) ## truncate the 2x2 matrix
-        print (word_word_relation.shape)
+        # print (word_word_relation.shape)
       else:
         word_word_relation = None
 
@@ -471,13 +471,17 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make
 
     if args.aa_type_emb:
-      word_word_relation = batch[5][:,0:max_len_in_batch].to(args.device)
+      # print ('max_len_in_batch')
+      # print (max_len_in_batch)
+      word_word_relation = batch[5][:,:,0:(max_len_in_batch+num_labels)][:,0:(max_len_in_batch+num_labels),:].to(args.device) ## truncate the 2x2 matrix
+      # print (word_word_relation.shape)
     else:
       word_word_relation = None
 
+
     with torch.no_grad():
       outputs = model( 0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=None, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, word_word_relation=word_word_relation )
-      
+
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
