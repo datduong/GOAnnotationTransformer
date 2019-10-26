@@ -8,6 +8,8 @@ import os
 import sys
 from io import open
 
+import numpy as np 
+
 import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
@@ -39,7 +41,7 @@ class BertSelfAttentionDistance(nn.Module):
 
     ## add in the distance-type weights. for example, distance 0-->0 , [1-5]-->1 , [6-10]-->2
     self.distance_vector = nn.Embedding(config.distance_type,config.hidden_size,padding_idx=0) ## distance 0 --> type 0 --> vector 0
-
+  
   def transpose_for_scores(self, x):
     new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
     x = x.view(*new_x_shape)
@@ -57,17 +59,28 @@ class BertSelfAttentionDistance(nn.Module):
     # Take the dot product between "query" and "key" to get the raw attention scores.
     attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
 
+
     # now we have to add in the extra distance-type
     # @query_layer is head x batch x word x dim
     word_dot_distance = torch.matmul(query_layer,self.distance_vector.weight.transpose(0,1))
     # extract hidden_dot_distance using word-word-position distance matrix
     # use torch.gather https://stackoverflow.com/questions/50999977/what-does-the-gather-function-do-in-pytorch-in-layman-terms
+    # using torch.gather in forward pass only is fast, why backward pass is very slow. why ? ... using the "(z==1).float()" helps a lot.
+    # print (query_layer.shape)
     # print (word_dot_distance.shape)
     # print (word_word_relation.unsqueeze(1).shape)
-    word_word_distance_att = torch.gather( word_dot_distance, dim=3, index=word_word_relation.unsqueeze(1) )
+    mask_out = word_word_relation == 1
+    mask_out = mask_out.unsqueeze(1).float()
+    word_word_distance_att = torch.gather( word_dot_distance, dim=3, index=word_word_relation.unsqueeze(1) ) * mask_out
+
 
     ## add to the traditional @attention_scores
+    # before... attention_scores = attention_scores / math.sqrt(self.attention_head_size)
+    # want to try without torch.gather
+    # print (attention_scores.shape)
+    # print (word_word_distance_att.shape)
     attention_scores = (attention_scores + word_word_distance_att) / math.sqrt(self.attention_head_size)
+
     # Apply the attention mask is (precomputed for all layers in BertModelDistance forward() function)
     attention_scores = attention_scores + attention_mask
 
@@ -216,6 +229,10 @@ class BertModelDistance(BertPreTrainedModel):
 
     self.init_weights()
 
+    ## fix it back to 0 
+    # self.encoder.BertSelfAttentionDistance.distance_vector.weight[0]=0
+
+
   def _resize_token_embeddings(self, new_num_tokens):
     old_embeddings = self.embeddings.word_embeddings
     new_embeddings = self._get_resized_embeddings(old_embeddings, new_num_tokens)
@@ -297,7 +314,7 @@ class BertForTokenClsDistance (BertPreTrainedModel):
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
     # self.apply(self.init_weights)
-    self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
+    # self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
     self.classifier = nn.Linear(config.hidden_size, config.num_labels)
 

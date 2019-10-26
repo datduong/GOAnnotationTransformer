@@ -60,13 +60,13 @@ MODEL_CLASSES = {
 }
 
 def make_relation_matrix(num_aa,mutation_pos):
-  zeros = np.zeros((num_aa,num_aa))
+  zeros = np.zeros((num_aa,num_aa)) ## size of AA 
   where = np.array ( mutation_pos )
   where = np.where(where==1)[0] ## where the 1-hot is "active"... really just get position of the 1
   if len(where)>0: ## there is a 1 somewhere, then we update
     where = where + 1 ## shift +1 because CLS will take spot 0
     zeros [ : , where ] = 1 ## column because if we use a_ij, then it is j-->i
-  return coo_matrix(zeros)
+  return coo_matrix(zeros) ## sparse matrix to save easily 
 
 class TextDataset(Dataset):
   def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
@@ -162,7 +162,8 @@ class TextDataset(Dataset):
           ### !!! create a relationship matrix for both AA + GO
           ### want to model the effect of a mutated AA
           ### need a block_size x block_size because of padding
-          mutation = np.array ( [int(float(s)) for s in text[3].split()] ) ## notice, we read a 1-hot
+          mutation = np.array ( [int(float(s)) for s in text[3].split()] ) ## notice, we read a 1-hot, so only need to convert to int 
+          ## !! important below. we're using @block_size because we need to handle padding
           zeros = make_relation_matrix ( block_size, mutation ) ## column because if we use a_ij, then it is j-->i
           self.aa_type_emb.append ( zeros )
 
@@ -343,6 +344,11 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
           scaled_loss.backward()
       else:
         loss.backward()
+
+      # if torch.sum(word_word_relation) > 0: 
+      #   print ('update??')
+      # ## see gradient 
+      # print (model.bert.encoder.layer[0].attention.self.distance_vector.weight.grad)
 
       tr_loss += loss.item()
       if (step + 1) % args.gradient_accumulation_steps == 0:
