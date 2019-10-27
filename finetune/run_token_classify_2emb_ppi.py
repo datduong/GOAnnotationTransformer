@@ -665,6 +665,10 @@ def main():
     # config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
+  ## fix emb into 0
+  if args.aa_type_emb: 
+    print ('\nset token-type emb into 0\n')
+    model.bert.embeddings.token_type_embeddings.weight.data[0] = 0 
 
   ## load pretrain label vectors ?
   if args.pretrained_label_path is not None:

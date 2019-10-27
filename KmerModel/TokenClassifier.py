@@ -172,7 +172,7 @@ class BertEmbeddingsAA(nn.Module):
       self.aa_type_emb = False 
       
     if self.aa_type_emb:
-      print ('\n\nturn on the toke-type style embed.\n\n')
+      print ('\n\nturn on the token-type style embed.\n\n')
       ## okay to say 4 groups + 1 extra , we need special token to map to all 0, so CLS SEP PAD --> group 0
       ## 20 major amino acids --> 4 major groups
       ## or... we have mutation/not --> 2 major groups. set not mutation = 0 as base case
