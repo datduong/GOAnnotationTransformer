@@ -333,7 +333,10 @@ def main():
   fout = open(os.path.join(args.output_dir,"HistogramValidate/attention_summary.txt"),"w")
   fout.write("prot\tlayer\thead\tKL\tskewness\tprob_mut\n")
 
-  list_prot_to_get = ['O54992', 'Q6X632', 'P0A812', 'Q9HWK6', 'O35730', 'Q9S9K9', 'Q5VV41', 'Q96B01', 'Q6FJA3']
+  list_prot_to_get = np.random.choice(protein_name, size=1998, replace=False, p=None).tolist()
+  list_prot_to_get = list_prot_to_get + ['O54992', 'Q6X632', 'P0A812', 'Q9HWK6', 'O35730', 'Q9S9K9', 'Q5VV41', 'Q96B01', 'Q6FJA3']
+  list_prot_to_get = sorted ( list (set(list_prot_to_get)) ) 
+  print (list_prot_to_get)
 
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
@@ -341,9 +344,7 @@ def main():
 
     if (batch_counter*batch_size) != row_counter:
       print ('check @row_counter for @batch_counter {} should see this message only at the last batch'.format(batch_counter))
-      print (batch_counter)
-      print (batch_size)
-      print (row_counter)
+
 
     end_point_prot_name = row_counter + batch_size
     if len( set(protein_name[row_counter:end_point_prot_name]).intersection( set(list_prot_to_get) ) ) == 0 :
@@ -377,7 +378,8 @@ def main():
     nb_eval_steps += 1
 
     attention_mask = attention_mask.detach().cpu().numpy() ## used to get back only important positions
-    aa_type = aa_type.detach().cpu().numpy()
+    if args.aa_type_emb:
+      aa_type = aa_type.detach().cpu().numpy()
 
     layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention.
     print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
@@ -405,15 +407,26 @@ def main():
 
           where_not_mask = attention_mask[obs]==1 ## in 1 row, find where it's 1, this is valid position
 
-          mutation=aa_type[obs]
-        
+          if args.aa_type_emb:
+            mutation = aa_type[obs]
+          else:
+            mutation = None
+
           for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
+
             this_head = this_layer_att[obs][head] [ :, where_not_mask ] [ where_not_mask, : ] ## must use masking to get back correct values
-            end = this_head.shape[0] - num_labels
-            this_head = this_head[1:end] ## exclude cls, and sep, use only AA
-            mutation = mutation[1:end]
+            where_AA_end = this_head.shape[0] - num_labels
+
+            this_head = this_head[1:where_AA_end] ## exclude cls, and sep, focus on only AA. notice... the column includes both AA + GO
+
+            if args.aa_type_emb:
+              mutation = mutation[1:where_AA_end]
+
             this_head = view_util.CountAttRow (this_head)
+            # print ('\n')
+            # print (this_head)
             this_head = view_util.GetSkewnessKLDivergence(this_head, mutation=mutation)
+
             attention_summary[ this_prot_name ][layer][head] = this_head
 
     ## update next counter, so we move to batch#2 in the raw text

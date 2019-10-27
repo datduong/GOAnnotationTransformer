@@ -76,8 +76,6 @@ def aa_type_emb (one_aa):
 fin = '/u/scratch/d/donle225/mutagenesis/output_files/train-mf.tsv'
 # df = pd.read_csv(fin,sep="\t",index_col=0)
 
-
-
 AA_type = {}
 
 ## record where the protein have change sequence 

@@ -11,7 +11,7 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear768.Layer12/label_vector.pickle'
 
 choice='2embPpiGeluE768H1L12I768PretrainLabelDrop0.1' # Lr5e-5
-block_size=2048 # mf and cc 1792 but bp has more term  2048
+block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=9500 # 9500
 
 for ontology in 'mf' ; do
@@ -51,7 +51,7 @@ for ontology in 'mf' ; do
 
   # CUDA_VISIBLE_DEVICES=6 python3 -u view_weight_2emb.py --block_size 1792 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 6 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path > $output_dir/view_weights.txt
 
-  CUDA_VISIBLE_DEVICES=1 python3 -u view_weight_aa_2emb.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 20 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path > $output_dir/view_aa_weights.txt
+  CUDA_VISIBLE_DEVICES=1 python3 -u view_weight_aa_skewness.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 32 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path > $output_dir/view_aa_weights.txt
 
 
 done
