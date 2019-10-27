@@ -26,6 +26,9 @@ def KeepHighLocation (a):
 
 def GetSkewnessKLDivergence (a,mutation=None,bin_size=100):
   ## need to create the bins
+  if len(a) < 100: 
+    bin_size = 25 ## short sequences
+    
   bin_range = ( len(a)//bin_size + 2 ) * bin_size ## floor then add 1, so that we have full even width, add +1 again because of np.arange
   a, high_val = KeepHighLocation (a)
   ## tells us to partition bins by location with width 100
