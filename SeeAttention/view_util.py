@@ -3,12 +3,49 @@
 import sys,re,os,pickle
 import numpy as np
 import pandas as pd
+from scipy.stats import entropy, skew
 
 from pytorch_transformers import BertTokenizer
+from sympy import Interval, Union # https://stackoverflow.com/questions/15273693/python-union-of-multiple-ranges
+
+def CountAttRow (A, num_labels=0):
+  # @ A is attention matrix ... we should let A be numpy instead of torch
+  # end = A.shape[0]-num_labels
+  # A = A[1:end,1:end] ## ignore GO labels
+  # row_i = torch.sum(A,1)
+  # A = A / row_i.unsqueeze(1) ## rescale to sum 1
+  
+  ## universal 25% quantile. count how many "large" weights for each row
+  return np.sum( A > np.quantile( A , q=.25 ) , 1 )
+
+
+
+def GetSkewnessKLDivergence (a,mutation=None,bin_size=100):
+  ## need to create the bins
+  bin_range = ( len(a)//100 + 1 ) * 100 ## floor then add 1, so that we have full even width
+  prob , bin_border = np.histogram (a, bins=bin_range, density=True ) ## get the probability of being in each bin
+  len_prob = len(prob)
+
+  ## KL divergence
+  KL_toward_uniform = entropy ( prob, qk=np.ones(len_prob)/len_prob )
+
+  ## skewness
+  skewness = skew(a)
+
+  ## does bin of mutation have strong peak ?
+  mutation = np.where(mutation==1)[0]
+  if len(mutation) > 0:
+    bin_mutation = np.digitize(mutation,bins=bin_border,right=True) ## which bind the mutation is in ?
+    prob_mutation = np.mean ( prob[np.array(bin_mutation)] ) ## average over all mutation positions
+  else:
+    prob_mutation = -1
+
+  return KL_toward_uniform, skewness, prob_mutation
 
 
 def normalize_to_sum_1 (a):
   return a/a.sum(axis=1,keepdims=1)
+
 
 def get_word_index_in_array (vocab_dict,some_array):
   # return [ vocab_dict[lab] for lab in sorted(some_array) ]
@@ -38,10 +75,10 @@ def get_att_weight (matrix,input_ids,label_names_in_index,seq_in_index=None):
     aa_position = np.argwhere(np.in1d(input_ids,seq_in_index)).transpose()[0]
     ## add into tuple so use (something, )
     out = out + ( normalize_to_sum_1 ( matrix[ np.ix_ ( go_position,aa_position ) ] ) , )  ## row sum to 1, so we see which segment contribute most to this GO
-  
-    ## output a combine GOvsAll 
+
+    ## output a combine GOvsAll
     position = np.argwhere(np.in1d(input_ids, seq_in_index+label_names_in_index )).transpose()[0]
-    out = out + ( normalize_to_sum_1 ( matrix[ np.ix_ ( go_position,position ) ] ) , ) 
+    out = out + ( normalize_to_sum_1 ( matrix[ np.ix_ ( go_position,position ) ] ) , )
 
   return out
 
@@ -58,14 +95,12 @@ def get_best_prob (matrix,top_k=20) :
 #   cut_off = np.reshape ( cut_off.repeat(matrix.shape[0]), matrix.shape ) ## repeat same number of GO, reshape into same shape as @matrix
 #   pass
 
-def get_quantile ( matrix ): ## @matrix is one AA sequence, and 1 head 
-  ## compute quantile for each row 
-  q = np.quantile(matrix,axis=1,q=[.25,.5,.75,.85,.95]).transpose() ## use .transpose() because one column in @p, is the set of quantile in the row in @matrix 
+def get_quantile ( matrix ): ## @matrix is one AA sequence, and 1 head
+  ## compute quantile for each row
+  q = np.quantile(matrix,axis=1,q=[.25,.5,.75,.85,.95]).transpose() ## use .transpose() because one column in @p, is the set of quantile in the row in @matrix
   return (q)
 
 
-
-from sympy import Interval, Union # https://stackoverflow.com/questions/15273693/python-union-of-multiple-ranges
 def union(data):
   """ Union of a list of intervals e.g. [(1,2),(3,4)] """
   intervals = [Interval(begin, end) for (begin, end) in data]
@@ -105,9 +140,9 @@ def return_best_segment (attention, tokenizer, sequence, go_names, expand, top_k
     for start_end in best_range[go]: # @start_end is object @Interval, or it is a @list
 
       if isinstance(start_end, list):
-        seg = [ tokenizer._convert_id_to_token (s) for s in sequence[ start_end[0] : start_end[1] ] ] ## get the actual sequence 
-        ## attention[counter] gets row where GO vs. AA 
-        prob = [ attention[counter][s] for s in np.arange(start_end[0],start_end[1]) ] ## get att. weight at each AA included inside the segment 
+        seg = [ tokenizer._convert_id_to_token (s) for s in sequence[ start_end[0] : start_end[1] ] ] ## get the actual sequence
+        ## attention[counter] gets row where GO vs. AA
+        prob = [ attention[counter][s] for s in np.arange(start_end[0],start_end[1]) ] ## get att. weight at each AA included inside the segment
 
       else:
         seg = [ tokenizer._convert_id_to_token (s) for s in sequence[ start_end.left : start_end.right ] ]
