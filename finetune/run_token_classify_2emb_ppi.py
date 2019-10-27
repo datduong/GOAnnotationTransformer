@@ -667,7 +667,7 @@ def main():
 
   ## fix emb into 0
   if args.aa_type_emb: 
-    print ('\nset token-type emb into 0\n')
+    print ('\nreset token-type emb at position 0 into 0\n')
     model.bert.embeddings.token_type_embeddings.weight.data[0] = 0 
 
   ## load pretrain label vectors ?

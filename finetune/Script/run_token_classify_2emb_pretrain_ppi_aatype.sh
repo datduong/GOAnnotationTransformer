@@ -49,9 +49,9 @@ for ontology in 'mf' ; do
   cd $server/BertGOAnnotation/SeeAttention/
   eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-aa-mut.csv'
 
-  model_name_or_path=$output_dir'/checkpoint-80624'
+  model_name_or_path=$output_dir'/checkpoint-47026'
 
-  CUDA_VISIBLE_DEVICES=7 python3 -u view_weight_aa_skewness.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 20 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/view_aa_weights.txt
+  CUDA_VISIBLE_DEVICES=7 python3 -u view_weight_aa_skewness.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 24 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/view_aa_weights.txt
 
 
 done
