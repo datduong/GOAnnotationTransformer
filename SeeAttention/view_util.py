@@ -22,12 +22,12 @@ def KeepHighLocation (a):
   # @a should be array already 
   high = np.quantile(a, q=.75) ## which positions are high 
   # print ('high val {}'.format(high))
-  return np.where(a >= high)[0] ## return location, not true value
+  return np.where(a >= high)[0], high ## return location, not true value
 
 def GetSkewnessKLDivergence (a,mutation=None,bin_size=100):
   ## need to create the bins
   bin_range = ( len(a)//bin_size + 2 ) * bin_size ## floor then add 1, so that we have full even width, add +1 again because of np.arange
-  a = KeepHighLocation (a)
+  a, high_val = KeepHighLocation (a)
   ## tells us to partition bins by location with width 100
   prob , bin_border = np.histogram (a, bins=np.arange(0,bin_range,bin_size), density=True ) ## get the probability of being in each bin
   len_prob = len(prob)
@@ -37,10 +37,12 @@ def GetSkewnessKLDivergence (a,mutation=None,bin_size=100):
   skewness = skew(a)
   ## does bin of mutation have strong peak ?
 
-  # print ('\nsee')
-  # print (a)
-  # print (prob)
-  # print (bin_border)
+  if (KL_toward_uniform == 0):
+    print ('\nsee why 0')
+    print (a)
+    print (high_val)
+    print (prob)
+    print (bin_border)
 
   prob_mutation = -1
   if mutation is not None: 
