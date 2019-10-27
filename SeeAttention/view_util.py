@@ -18,28 +18,29 @@ def CountAttRow (A, num_labels=0):
   ## universal 25% quantile. count how many "large" weights for each row
   return np.sum( A > np.quantile( A , q=.25 ) , 1 )
 
-
+def KeepHighLocation (a): 
+  # @a should be array already 
+  high = np.quantile(a, q=.75) ## which positions are high 
+  return np.where(a>high)[0] ## return location, not true value
 
 def GetSkewnessKLDivergence (a,mutation=None,bin_size=100):
   ## need to create the bins
-  bin_range = ( len(a)//100 + 1 ) * 100 ## floor then add 1, so that we have full even width
-  prob , bin_border = np.histogram (a, bins=bin_range, density=True ) ## get the probability of being in each bin
+  bin_range = ( len(a)//bin_size + 2 ) * bin_size ## floor then add 1, so that we have full even width, add +1 again because of np.arange
+  a = KeepHighLocation (a)
+  ## tells us to partition bins by location with width 100
+  prob , bin_border = np.histogram (a, bins=np.arange(0,bin_range,bin_size), density=True ) ## get the probability of being in each bin
   len_prob = len(prob)
-
   ## KL divergence
   KL_toward_uniform = entropy ( prob, qk=np.ones(len_prob)/len_prob )
-
   ## skewness
   skewness = skew(a)
-
   ## does bin of mutation have strong peak ?
-  mutation = np.where(mutation==1)[0]
+  mutation = np.where(mutation==1)[0] ## location of mutation 
   if len(mutation) > 0:
-    bin_mutation = np.digitize(mutation,bins=bin_border,right=True) ## which bind the mutation is in ?
-    prob_mutation = np.mean ( prob[np.array(bin_mutation)] ) ## average over all mutation positions
+    bin_mutation = np.digitize(mutation,bins=bin_border,right=True) - 1 ## which bind the mutation is in ?, notice we have to shift -1 to get right bin
+    prob_mutation = np.mean ( prob[np.array(bin_mutation)] ) * 100 ## average over all mutation positions
   else:
     prob_mutation = -1
-
   return KL_toward_uniform, skewness, prob_mutation
 
 

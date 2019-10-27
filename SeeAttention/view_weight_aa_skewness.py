@@ -328,9 +328,12 @@ def main():
 
   row_counter = 0 # so we can check the row id.
 
+  attention_summary = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
 
   fout = open(os.path.join(args.output_dir,"HistogramValidate/attention_summary.txt"),"w")
   fout.write("prot\tlayer\thead\tKL\tskewness\tprob_mut\n")
+
+  list_prot_to_get = ['O54992', 'Q6X632', 'P0A812', 'Q9HWK6', 'O35730', 'Q9S9K9', 'Q5VV41', 'Q96B01', 'Q6FJA3']
 
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
@@ -338,6 +341,16 @@ def main():
 
     if (batch_counter*batch_size) != row_counter:
       print ('check @row_counter for @batch_counter {} should see this message only at the last batch'.format(batch_counter))
+      print (batch_counter)
+      print (batch_size)
+      print (row_counter)
+
+    end_point_prot_name = row_counter + batch_size
+    if len( set(protein_name[row_counter:end_point_prot_name]).intersection( set(list_prot_to_get) ) ) == 0 :
+      ## suppose we don't enter this @if, then we will update @row_counter at the end, before we call "@for batch_counter...."
+      row_counter = end_point_prot_name ## skip all, start at new positions of next batch
+      continue
+
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
     input_ids_aa = batch[1][:,0:max_len_in_batch].cuda()
@@ -364,11 +377,10 @@ def main():
     nb_eval_steps += 1
 
     attention_mask = attention_mask.detach().cpu().numpy() ## used to get back only important positions
+    aa_type = aa_type.detach().cpu().numpy()
 
     layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention.
     print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
-
-    # attention_summary = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
 
     for layer in range (config.num_hidden_layers):
 
@@ -380,18 +392,43 @@ def main():
 
         this_prot_name = protein_name[row_counter+obs]
 
-        where_not_mask = attention_mask[obs]==1 ## in 1 row, find where it's 1, this is valid position 
+        if this_prot_name in list_prot_to_get:
 
-        for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
-          this_head = this_layer_att[obs][head] [ :, where_not_mask ] [ where_not_mask, : ] ## must use masking to get back correct values
-          this_head = view_util.CountAttRow (this_head)
-          this_head = view_util.GetSkewnessKLDivergence(this_head, mutation=aa_type[obs])
-          # attention_summary[ this_prot_name ][layer][head] = this_head
-          fout.write( this_prot_name+'\t'+str(layer)+'\t'+str(head)+'\t'+'\t'.join(str(k) for k in this_head) )
+          if layer == 0: ## sanity check
+            print ("\n")
+            print (this_prot_name)
 
+          if this_prot_name not in attention_summary:
+            attention_summary[this_prot_name] = {}
+
+          attention_summary[this_prot_name][layer] = {}
+
+          where_not_mask = attention_mask[obs]==1 ## in 1 row, find where it's 1, this is valid position
+
+          mutation=aa_type[obs]
+        
+          for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
+            this_head = this_layer_att[obs][head] [ :, where_not_mask ] [ where_not_mask, : ] ## must use masking to get back correct values
+            end = this_head.shape[0] - num_labels
+            this_head = this_head[1:end] ## exclude cls, and sep, use only AA
+            mutation = mutation[1:end]
+            this_head = view_util.CountAttRow (this_head)
+            this_head = view_util.GetSkewnessKLDivergence(this_head, mutation=mutation)
+            attention_summary[ this_prot_name ][layer][head] = this_head
 
     ## update next counter, so we move to batch#2 in the raw text
-    row_counter = row_counter + batch_size
+    # row_counter = row_counter + batch_size
+    row_counter = end_point_prot_name
+
+    ## write before move on
+    if (batch_counter % 10 == 0) or (batch_counter == len(eval_dataloader)):
+      for this_prot_name in attention_summary:
+        for layer in range (config.num_hidden_layers):
+          for head in range(config.num_attention_heads) :
+            this_head = attention_summary[ this_prot_name ][layer][head]
+            fout.write( this_prot_name+'\t'+str(layer)+'\t'+str(head)+'\t'+'\t'.join(str(k) for k in this_head)+'\n' )
+      ## empty out
+      attention_summary = {}
 
   ## end
   fout.close()
