@@ -334,7 +334,7 @@ def main():
   fout.write("prot\tlayer\thead\tKL\tskewness\tprob_mut\n")
 
   np.random.seed(1)
-  list_prot_to_get = np.random.choice(protein_name, size=998, replace=False, p=None).tolist()
+  list_prot_to_get = np.random.choice(protein_name, size=498, replace=False, p=None).tolist()
   list_prot_to_get = list_prot_to_get + ['O54992', 'Q6X632', 'P0A812', 'Q9HWK6', 'O35730', 'Q9S9K9', 'Q5VV41', 'Q96B01', 'Q6FJA3']
   list_prot_to_get = sorted ( list (set(list_prot_to_get)) ) 
   # print (list_prot_to_get)

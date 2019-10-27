@@ -14,21 +14,21 @@ def CountAttRow (A, num_labels=0):
   # A = A[1:end,1:end] ## ignore GO labels
   # row_i = torch.sum(A,1)
   # A = A / row_i.unsqueeze(1) ## rescale to sum 1
-  
+
   ## universal 25% quantile. count how many "large" weights for each row
   return np.sum( A > np.quantile( A , q=.25 ) , 1 )
 
-def KeepHighLocation (a): 
-  # @a should be array already 
-  high = np.quantile(a, q=.75) ## which positions are high 
+def KeepHighLocation (a):
+  # @a should be array already
+  high = np.quantile(a, q=.75) ## which positions are high
   # print ('high val {}'.format(high))
   return np.where(a >= high)[0], high ## return location, not true value
 
 def GetSkewnessKLDivergence (a,mutation=None,bin_size=100):
   ## need to create the bins
-  if len(a) < 100: 
+  if len(a) < 100:
     bin_size = 25 ## short sequences
-    
+
   bin_range = ( len(a)//bin_size + 2 ) * bin_size ## floor then add 1, so that we have full even width, add +1 again because of np.arange
   a, high_val = KeepHighLocation (a)
   ## tells us to partition bins by location with width 100
@@ -48,8 +48,8 @@ def GetSkewnessKLDivergence (a,mutation=None,bin_size=100):
     print (bin_border)
 
   prob_mutation = -1
-  if mutation is not None: 
-    mutation = np.where(mutation==1)[0] ## location of mutation 
+  if mutation is not None:
+    mutation = np.where(mutation==1)[0] ## location of mutation
     if len(mutation) > 0:
       bin_mutation = np.digitize(mutation,bins=bin_border,right=True) - 1 ## which bind the mutation is in ?, notice we have to shift -1 to get right bin
       prob_mutation = np.mean ( prob[np.array(bin_mutation)] ) * 100 ## average over all mutation positions
