@@ -336,7 +336,7 @@ def main():
   list_prot_to_get = np.random.choice(protein_name, size=1998, replace=False, p=None).tolist()
   list_prot_to_get = list_prot_to_get + ['O54992', 'Q6X632', 'P0A812', 'Q9HWK6', 'O35730', 'Q9S9K9', 'Q5VV41', 'Q96B01', 'Q6FJA3']
   list_prot_to_get = sorted ( list (set(list_prot_to_get)) ) 
-  print (list_prot_to_get)
+  # print (list_prot_to_get)
 
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
@@ -382,7 +382,7 @@ def main():
       aa_type = aa_type.detach().cpu().numpy()
 
     layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention.
-    print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
+    # print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
 
     for layer in range (config.num_hidden_layers):
 
@@ -396,9 +396,9 @@ def main():
 
         if this_prot_name in list_prot_to_get:
 
-          if layer == 0: ## sanity check
-            print ("\n")
-            print (this_prot_name)
+          # if layer == 0: ## sanity check
+          #   print ("\n")
+          #   print (this_prot_name)
 
           if this_prot_name not in attention_summary:
             attention_summary[this_prot_name] = {}
