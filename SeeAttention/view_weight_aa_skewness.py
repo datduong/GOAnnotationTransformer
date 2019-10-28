@@ -330,13 +330,13 @@ def main():
 
   attention_summary = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
 
-  fout = open(os.path.join(args.output_dir,"HistogramValidate/attention_summary.txt"),"w")
+  fout = open(os.path.join(args.output_dir,"HistogramValidate/attention_summary_train_2000.txt"),"w")
   fout.write("prot\tlayer\thead\tKL\tskewness\tprob_mut\n")
 
   np.random.seed(1)
-  list_prot_to_get = np.random.choice(protein_name, size=498, replace=False, p=None).tolist()
+  list_prot_to_get = np.random.choice(protein_name, size=1998, replace=False, p=None).tolist() # 498
   list_prot_to_get = list_prot_to_get + ['O54992', 'Q6X632', 'P0A812', 'Q9HWK6', 'O35730', 'Q9S9K9', 'Q5VV41', 'Q96B01', 'Q6FJA3']
-  list_prot_to_get = sorted ( list (set(list_prot_to_get)) ) 
+  list_prot_to_get = sorted ( list (set(list_prot_to_get)) )
   # print (list_prot_to_get)
 
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
@@ -346,13 +346,11 @@ def main():
     if (batch_counter*batch_size) != row_counter:
       print ('check @row_counter for @batch_counter {} should see this message only at the last batch'.format(batch_counter))
 
-
     end_point_prot_name = row_counter + batch_size
     if len( set(protein_name[row_counter:end_point_prot_name]).intersection( set(list_prot_to_get) ) ) == 0 :
       ## suppose we don't enter this @if, then we will update @row_counter at the end, before we call "@for batch_counter...."
       row_counter = end_point_prot_name ## skip all, start at new positions of next batch
       continue
-
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
     input_ids_aa = batch[1][:,0:max_len_in_batch].cuda()
