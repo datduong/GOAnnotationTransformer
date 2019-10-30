@@ -20,27 +20,27 @@ def get_1type (string,what_type=None): ## @what_type tells use sub category of D
   else:
     name = " ".join(front[3::]).lower()
     ## check for cases like MOTIF dry motif 133-135;important conformation changes for-ligand-induced
-    if ';' in name: ## keep only relevant parts
-      name = name.split(';')[0] ## return only the front
-
+    # if ';' in name: ## keep only relevant parts
+    #   name = name.split(';')[0] ## return only the front
     name = re.sub(r"\.$","",name)
     name = front[0] + " " + re.sub(r" [0-9]+$","",name)
 
-  if len(name)==0:
-    print (string)
-    exit()
+  if len(name)==0: print (string); exit()
+
   name = re.sub(r';',' ',name)
   return name , where ## type and location
 
 def get_location (string) :
-  # 'REGION 46 69 Basic motif. {ECO:0000255|PROSITE-ProRule:PRU00978}.; REGION 71 99 Leucine-zipper. {ECO:0000255|PROSITE-ProRule:PRU00978}.; REGION 356 387 c-CRD. {ECO:0000250|UniProtKB:P19880}.'
+  # P08909  5HT2C_RAT       reviewed        460     GO:0001587; GO:0001662; GO:0004930; GO:0004993; GO:0005887; GO:0007187; GO:0007200; GO:0007208; GO:0007268; GO:0007626; GO:0007631; GO:0009897; GO:0009986; GO:0014054; GO:0014057; GO:0030425; GO:0030594; GO:0031100; GO:0031583; GO:0031644; GO:0032098; GO:0035095; GO:0040013; GO:0042493; GO:0043397; GO:0045907; GO:0045963; GO:0048016; GO:0051209; GO:0051482; GO:0051930    REGION 135 140 Agonist binding. {ECO:0000250}.; REGION 326 330 Agonist binding. {ECO:0000250}.          SIMILARITY: Belongs to the G-protein coupled receptor 1 family. {ECO:0000255|PROSITE-ProRule:PRU00521}.            G-protein coupled receptor 1 family     MOTIF 152 154 DRY motif; important for ligand-induced conformation changes. {ECO:0000250}.; MOTIF 366 370 NPxxY motif; important for ligand-induced conformation changes and signaling. {ECO:0000250}.; MOTIF 458 460 PDZ-binding.                         DOMAIN: The PDZ domain-binding motif is involved in the interaction with MPDZ.  MVNLGNAVRSLLMHLIGLLVWQFDISISPVAAIVTDTFNSSDGGRLFQFPDGVQNWPALSIVVIIIMTIGGNILVIMAVSMEKKLHNATNYFLMSLAIADMLVGLLVMPLSLLAILYDYVWPLPRYLCPVWISLDVLFSTASIMHLCAISLDRYVAIRNPIEHSRFNSRTKAIMKIAIVWAISIGVSVPIPVIGLRDESKVFVNNTTCVLNDPNFVLIGSFVAFFIPLTIMVITYFLTIYVLRRQTLMLLRGHTEEELANMSLNFLNCCCKKNGGEEENAPNPNPDQKPRRKKKEKRPRGTMQAINNEKKASKVLGIVFFVFLIMWCPFFITNILSVLCGKACNQKLMEKLLNVFVWIGYVCSGINPLVYTLFNKIYRRAFSKYLRCDYKPDKKPPVRQIPRVAATALSGRELNVNIYRHTNERVARKANDPEPGIEMQVENLELPVNPSNVVSERISSV
   string = string.split(';')
   out = []
   type_out = []
   for s in string:
-    this = get_1type(s)
-    out.append(this)
-    type_out.append(this[0])
+    # notice some string is an extended description of the other strings 
+    if re.findall(' [0-9]+ [0-9]+ ', s): 
+      this = get_1type(s)
+      out.append(this)
+      type_out.append(this[0])
   return out , type_out
 
 def format_write(tup): ## tuple

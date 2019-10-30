@@ -166,17 +166,20 @@ class BertEmbeddingsAA(nn.Module):
     # label should not need to have ordering ?
     self.position_embeddings = nn.Embedding(config.max_position_embeddings, config.hidden_size)
 
-    try: 
+    try:
       self.aa_type_emb = config.aa_type_emb ## may see error for some legacy call ??
-    except: 
-      self.aa_type_emb = False 
-      
+    except:
+      self.aa_type_emb = False
+
     if self.aa_type_emb:
       print ('\n\nturn on the token-type style embed.\n\n')
       ## okay to say 4 groups + 1 extra , we need special token to map to all 0, so CLS SEP PAD --> group 0
       ## 20 major amino acids --> 4 major groups
       ## or... we have mutation/not --> 2 major groups. set not mutation = 0 as base case
-      self.token_type_embeddings = nn.Embedding(config.type_vocab_size, config.hidden_size, padding_idx=0) 
+      ## we did not see experiment with AA type greatly improve outcome
+
+      ## !! notice that padding_idx=0 will not be 0 because of initialization MUST MANUAL RESET 0
+      self.token_type_embeddings = nn.Embedding(config.type_vocab_size, config.hidden_size, padding_idx=0)
 
     # self.LayerNorm is not snake-cased to stick with TensorFlow model variable name and be able to load
     # any TensorFlow checkpoint file
@@ -195,7 +198,10 @@ class BertEmbeddingsAA(nn.Module):
     position_embeddings = self.position_embeddings(position_ids)
 
     if self.aa_type_emb:
+      # @token_type_ids is batch x aa_len x domain_type --> output batch x aa_len x domain_type x dim
       token_type_embeddings = self.token_type_embeddings(token_type_ids)
+      ## must sum over domain (additive effect)
+      token_type_embeddings = torch.sum(token_type_embeddings,dim=3) # get batch x aa_len x dim
       embeddings = words_embeddings + position_embeddings  + token_type_embeddings
 
     else:
