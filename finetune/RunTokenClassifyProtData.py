@@ -74,7 +74,7 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
     ## want annotation on protein sequence into matrix. Len x Type
     ## a = 'COILED 87-172;DOMAIN uba 2-42;DOMAIN ubx 211-293'.split(';')
     a = a.split() ## to get the position, which should always be at the last part
-    type_name = " ".join( a[0 : (len(a)-1)] ) 
+    type_name = " ".join( a[0 : (len(a)-1)] )
 
     if type_name not in annot_name_sorted: ## unseen Domain Type
       continue
@@ -82,12 +82,8 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
     type_number = annot_name_sorted[ type_name ] ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
 
     ## notice in preprocessing, we have -1, because uniprot give raw number, but python starts at 0.
-    ## notice we do not -1 for the end point. 
-    try: 
-      row = [int(f) for f in a[-1].split('-')] ## get back 2 numbers
-    except: 
-      print (string)
-      exit() 
+    ## notice we do not -1 for the end point.
+    row = [int(f) for f in a[-1].split('-')] ## get back 2 numbers
     row = np.arange(row[0]-1,row[1]) ## continuous segment
 
     ## we have to randomly assign UNK... assign a whole block of UNK

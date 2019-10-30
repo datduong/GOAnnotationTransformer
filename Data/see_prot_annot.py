@@ -18,7 +18,8 @@ train_count = {}
 ## must select something to be 'UNK' so that we can handle unseen domain
 fout = open('train_'+onto_type+'_prot_annot_type.txt','w')
 fout.write('Type\tCount\tUnkChance\n')
-for key, value in sorted(train.items(), key=lambda kv: kv[1], reverse=True): 
+for key in sorted (train.keys()) :  # key, value in sorted(train.items(), key=lambda kv: kv[1], reverse=True)
+  value = train[key]
   chance = value // 10
   if chance > 100: 
     chance = 100 
