@@ -63,8 +63,8 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
 
   ## must do padding so all items get the same size
   out = np.zeros((max_num_aa,len(annot_name_sorted))) ## maximum possible
-  if string is np.nan:
-    return out
+  if string == 'none':
+    return coo_matrix(out)
 
   # @string is some protein data, delim by ";"
   annot = string.split(';')
@@ -74,16 +74,17 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
     ## want annotation on protein sequence into matrix. Len x Type
     ## a = 'COILED 87-172;DOMAIN uba 2-42;DOMAIN ubx 211-293'.split(';')
     a = a.split() ## to get the position, which should always be at the last part
-    type_name = a [0 : (len(a)-1)]
+    type_name = " ".join( a[0 : (len(a)-1)] ) 
 
     if type_name not in annot_name_sorted: ## unseen Domain Type
       continue
 
     type_number = annot_name_sorted[ type_name ] ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
 
-    ## notice in preprocessing, we have -1, because uniprot give raw number, but python starts at 0. 
-    row = [int(f)-1 for f in a[-1].split('-')] ## get back 2 numbers
-    row = np.arange(row) ## continuous segment
+    ## notice in preprocessing, we have -1, because uniprot give raw number, but python starts at 0.
+    ## notice we do not -1 for the end point. 
+    row = [int(f) for f in a[-1].split('-')] ## get back 2 numbers
+    row = np.arange(row[0]-1,row[1]) ## continuous segment
 
     ## we have to randomly assign UNK... assign a whole block of UNK
     if annot_data[type_name][1] > 0: ## chance of being UNK
@@ -94,17 +95,8 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
     else:
       annot_matrix [ row,index ] = type_number
 
-  print ('\nmake sense on annot_matrix ?')
-  print (annot_matrix) # MOTIF nuclear localization signal 471-477;COMPBIAS pro-rich 411-482;DOMAIN protein kinase 67-328;DOMAIN agc-kinase c-terminal 329-399
-  try:
-    print (annot_matrix[460:480])
-    print (annot_matrix[320:340])
-  except:
-    pass
-
-  out[1:(num_aa+1), 1:(num_aa+1)] = annot_matrix ## notice shifting by because of CLS and SEP
+  out[1:(num_aa+1), 1:(len(annot)+1)] = annot_matrix ## notice shifting by because of CLS and SEP
   return coo_matrix(out)
-
 
 
 class TextDataset(Dataset):
@@ -168,11 +160,10 @@ class TextDataset(Dataset):
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
-        if counter == 0: 
-          continue 
-        
-        if counter > 100 :
-          break
+
+        # if counter > 100 :
+        #   break
+
         text = text.strip()
         if len(text) == 0: ## skip blank ??
           continue
@@ -364,11 +355,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         aa_type = batch[5][:,0:(max_len_in_batch+num_labels),:].to(args.device)
       else:
         aa_type = None
-
-      print (aa_type.shape)
-      print (aa_type[0])
-      print (aa_type[1])
-      exit()
 
       model.train()
 
