@@ -6,7 +6,7 @@ import pandas as pd
 
 from tqdm import tqdm
 
-def get_1type (string):
+def get_1type (string,what_type=None): ## @what_type tells use sub category of Domain
   front = string.split('{') ## split by the name convention
   front = front[0].split()
   where = "-".join(front[1:3]) # 2nd and 3rd
@@ -18,7 +18,11 @@ def get_1type (string):
   else:
     name = " ".join(front[3::]).lower()
     name = re.sub(r"\.$","",name)
-    name = re.sub(r" [0-9]+$","",name)
+    name = front[0] + " " + re.sub(r" [0-9]+$","",name)
+  if len(name)==0: 
+    print (string)
+    exit() 
+  name = re.sub(r';',' ',name)
   return name , where ## type and location
 
 def get_location (string) :
@@ -68,8 +72,8 @@ for data_type in ['train','dev','test']:
     # Motif 10
     # Compositional bias 11
     # Coiled coil 12
-    # Domain [FT] 13
-    # Domain [CC] Sequence 14
+    # Domain [FT] 13 ## feature 
+    # Domain [CC] Sequence 14 ## comment
 
     fout = open ( path+data_type+'-'+onto_type+'-prot-annot.tsv', 'w' )
     fout.write('Entry\tGene ontology IDs\tSequence\tProt Emb\tType\n')
@@ -91,7 +95,7 @@ for data_type in ['train','dev','test']:
         # break
         fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
         continue
-      for where_ in [5,6,8,10,11,12]:
+      for where_ in [6,8,10,11,12,13]:
         if len (line[where_]) > 0 :
           out, type_out = get_location (line[where_])
           prot_annot = prot_annot + out
@@ -102,32 +106,53 @@ for data_type in ['train','dev','test']:
               prot_label_type[t] = 1 + prot_label_type[t]
             else:
               prot_label_type[t] = 1
-      # if line[0]=='Q2V3L3':
+      # if line[0]=='Q2V3L3': # Q99653
       #   break
       # if index > 40000:
       #   break
       # Entry Gene ontology IDs Sequence  Prot Emb
       fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
 
-
     fout.close()
     uniprot.close()
     print ('total type {}'.format(len(prot_label_type)))
 
-    pickle.dump(prot_label_type,open(data_type+'_prot_annot_type.pickle','wb'))
+    pickle.dump(prot_label_type,open(data_type+'_'+onto_type+'_prot_annot_type.pickle','wb'))
 
     # for i in range(len(z)):
     #   if (z[i] != x[i]) :
     #     print (i)
 
-    ## get top domain only... may be too much to fit all types?
-    # https://able.bio/rhett/sort-a-python-dictionary-by-value-or-key--84te6gv
-    counter = 0
-    for key, value in sorted(prot_label_type.items(), key=lambda kv: kv[1], reverse=True):
-      print("%s: %s" % (key, value))
-      counter = counter + 1 
-      if counter > 1000: 
-        break 
+
+onto_type = 'mf'
+train = pickle.load(open('train_'+onto_type+'_prot_annot_type.pickle','rb'))
+not_in_train = {} ## what can we do if domain not seen in train data ? 
+all_prot_annot = {}
+for data_type in ['dev','train','test']: #,'dev','test'
+  prot_label_type = pickle.load(open(data_type+'_'+onto_type+'_prot_annot_type.pickle','rb'))
+  print ('data type {} len {}'.format(data_type,len(prot_label_type)))
+  ## get top domain only... may be too much to fit all types?
+  # https://able.bio/rhett/sort-a-python-dictionary-by-value-or-key--84te6gv
+  counter = 0
+  for key, value in sorted(prot_label_type.items(), key=lambda kv: kv[1], reverse=True):
+    # print("%s: %s" % (key, value))
+    if key not in all_prot_annot: 
+      all_prot_annot[key] = value
+    else: 
+      all_prot_annot[key] = value + all_prot_annot[key]
+    counter = counter + 1 
+    # if counter > 10: 
+    #   break 
+    ## what if not in train ?? 
+    if key not in train: 
+      if key not in not_in_train: 
+        not_in_train[key] = value
+      else: 
+        not_in_train[key] = value + not_in_train[key]
 
 
+print ('not in train {}'.format(len(not_in_train)))
+
+pickle.dump(all_prot_annot,open(onto_type+'all_prot_annot.pickle','wb'))
+print ('total unique type {}'.format(len(all_prot_annot)))
 

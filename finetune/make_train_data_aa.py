@@ -73,25 +73,25 @@ def aa_type_emb (one_aa):
   return 0
 
 
-fin = '/u/scratch/d/donle225/mutagenesis/output_files/train-mf.tsv'
+# fin = '/u/scratch/d/donle225/mutagenesis/output_files/train-mf.tsv'
 # df = pd.read_csv(fin,sep="\t",index_col=0)
 
 AA_type = {}
 
-## record where the protein have change sequence 
-prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split() 
+## record where the protein have change sequence
+prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split()
 
 for data_type in ['train','dev','test']:
   for ontology in ['mf']: # 'cc','bp',
 
     long_count = 0
 
-    # fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/"+data_type+"-"+ontology+".tsv"
-    fin = '/u/scratch/d/donle225/mutagenesis/output_files/'+data_type+"-"+ontology+'.tsv'
-    fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/"+data_type+"-"+ontology+"-aa-mut.csv"
+    fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/"+data_type+"-"+ontology+"-prot-annot.tsv"
+    # fin = '/u/scratch/d/donle225/mutagenesis/output_files/'+data_type+"-"+ontology+'.tsv'
+    fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/"+data_type+"-"+ontology+"-prot-annot.tsv"
 
-    # df = pd.read_csv(fin,sep="\t")
-    df = pd.read_csv(fin,sep="\t",index_col=0)
+    df = pd.read_csv(fin,sep="\t",dtype=str)
+    # df = pd.read_csv(fin,sep="\t",index_col=0)
 
     print (fin)
     print ( df.shape )
@@ -105,8 +105,8 @@ for data_type in ['train','dev','test']:
       if (len(row['Sequence'])> 1024):
         long_count = long_count+1
 
-      if row['Entry'] in prot_change: 
-        continue
+      # if row['Entry'] in prot_change:
+      #   continue
 
       new_seq = row['Sequence']
 
@@ -117,17 +117,26 @@ for data_type in ['train','dev','test']:
       #     pass
 
       # aa_type = [aa_type_emb(aa) for aa in new_seq]
-      aa_type = row['Mutagenesis']
-      aa_type_np = np.zeros(len(new_seq)) ## maximum length filled with zeros for now
-      if aa_type is not np.nan: 
-        where1 = sorted(aa_type.split(";"))
-        where1 = np.array ( [int(w)-1 for w in where1] ) ## NOTICE, SHIFT BACK 1, BECAUSE PYTHON INDEXING STARTS AT 0. 
-        ## update 1-hot 
-        aa_type_np[where1] = 1
+      # aa_type = row['Type'] # Type Mutagenesis
+      # aa_type_np = np.zeros(len(new_seq)) ## maximum length filled with zeros for now
+      # if aa_type is not np.nan:
+      #   where1 = sorted(aa_type.split(";"))
+      #   where1 = np.array ( [int(w)-1 for w in where1] ) ## NOTICE, SHIFT BACK 1, BECAUSE PYTHON INDEXING STARTS AT 0.
+      #   ## update 1-hot
+      #   aa_type_np[where1] = 1
 
       go_list = re.sub(r":","",row['Gene ontology IDs'])
       go_list = sorted(go_list.split(";"))
-      fout.write(" ".join(new_seq) + "\t" + " ".join(go_list)+ "\t" + " ".join(row['Prot Emb'].strip().split(';')) + "\t"+' '.join(str(aa) for aa in aa_type_np) + "\n")
+      # fout.write(row['Entry'] + '\t' + " ".join(new_seq) + "\t" + " ".join(go_list)+ "\t" + " ".join(row['Prot Emb'].strip().split(';')) + "\t"+' '.join(str(aa) for aa in aa_type_np) + "\n")
+      # print (row['Type'])
+
+      if row['Type'] is np.nan:
+        type_name = 'none'
+      else:
+        type_name = row['Type']
+
+      fout.write(row['Entry'] + '\t' + " ".join(new_seq) + "\t" + " ".join(go_list)+ "\t" + " ".join(row['Prot Emb'].strip().split(';')) + "\t"+ type_name + "\n")
+
 
     fout.close()
     print ('long seq counter {}'.format(long_count))
