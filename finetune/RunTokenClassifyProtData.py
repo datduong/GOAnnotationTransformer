@@ -83,7 +83,11 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
 
     ## notice in preprocessing, we have -1, because uniprot give raw number, but python starts at 0.
     ## notice we do not -1 for the end point. 
-    row = [int(f) for f in a[-1].split('-')] ## get back 2 numbers
+    try: 
+      row = [int(f) for f in a[-1].split('-')] ## get back 2 numbers
+    except: 
+      print (string)
+      exit() 
     row = np.arange(row[0]-1,row[1]) ## continuous segment
 
     ## we have to randomly assign UNK... assign a whole block of UNK

@@ -11,12 +11,14 @@ def get_1type (string,what_type=None): ## @what_type tells use sub category of D
   front = front[0].split()
   where = "-".join(front[1:3]) # 2nd and 3rd
   ## ignore the numbering ?? https://www.uniprot.org/uniprot/Q8K3W3#family_and_domains
+  ## https://www.uniprot.org/uniprot/P19327#family_and_domains
+  
   if 'COILED' in string:
     name = 'COILED'
   elif 'ZN_FING' in string:
     name = 'ZN_FING'
   else:
-    name = " ".join(front[3::]).lower()
+    name = " ".join(front[3::]).lower() ## check for cases like MOTIF dry motif 133-135;important conformation changes for-ligand-induced
     name = re.sub(r"\.$","",name)
     name = front[0] + " " + re.sub(r" [0-9]+$","",name)
   if len(name)==0: 
