@@ -12,18 +12,23 @@ def get_1type (string,what_type=None): ## @what_type tells use sub category of D
   where = "-".join(front[1:3]) # 2nd and 3rd
   ## ignore the numbering ?? https://www.uniprot.org/uniprot/Q8K3W3#family_and_domains
   ## https://www.uniprot.org/uniprot/P19327#family_and_domains
-  
+
   if 'COILED' in string:
     name = 'COILED'
   elif 'ZN_FING' in string:
     name = 'ZN_FING'
   else:
-    name = " ".join(front[3::]).lower() ## check for cases like MOTIF dry motif 133-135;important conformation changes for-ligand-induced
+    name = " ".join(front[3::]).lower()
+    ## check for cases like MOTIF dry motif 133-135;important conformation changes for-ligand-induced
+    if ';' in name: ## keep only relevant parts
+      name = name.split(';')[0] ## return only the front
+
     name = re.sub(r"\.$","",name)
     name = front[0] + " " + re.sub(r" [0-9]+$","",name)
-  if len(name)==0: 
+
+  if len(name)==0:
     print (string)
-    exit() 
+    exit()
   name = re.sub(r';',' ',name)
   return name , where ## type and location
 
@@ -74,7 +79,7 @@ for data_type in ['train','dev','test']:
     # Motif 10
     # Compositional bias 11
     # Coiled coil 12
-    # Domain [FT] 13 ## feature 
+    # Domain [FT] 13 ## feature
     # Domain [CC] Sequence 14 ## comment
 
     fout = open ( path+data_type+'-'+onto_type+'-prot-annot.tsv', 'w' )
@@ -128,7 +133,7 @@ for data_type in ['train','dev','test']:
 
 onto_type = 'mf'
 train = pickle.load(open('train_'+onto_type+'_prot_annot_type.pickle','rb'))
-not_in_train = {} ## what can we do if domain not seen in train data ? 
+not_in_train = {} ## what can we do if domain not seen in train data ?
 all_prot_annot = {}
 for data_type in ['dev','train','test']: #,'dev','test'
   prot_label_type = pickle.load(open(data_type+'_'+onto_type+'_prot_annot_type.pickle','rb'))
@@ -138,18 +143,18 @@ for data_type in ['dev','train','test']: #,'dev','test'
   counter = 0
   for key, value in sorted(prot_label_type.items(), key=lambda kv: kv[1], reverse=True):
     # print("%s: %s" % (key, value))
-    if key not in all_prot_annot: 
+    if key not in all_prot_annot:
       all_prot_annot[key] = value
-    else: 
+    else:
       all_prot_annot[key] = value + all_prot_annot[key]
-    counter = counter + 1 
-    # if counter > 10: 
-    #   break 
-    ## what if not in train ?? 
-    if key not in train: 
-      if key not in not_in_train: 
+    counter = counter + 1
+    # if counter > 10:
+    #   break
+    ## what if not in train ??
+    if key not in train:
+      if key not in not_in_train:
         not_in_train[key] = value
-      else: 
+      else:
         not_in_train[key] = value + not_in_train[key]
 
 
