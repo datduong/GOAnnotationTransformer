@@ -38,7 +38,7 @@ MODEL_CLASSES = {
   'bert': (BertConfig, TokenClassifier.BertForTokenClassification2EmbPPI, BertTokenizer) ## replace the standard @BertForTokenClassification
 }
 
-def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
+def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate):
 
   ## must do padding so all items get the same size
   out = np.zeros((max_num_aa,len(annot_name_sorted))) ## maximum possible
@@ -56,18 +56,19 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
     type_name = " ".join( a[0 : (len(a)-1)] )
 
     if type_name not in annot_name_sorted: ## unseen Domain Type
-      continue
+      type_number = 1 ## set to UNK
+    else:
+      ## !! notice, shift by +2 so that we PAD=0 (nothing) and UNK=1 (some unseen domain)
+      type_number = annot_name_sorted[ type_name ] ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
 
-    ## !! notice, shift by +2 so that we PAD=0 (nothing) and UNK=1 (some unseen domain)
-    type_number = annot_name_sorted[ type_name ] ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
-
-    ## notice in preprocessing, we have -1, because uniprot give raw number, but python starts at 0.
-    ## notice we do not -1 for the end point.
+    ## in preprocessing, we have -1, because uniprot give raw number, but python starts at 0.
+    ## we do not -1 for the end point.
     row = [int(f) for f in a[-1].split('-')] ## get back 2 numbers
     row = np.arange(row[0]-1,row[1]) ## continuous segment
 
     ## we have to randomly assign UNK... assign a whole block of UNK
-    if annot_data[type_name][1] > 0: ## chance of being UNK
+    ## do not need to assign random UNK for dev or test set
+    if (not evaluate) and (type_number > 1): ## chance of being UNK
       if np.random.uniform() < annot_data[type_name][1]*1.0/annot_data[type_name][0]:
         annot_matrix [ row,index ] = 1 ## type=1 is UNK
       else:
@@ -75,7 +76,10 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
     else:
       annot_matrix [ row,index ] = type_number
 
-  out[1:(num_aa+1), 1:(len(annot)+1)] = annot_matrix ## notice shifting by because of CLS and SEP
+  ## out is max_len (both aa + CSL SEP PAD) + len_annot
+  ## read by row, so CLS has annot=0
+  ## only need to shift 1 row down
+  out[1:(num_aa+1), 0:len(annot)] = annot_matrix ## notice shifting by because of CLS and SEP
 
   # print ('\nsee annot matrix\n')
   # print (annot_matrix)
@@ -83,7 +87,7 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
 
 
 class TextDataset(Dataset):
-  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
+  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None, evaluate=None):
     # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
 
     self.args = args
@@ -185,7 +189,8 @@ class TextDataset(Dataset):
 
         if args.aa_type_emb:
           ### !!! need to get token type emb of AA in protein
-          AA = ReadProtData(text[4],len_withClsSep-2,max_aa_len,annot_data,annot_name_sorted)
+          ## in evaluation mode, do not need to random assign UNK
+          AA = ReadProtData(text[4],len_withClsSep-2,max_aa_len,annot_data,annot_name_sorted,evaluate=evaluate)
           self.aa_type_emb.append ( AA )
 
         if counter < 3:
@@ -235,7 +240,7 @@ class TextDataset(Dataset):
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
-  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args)
+  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args, evaluate=evaluate)
   return dataset
 
 
