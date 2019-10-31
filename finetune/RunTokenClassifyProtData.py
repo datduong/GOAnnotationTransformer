@@ -80,7 +80,7 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
       continue
 
     ## !! notice, shift by +2 so that we PAD=0 (nothing) and UNK=1 (some unseen domain)
-    type_number = annot_name_sorted[ type_name ] + 2 ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
+    type_number = annot_name_sorted[ type_name ] ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
 
     ## notice in preprocessing, we have -1, because uniprot give raw number, but python starts at 0.
     ## notice we do not -1 for the end point.
@@ -140,7 +140,8 @@ class TextDataset(Dataset):
         print ('load in aa_type_file')
         annot_data = pickle.load ( open ( args.aa_type_file, 'rb' ) )
         temp = sorted (list (annot_data.keys() ) ) ## easiest to just do by alphabet, so we can backtrack very easily
-        annot_name_sorted = {value: index for index, value in enumerate(temp)} ## lookup index
+        ## make sure we exclude position which is last. @annot_name_sorted is index-lookup, so we have +2
+        annot_name_sorted = {value: index+2 for index, value in enumerate(temp)} ## lookup index
 
 
       label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet
