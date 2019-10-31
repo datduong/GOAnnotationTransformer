@@ -37,9 +37,9 @@ for ontology in 'mf' ; do
 
   # 5040 batches train
   ## continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 6 --per_gpu_eval_batch_size 10 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --learning_rate 0.0001 --seed 2019 --fp16 --pretrained_label_path $pretrained_label_path --aa_type_emb --aa_type_file $aa_type_file > $output_dir/train_point.txt # --no_cuda
+  CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 10 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --learning_rate 0.0001 --seed 2019 --fp16 --aa_type_emb --aa_type_file $aa_type_file > $output_dir/train_point.txt # --no_cuda
 
-  # ## testing phase
+  # ## testing phase --pretrained_label_path $pretrained_label_path
 
   # for test_data in 'test'; do # 'dev' 
   #   eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/'$test_data'-'$ontology'-prot-annot.csv'

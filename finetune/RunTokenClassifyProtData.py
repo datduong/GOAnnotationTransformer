@@ -79,7 +79,8 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted):
     if type_name not in annot_name_sorted: ## unseen Domain Type
       continue
 
-    type_number = annot_name_sorted[ type_name ] ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
+    ## !! notice, shift by +2 so that we PAD=0 (nothing) and UNK=1 (some unseen domain)
+    type_number = annot_name_sorted[ type_name ] + 2 ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
 
     ## notice in preprocessing, we have -1, because uniprot give raw number, but python starts at 0.
     ## notice we do not -1 for the end point.
@@ -352,7 +353,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
       if args.aa_type_emb:
         ## batch x aa_len x type
-        aa_type = batch[5][:,0:(max_len_in_batch+num_labels),:].to(args.device)
+        aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
       else:
         aa_type = None
 
@@ -504,7 +505,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make
 
     if args.aa_type_emb:
-      aa_type = batch[5][:,0:max_len_in_batch].to(args.device)
+      aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
     else:
       aa_type = None
 
