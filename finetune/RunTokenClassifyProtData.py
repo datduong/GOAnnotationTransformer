@@ -519,6 +519,10 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     else:
       aa_type = None
 
+    # print (input_ids_aa.shape)
+    # print (aa_type.shape)
+    # print (aa_type)
+
     with torch.no_grad():
       outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
       lm_loss = outputs[0]

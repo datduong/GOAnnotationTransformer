@@ -35,8 +35,57 @@ import view_util
 logger = logging.getLogger(__name__)
 
 
+
+def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate):
+
+  ## must do padding so all items get the same size
+  out = np.zeros((max_num_aa,len(annot_name_sorted))) ## maximum possible
+  if string == 'none':
+    return coo_matrix(out)
+
+  # @string is some protein data, delim by ";"
+  annot = string.split(';')
+  annot_matrix = np.zeros((num_aa,len(annot))) ## exact @num_aa without CLS and SEP
+
+  for index, a in enumerate(annot): ## we do not need the whole matrix. we can use 1,2,3,4,5 indexing style on the column entry
+    ## want annotation on protein sequence into matrix. Len x Type
+    ## a = 'COILED 87-172;DOMAIN uba 2-42;DOMAIN ubx 211-293'.split(';')
+    a = a.split() ## to get the position, which should always be at the last part
+    type_name = " ".join( a[0 : (len(a)-1)] )
+
+    if type_name not in annot_name_sorted: ## unseen Domain Type
+      type_number = 1 ## set to UNK
+    else:
+      ## !! notice, shift by +2 so that we PAD=0 (nothing) and UNK=1 (some unseen domain)
+      type_number = annot_name_sorted[ type_name ] ## make sure we exclude position which is last. @annot_name_sorted is index-lookup
+
+    ## in preprocessing, we have -1, because uniprot give raw number, but python starts at 0.
+    ## we do not -1 for the end point.
+    row = [int(f) for f in a[-1].split('-')] ## get back 2 numbers
+    row = np.arange(row[0]-1,row[1]) ## continuous segment
+
+    ## we have to randomly assign UNK... assign a whole block of UNK
+    ## do not need to assign random UNK for dev or test set
+    if (not evaluate) and (type_number > 1): ## chance of being UNK
+      if np.random.uniform() < annot_data[type_name][1]*1.0/annot_data[type_name][0]:
+        annot_matrix [ row,index ] = 1 ## type=1 is UNK
+      else:
+        annot_matrix [ row,index ] = type_number ## @col is the number of the type w.r.t. the whole set of types, @index is just for this string
+    else:
+      annot_matrix [ row,index ] = type_number
+
+  ## out is max_len (both aa + CSL SEP PAD) + len_annot
+  ## read by row, so CLS has annot=0
+  ## only need to shift 1 row down
+  out[1:(num_aa+1), 0:len(annot)] = annot_matrix ## notice shifting by because of CLS and SEP
+
+  # print ('\nsee annot matrix\n')
+  # print (annot_matrix)
+  return coo_matrix(out)
+
+
 class TextDataset(Dataset):
-  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None):
+  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None, evaluate=None):
     # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
 
     self.args = args
@@ -44,7 +93,7 @@ class TextDataset(Dataset):
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     if args.aa_type_emb:
-      directory = os.path.join(directory , 'aa_mut_ppi_cache')
+      directory = os.path.join(directory , 'aa_ppi_annot_cache')
     else:
       directory = os.path.join(directory , 'aa_ppi_cache')
     if not os.path.exists(directory):
@@ -70,6 +119,15 @@ class TextDataset(Dataset):
 
     else:
 
+      annot_name_sorted = None
+      if args.aa_type_file is not None:
+        print ('load in aa_type_file')
+        annot_data = pickle.load ( open ( args.aa_type_file, 'rb' ) )
+        temp = sorted (list (annot_data.keys() ) ) ## easiest to just do by alphabet, so we can backtrack very easily
+        ## make sure we exclude position which is last. @annot_name_sorted is index-lookup, so we have +2
+        annot_name_sorted = {value: index+2 for index, value in enumerate(temp)} ## lookup index
+
+
       label_2test_array = sorted(label_2test_array) ## just to be sure we keep alphabet
       num_label = len(label_2test_array)
       print ('num label {}'.format(num_label))
@@ -88,8 +146,10 @@ class TextDataset(Dataset):
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
+
         # if counter > 100 :
         #   break
+
         text = text.strip()
         if len(text) == 0: ## skip blank ??
           continue
@@ -104,19 +164,19 @@ class TextDataset(Dataset):
 
         ### !!!!
         ### !!!! now we append the protein-network vector
-        self.ppi_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
+        self.ppi_vec.append ([float(s) for s in text[3].split()]) ## 3rd tab
 
         ## create a gold-standard label 1-hot vector.
         ## convert label into 1-hot style
         label1hot = np.zeros(num_label) ## 1D array
-        this_label = text[1].strip().split() ## by space
+        this_label = text[2].strip().split() ## by space
         index_as1 = [label_index_map[label] for label in this_label]
         label1hot [ index_as1 ] = 1
         self.label1hot.append( label1hot )
 
         # kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
         ## GET THE AA INDEXING '[CLS] ' + text[0] + ' [SEP]'
-        this_aa = tokenizer.convert_tokens_to_ids ( tokenizer.tokenize ('[CLS] ' + text[0] + ' [SEP]') )
+        this_aa = tokenizer.convert_tokens_to_ids ( tokenizer.tokenize ('[CLS] ' + text[1] + ' [SEP]') )
         len_withClsSep = len(this_aa)
 
         ## pad @this_aa to max len
@@ -126,8 +186,10 @@ class TextDataset(Dataset):
         self.mask_ids_aa.append (mask_aa)
 
         if args.aa_type_emb:
-          ### !!! also need to get token type emb
-          self.aa_type_emb.append ( [0] + [int(float(s)) for s in text[3].split()] + [0] * ( max_aa_len + 1 - len_withClsSep ) ) ## 0 for CLS SEP PAD
+          ### !!! need to get token type emb of AA in protein
+          ## in evaluation mode, do not need to random assign UNK
+          AA = ReadProtData(text[4],len_withClsSep-2,max_aa_len,annot_data,annot_name_sorted,evaluate=evaluate)
+          self.aa_type_emb.append ( AA )
 
         if counter < 3:
           print ('see sample {}'.format(counter))
@@ -162,11 +224,11 @@ class TextDataset(Dataset):
   def __getitem__(self, item):
     if self.args.aa_type_emb:
       return (torch.LongTensor(self.label1hot[item]),
-            torch.tensor(self.input_ids_aa[item]),
-            torch.tensor(self.input_ids_label[item]),
-            torch.tensor(self.mask_ids_aa[item]),
-            torch.tensor(self.ppi_vec[item]),
-            torch.LongTensor(self.aa_type_emb[item]))
+              torch.tensor(self.input_ids_aa[item]),
+              torch.tensor(self.input_ids_label[item]),
+              torch.tensor(self.mask_ids_aa[item]),
+              torch.tensor(self.ppi_vec[item]),
+              torch.LongTensor(self.aa_type_emb[item].toarray()))
     else:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
@@ -176,13 +238,16 @@ class TextDataset(Dataset):
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
-  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args)
+  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args, evaluate=evaluate)
   return dataset
+
 
 
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--data_type", type=str, default=None)
+  parser.add_argument("--aa_type_file", type=str, default=None)
   parser.add_argument("--pretrained_label_path", type=str, default=None)
   parser.add_argument("--label_2test", type=str, default=None)
   parser.add_argument("--bert_vocab", type=str, default=None)
@@ -308,12 +373,16 @@ def main():
 
 
   if args.aa_type_emb: # model mutation
-    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf-mut.tsv", dtype=str, sep="\t",index_col=0)
-    protein_name = list ( protein_name['Entry'] )
-    prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split()
-    protein_name = [p for p in protein_name if p not in prot_change]
+    # protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf-mut.tsv", dtype=str, sep="\t",index_col=0)
+    # protein_name = list ( protein_name['Entry'] )
+    # prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split()
+    # protein_name = [p for p in protein_name if p not in prot_change]
+
+    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/"+args.data_type+"-mf-prot-annot.tsv", dtype=str, sep="\t",header=None)
+    protein_name = list ( protein_name[0] )
+
   else:
-    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf.tsv", dtype=str, sep="\t")
+    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/"+args.data_type+"-mf.tsv", dtype=str, sep="\t")
     protein_name = list ( protein_name['Entry'] )
 
 
@@ -330,7 +399,7 @@ def main():
 
   attention_summary = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
 
-  fout = open(os.path.join(args.output_dir,"HistogramValidate/attention_summary_train_2000.txt"),"w")
+  fout = open(os.path.join(args.output_dir,"HistogramValidate/attention_summary_"+args.data_type+".txt"),"w")
   fout.write("prot\tlayer\thead\tKL\tskewness\tprob_mut\n")
 
   np.random.seed(1)
@@ -365,7 +434,8 @@ def main():
     ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).cuda() ## make
 
     if args.aa_type_emb:
-      aa_type = batch[5][:,0:max_len_in_batch].cuda()
+      # aa_type = batch[5][:,0:max_len_in_batch].cuda()
+      aa_type = batch[5][:,0:max_len_in_batch,:].cuda()
     else:
       aa_type = None
 

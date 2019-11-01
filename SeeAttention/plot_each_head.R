@@ -10,7 +10,7 @@ library('RColorBrewer')
 coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25)
 
 # setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1')
-setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiMutGeluE768H1L12I768PreLabDrop0.1/ManualValidate')
+setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE768H1L12I768PreLab/ManualValidate')
 
 num_label = 589
 prot = 'O54992 Q6X632 P0A812 Q96B01 Q5VV41 Q6FJA3 Q9HWK6' # 'O54992 P23109 P9WNC3'# 'P23109' # B3PC73 O54992 P23109

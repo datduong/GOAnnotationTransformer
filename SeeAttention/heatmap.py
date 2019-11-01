@@ -6,7 +6,7 @@ import pickle,re,sys,os
 
 # path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1/ManualValidate/'
 
-path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiMutGeluE768H1L12I768PreLabDrop0.1/ManualValidate/'
+path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE768H1L12I768PreLab/ManualValidate/'
 
 list_prot_to_get = ['Q6FJA3', 'O54992', 'P0A812', 'Q6X632', 'Q5VV41', 'O35730', 'Q9S9K9', 'Q96B01', 'Q9HWK6']
 

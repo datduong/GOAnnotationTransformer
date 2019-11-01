@@ -6,6 +6,29 @@ import pandas as pd
 
 from tqdm import tqdm
 
+def find_change(string1,string2):
+  # if same len, then try to assign domain if change is not in range
+  # else just not use domain
+  if string1==string2:
+    return 0, None ## dont need to do the check at @same_len
+
+  string1 = np.array([s for s in string1])
+  string2 = np.array([s for s in string2])
+  if len(string1) != len(string2):
+    return 1, None ## @string2 is the "old" data, and @1 is used to indicate not same len
+  else: ## if come to here, then string1!=string2, but the len are the same
+    where_not_same = string1!=string2
+    where_not_same = np.where (where_not_same)[0]
+    return 0, where_not_same ## @0 says that strings are same len
+
+
+def is_in_interval(a,b,c):
+  if (b<a) and (a<c):
+    return True
+  else:
+    return False
+
+
 def get_1type (string,what_type=None): ## @what_type tells use sub category of Domain
   front = string.split('{') ## split by the name convention
   front = front[0].split()
@@ -30,17 +53,33 @@ def get_1type (string,what_type=None): ## @what_type tells use sub category of D
   name = re.sub(r';',' ',name)
   return name , where ## type and location
 
-def get_location (string) :
+def get_location (string,where_change=None) :
   # P08909  5HT2C_RAT       reviewed        460     GO:0001587; GO:0001662; GO:0004930; GO:0004993; GO:0005887; GO:0007187; GO:0007200; GO:0007208; GO:0007268; GO:0007626; GO:0007631; GO:0009897; GO:0009986; GO:0014054; GO:0014057; GO:0030425; GO:0030594; GO:0031100; GO:0031583; GO:0031644; GO:0032098; GO:0035095; GO:0040013; GO:0042493; GO:0043397; GO:0045907; GO:0045963; GO:0048016; GO:0051209; GO:0051482; GO:0051930    REGION 135 140 Agonist binding. {ECO:0000250}.; REGION 326 330 Agonist binding. {ECO:0000250}.          SIMILARITY: Belongs to the G-protein coupled receptor 1 family. {ECO:0000255|PROSITE-ProRule:PRU00521}.            G-protein coupled receptor 1 family     MOTIF 152 154 DRY motif; important for ligand-induced conformation changes. {ECO:0000250}.; MOTIF 366 370 NPxxY motif; important for ligand-induced conformation changes and signaling. {ECO:0000250}.; MOTIF 458 460 PDZ-binding.                         DOMAIN: The PDZ domain-binding motif is involved in the interaction with MPDZ.  MVNLGNAVRSLLMHLIGLLVWQFDISISPVAAIVTDTFNSSDGGRLFQFPDGVQNWPALSIVVIIIMTIGGNILVIMAVSMEKKLHNATNYFLMSLAIADMLVGLLVMPLSLLAILYDYVWPLPRYLCPVWISLDVLFSTASIMHLCAISLDRYVAIRNPIEHSRFNSRTKAIMKIAIVWAISIGVSVPIPVIGLRDESKVFVNNTTCVLNDPNFVLIGSFVAFFIPLTIMVITYFLTIYVLRRQTLMLLRGHTEEELANMSLNFLNCCCKKNGGEEENAPNPNPDQKPRRKKKEKRPRGTMQAINNEKKASKVLGIVFFVFLIMWCPFFITNILSVLCGKACNQKLMEKLLNVFVWIGYVCSGINPLVYTLFNKIYRRAFSKYLRCDYKPDKKPPVRQIPRVAATALSGRELNVNIYRHTNERVARKANDPEPGIEMQVENLELPVNPSNVVSERISSV
   string = string.split(';')
   out = []
   type_out = []
   for s in string:
-    # notice some string is an extended description of the other strings 
-    if re.findall(' [0-9]+ [0-9]+ ', s): 
+    # notice some string is an extended description of the other strings
+    if re.findall(' [0-9]+ [0-9]+ ', s):
+
+      skip = False
+      if where_change is not None:
+        # check if it contain the change
+        bound = re.findall(' [0-9]+ [0-9]+ ', s)[0].strip().split()
+        low = float(bound[0])
+        high = float(bound[1])
+        for z in where_change: ## found 1 change that occur in this region. so we skip this region
+          if is_in_interval (z,low,high):
+            skip = True
+            break
+
+      if skip:
+        continue
+
       this = get_1type(s)
       out.append(this)
       type_out.append(this[0])
+
   return out , type_out
 
 def format_write(tup): ## tuple
@@ -59,7 +98,7 @@ data_type = "test"
 onto_type = 'mf'
 
 for data_type in ['train','dev','test']:
-  for onto_type in ['mf']:
+  for onto_type in ['cc','bp']:
 
     print ('\n\n')
     print (data_type)
@@ -95,16 +134,24 @@ for data_type in ['train','dev','test']:
         continue
       prot_annot = []
       row_found_in_data = fin.loc[fin['Entry'] == line[0]]
-      if line[15].strip() != list ( row_found_in_data['Sequence'] )[0]:
+
+      same_len, where_change_index = find_change( line[15].strip(), list(row_found_in_data['Sequence'])[0] )
+      if same_len == 1:
         print ('found but not match sequence {}'.format(line[0]))
-        # print (line[15].strip())
-        # print (list ( fin.loc[fin['Entry'] == line[0]]['Sequence'] )[0])
-        # break
         fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
         continue
+
+      # # if line[15].strip() != list ( row_found_in_data['Sequence'] )[0]:
+      #   print ('found but not match sequence {}'.format(line[0]))
+      #   # print (line[15].strip())
+      #   # print (list ( fin.loc[fin['Entry'] == line[0]]['Sequence'] )[0])
+      #   # break
+      #   fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
+      #   continue
+
       for where_ in [6,8,10,11,12,13]:
         if len (line[where_]) > 0 :
-          out, type_out = get_location (line[where_])
+          out, type_out = get_location (line[where_], where_change=where_change_index)
           prot_annot = prot_annot + out
           for t in type_out :
             # if t == 'head':

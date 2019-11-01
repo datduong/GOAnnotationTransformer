@@ -3,7 +3,7 @@
 setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1')
 # average sknewness and KL 
 
-fin = read.table("2embPpiGeluE768H1L12I768PretrainLabelDrop0.1/HistogramValidate/attention_summary.txt",sep='\t',head=T)
+fin = read.table("2embPpiAnnotE768H1L12I768PreLab/HistogramValidate/attention_summary_train_2000.txt",sep='\t',head=T)
 # prot  layer head  KL  skewness  prob_mut
 
 save = matrix(0,nrow=12,ncol=6)
