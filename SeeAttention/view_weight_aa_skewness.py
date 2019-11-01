@@ -476,10 +476,10 @@ def main():
 
           where_not_mask = attention_mask[obs]==1 ## in 1 row, find where it's 1, this is valid position
 
-          if args.aa_type_emb:
-            mutation = aa_type[obs]
-          else:
-            mutation = None
+          # if args.aa_type_emb:
+          #   mutation = aa_type[obs]
+          # else:
+          mutation = None
 
           for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
 
@@ -488,8 +488,8 @@ def main():
 
             this_head = this_head[1:where_AA_end] ## exclude cls, and sep, focus on only AA. notice... the column includes both AA + GO
 
-            if args.aa_type_emb:
-              mutation = mutation[1:where_AA_end]
+            # if args.aa_type_emb:
+            #   mutation = mutation[1:where_AA_end]
 
             this_head = view_util.CountAttRow (this_head)
             # print ('\n')

@@ -10,7 +10,7 @@ def find_change(string1,string2):
   # if same len, then try to assign domain if change is not in range
   # else just not use domain
   if string1==string2:
-    return 0, None ## dont need to do the check at @same_len
+    return 0, None ## dont need to do the check at @diff_and_not_same_len
 
   string1 = np.array([s for s in string1])
   string2 = np.array([s for s in string2])
@@ -98,7 +98,7 @@ data_type = "test"
 onto_type = 'mf'
 
 for data_type in ['train','dev','test']:
-  for onto_type in ['cc','bp']:
+  for onto_type in ['mf','cc','bp']:
 
     print ('\n\n')
     print (data_type)
@@ -135,11 +135,13 @@ for data_type in ['train','dev','test']:
       prot_annot = []
       row_found_in_data = fin.loc[fin['Entry'] == line[0]]
 
-      same_len, where_change_index = find_change( line[15].strip(), list(row_found_in_data['Sequence'])[0] )
-      if same_len == 1:
+      diff_and_not_same_len, where_change_index = find_change( line[15].strip(), list(row_found_in_data['Sequence'])[0] )
+      if diff_and_not_same_len == 1:
         print ('found but not match sequence {}'.format(line[0]))
         fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
         continue
+      if where_change_index is not None: 
+        print ('diff but same len {} {}'.format(line[0],where_change_index))
 
       # # if line[15].strip() != list ( row_found_in_data['Sequence'] )[0]:
       #   print ('found but not match sequence {}'.format(line[0]))
@@ -173,40 +175,36 @@ for data_type in ['train','dev','test']:
 
     pickle.dump(prot_label_type,open(data_type+'_'+onto_type+'_prot_annot_type.pickle','wb'))
 
-    # for i in range(len(z)):
-    #   if (z[i] != x[i]) :
-    #     print (i)
 
 
-onto_type = 'mf'
-train = pickle.load(open('train_'+onto_type+'_prot_annot_type.pickle','rb'))
-not_in_train = {} ## what can we do if domain not seen in train data ?
-all_prot_annot = {}
-for data_type in ['dev','train','test']: #,'dev','test'
-  prot_label_type = pickle.load(open(data_type+'_'+onto_type+'_prot_annot_type.pickle','rb'))
-  print ('data type {} len {}'.format(data_type,len(prot_label_type)))
-  ## get top domain only... may be too much to fit all types?
-  # https://able.bio/rhett/sort-a-python-dictionary-by-value-or-key--84te6gv
-  counter = 0
-  for key, value in sorted(prot_label_type.items(), key=lambda kv: kv[1], reverse=True):
-    # print("%s: %s" % (key, value))
-    if key not in all_prot_annot:
-      all_prot_annot[key] = value
-    else:
-      all_prot_annot[key] = value + all_prot_annot[key]
-    counter = counter + 1
-    # if counter > 10:
-    #   break
-    ## what if not in train ??
-    if key not in train:
-      if key not in not_in_train:
-        not_in_train[key] = value
+for onto_type in ['mf','cc','bp']:
+  train = pickle.load(open('train_'+onto_type+'_prot_annot_type.pickle','rb'))
+  not_in_train = {} ## what can we do if domain not seen in train data ?
+  all_prot_annot = {}
+  for data_type in ['dev','train','test']: #,'dev','test'
+    prot_label_type = pickle.load(open(data_type+'_'+onto_type+'_prot_annot_type.pickle','rb'))
+    print ('data type {} len {}'.format(data_type,len(prot_label_type)))
+    ## get top domain only... may be too much to fit all types?
+    # https://able.bio/rhett/sort-a-python-dictionary-by-value-or-key--84te6gv
+    counter = 0
+    for key, value in sorted(prot_label_type.items(), key=lambda kv: kv[1], reverse=True):
+      # print("%s: %s" % (key, value))
+      if key not in all_prot_annot:
+        all_prot_annot[key] = value
       else:
-        not_in_train[key] = value + not_in_train[key]
+        all_prot_annot[key] = value + all_prot_annot[key]
+      counter = counter + 1
+      # if counter > 10:
+      #   break
+      ## what if not in train ??
+      if key not in train:
+        if key not in not_in_train:
+          not_in_train[key] = value
+        else:
+          not_in_train[key] = value + not_in_train[key]
 
 
-print ('not in train {}'.format(len(not_in_train)))
-
-pickle.dump(all_prot_annot,open(onto_type+'all_prot_annot.pickle','wb'))
-print ('total unique type {}'.format(len(all_prot_annot)))
+  print ('not in train {}'.format(len(not_in_train)))
+  pickle.dump(all_prot_annot,open(onto_type+'_all_prot_annot.pickle','wb'))
+  print ('total unique type {}'.format(len(all_prot_annot)))
 
