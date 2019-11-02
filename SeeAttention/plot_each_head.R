@@ -17,8 +17,8 @@ prot = 'O54992 Q6X632 P0A812 Q96B01 Q5VV41 Q6FJA3 Q9HWK6' # 'O54992 P23109 P9WNC
 prot = strsplit(prot,"\\s+")[[1]]
 
 for (p in prot) {
-  counter = 1
   for (head in 0:3){
+    counter = 1
     plot_list = list()
     for (layer in 0:11){
       fin = read.csv( paste0(p, '/', p , 'layer' , layer, 'head',0,'.csv'), header=F )
@@ -46,11 +46,11 @@ for (p in prot) {
       counter = counter + 1
     }
     # grid.arrange(grobs = plot_list, ncol = 3) ## display plot
-    ggsave( file = paste0(p, '/', p, 'H',head,'.png'), arrangeGrob(grobs = plot_list, ncol = 4), width = 12, height = 10, units = c("in") )  ## save plot
+    ggsave( file = paste0(p, '/', p, 'H',head,'.png'), arrangeGrob(grobs = plot_list, ncol = 4), width = 15, height = 10, units = c("in") )  ## save plot
   }
 }
 
-
+q() 
 
 ave_downward = function(fin,num_label,direction){
   ## compute some summary statistics on best "aa"
