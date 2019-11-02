@@ -11,10 +11,10 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 pretrained_label_path='/u/scratch/d/datduong/deepgo/data/cosine.AveWordClsSep768.Linear768.Layer12/label_vector.pickle'
 
 choice='2embPpiAnnotE768H1L12I768PreLab' # Lr5e-5
-block_size=1792 # mf and cc 1792 but bp has more term  2048
+block_size=2048 # mf and cc 1792 but bp has more term  2048
 save_every=7000 # 9500 10000
 
-for ontology in 'mf' 'cc' ; do
+for ontology in 'bp' ; do # 'mf' 'cc'
   # last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
   output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
   mkdir $output_dir
@@ -35,9 +35,9 @@ for ontology in 'mf' 'cc' ; do
 
   python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_masklm_data --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
 
-  eval_masklm_data='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/test-'$ontology'-prot-annot.tsv'
+  # eval_masklm_data='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/test-'$ontology'-prot-annot.tsv'
 
-  python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_masklm_data --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
+  # python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_masklm_data --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
 
 done
 

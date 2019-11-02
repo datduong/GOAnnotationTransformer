@@ -14,7 +14,7 @@ choice='2embPpiAnnotE768H1L12I768PreLabNot0' # Lr5e-5 Dr0.2
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000 # 9500 10000
 
-for ontology in 'mf' ; do
+for ontology in 'mf' 'cc' ; do
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
   output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
   mkdir $output_dir
@@ -25,7 +25,7 @@ for ontology in 'mf' ; do
   config_name=$output_dir/config.json
   model_name_or_path=$output_dir
 
-  aa_type_file='/local/datdb/deepgo/data/train/fold_1/train_mf_prot_annot_count.pickle'
+  aa_type_file='/local/datdb/deepgo/data/train/fold_1/train_'$ontology'_prot_annot_count.pickle'
 
   train_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-prot-annot.tsv' ## okay to call it as long as it has ppi
   eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/dev-'$ontology'-prot-annot.tsv'
