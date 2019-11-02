@@ -720,13 +720,21 @@ def main():
     args.block_size = tokenizer.max_len_single_sentence  # Our input block size will be the max possible for the model
   args.block_size = min(args.block_size, tokenizer.max_len_single_sentence)
 
-
   config = BertConfig.from_pretrained(args.config_name) ## should we always override
+  config.label_size = len(label_2test_array) ## make sure we really get correct label
+
+  if args.aa_type_file is not None: ## read protein sequence extra data
+    print ('load in aa_type_file {}'.format(args.aa_type_file))
+    annot_data = pickle.load ( open ( args.aa_type_file, 'rb' ) )
+    print ('len of aa_type_file without special token {}'.format(len(annot_data)))
+    config.type_vocab_size = len(annot_data) + 2 # notice add 2 because PAD and UNK
 
   # Prepare model
+  print ('\nsee config before init model')
+  print (config)
+
   if args.config_override:
     # config = BertConfig.from_pretrained(args.config_name) ## should we always override
-    config.label_size = len(label_2test_array) ## make sure we really get correct label
     model = model_class(config)
   else:
     # config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
@@ -735,7 +743,7 @@ def main():
   ## fix emb into 0
   if args.reset_emb_zero:
     print ('\nreset token-type emb at position 0 into 0\n')
-    model.bert.embeddings.token_type_embeddings.weight.data[0] = 0
+    model.bert.embeddings.token_type_embeddings.weight.data[0] = 0 ## only set 1st one to zero, which is padding 
 
   ## load pretrain label vectors ?
   if args.pretrained_label_path is not None:
