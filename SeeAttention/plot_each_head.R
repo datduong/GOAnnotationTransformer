@@ -17,11 +17,13 @@ prot = 'O54992 Q6X632 P0A812 Q96B01 Q5VV41 Q6FJA3 Q9HWK6' # 'O54992 P23109 P9WNC
 prot = strsplit(prot,"\\s+")[[1]]
 
 for (p in prot) {
+  print (p)
   for (head in 0:3){
     counter = 1
     plot_list = list()
     for (layer in 0:11){
-      fin = read.csv( paste0(p, '/', p , 'layer' , layer, 'head',0,'.csv'), header=F )
+      print (paste0(p, '/', p , 'layer' , layer, 'head',0,'.csv'))
+      fin = read.csv( paste0(p, '/', p , 'layer' , layer, 'head',head,'.csv'), header=F )
       fin = as.matrix(fin)
       total_len = nrow(fin)
       colnames(fin) = 1:nrow(fin)
@@ -50,7 +52,7 @@ for (p in prot) {
   }
 }
 
-q() 
+q()
 
 ave_downward = function(fin,num_label,direction){
   ## compute some summary statistics on best "aa"
@@ -100,16 +102,16 @@ for (name in c('layerAA2AA','layerAA2all')){ # ,'layerAA2all','layerAA2GO'
       } else {
         plot(1:ncol(z), z[2,], pch=16,cex=.5, type='l', main=paste(p,'layer',layer), xlab='index',ylab='prob')
       }
-      abline(h = 1/(num_aa+num_label), col='blue' ) 
-      abline(v = c(51,115,182,337), col='red', lty=2 ) 
-      abline(v = num_aa+1, col='green', lty=2 ) 
+      abline(h = 1/(num_aa+num_label), col='blue' )
+      abline(v = c(51,115,182,337), col='red', lty=2 )
+      abline(v = num_aa+1, col='green', lty=2 )
 
     }
     dev.off()
   }
 }
 
-## 
+##
 
 
 

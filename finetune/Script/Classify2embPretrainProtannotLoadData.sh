@@ -14,8 +14,8 @@ choice='2embPpiAnnotE768H1L12I768PreLab' # Lr5e-5
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000 # 9500 10000
 
-for ontology in 'mf' ; do
-  last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
+for ontology in 'mf' 'cc' ; do
+  # last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
   output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
   mkdir $output_dir
 
@@ -25,13 +25,17 @@ for ontology in 'mf' ; do
   config_name=$output_dir/config.json
   model_name_or_path=$output_dir
 
-  aa_type_file='/u/scratch/d/datduong/deepgo/data/train/fold_1/train_mf_prot_annot_count.pickle'
+  aa_type_file='/u/scratch/d/datduong/deepgo/data/train/fold_1/train_'$ontology'_prot_annot_count.pickle'
 
   train_masklm_data='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-prot-annot.tsv' ## okay to call it as long as it has ppi
   eval_masklm_data='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/dev-'$ontology'-prot-annot.tsv'
   label_2test='/u/scratch/d/datduong/deepgo/data/train/deepgo.'$ontology'.csv'
 
   cd $server/BertGOAnnotation/finetune/
+
+  python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_masklm_data --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
+
+  eval_masklm_data='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/test-'$ontology'-prot-annot.tsv'
 
   python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_masklm_data --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
 

@@ -28,7 +28,7 @@ for name in to_load:
   print (prot)
   for p in prot: 
     for layer in range(12): 
-      for head in range (1): 
+      for head in range (4): 
         matrix = attention[p] [layer] [head]
         np.savetxt (  p + '/' + p + 'layer' + str(layer) + 'head' + str(head)+'.csv', matrix, delimiter=',')
 

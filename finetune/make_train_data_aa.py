@@ -82,7 +82,7 @@ AA_type = {}
 prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split()
 
 for data_type in ['train','dev','test']:
-  for ontology in ['mf']: # 'cc','bp',
+  for ontology in ['mf','cc','bp']: # 'cc','bp',
 
     long_count = 0
 
