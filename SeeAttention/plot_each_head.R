@@ -10,17 +10,17 @@ library('RColorBrewer')
 coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25)
 
 # setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1')
-setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE768H1L12I768PreLab/ManualValidate')
+setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE768H4L12I768PreLab/ManualValidate')
 
 num_label = 589
 prot = 'O54992 Q6X632 P0A812 Q96B01 Q5VV41 Q6FJA3 Q9HWK6' # 'O54992 P23109 P9WNC3'# 'P23109' # B3PC73 O54992 P23109
 prot = strsplit(prot,"\\s+")[[1]]
 
 for (p in prot) {
-  plot_list = list()
-  counter = 1
-  for (layer in 1:11){
-    for (head in 0:0){
+  for (head in 0:3){
+    counter = 1
+    plot_list = list()
+    for (layer in 0:11){
       fin = read.csv( paste0(p, '/', p , 'layer' , layer, 'head',0,'.csv'), header=F )
       fin = as.matrix(fin)
       total_len = nrow(fin)
@@ -39,16 +39,18 @@ for (p in prot) {
       ggtitle(paste0(p , 'layer' , layer, 'head',head)) +
       scale_fill_gradient2(low = "blue", high = "red") + # midpoint = total_median, limit = c(0,total_max)
       theme(legend.title = element_blank()) #,axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank())
-      png (file = paste0(p, '/', p, 'H',head,'L',layer,'.png'),width=7, height=7, units='in', res = 500)
-      print (p1)
-      dev.off()
-      # plot_list[[counter]] = p1
+      # png (file = paste0(p, '/', p, 'H',head,'L',layer,'.png'),width=7, height=7, units='in', res = 500)
+      # print (p1)
+      # dev.off()
+      plot_list[[counter]] = p1
       counter = counter + 1
     }
+    # grid.arrange(grobs = plot_list, ncol = 3) ## display plot
+    ggsave( file = paste0(p, '/', p, 'H',head,'.png'), arrangeGrob(grobs = plot_list, ncol = 4), width = 15, height = 10, units = c("in") )  ## save plot
   }
 }
 
-
+q() 
 
 ave_downward = function(fin,num_label,direction){
   ## compute some summary statistics on best "aa"
