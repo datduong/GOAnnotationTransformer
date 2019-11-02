@@ -564,6 +564,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--reset_emb_zero", action="store_true", default=False)
   parser.add_argument("--aa_type_file", type=str, default=None)
   parser.add_argument("--pretrained_label_path", type=str, default=None)
   parser.add_argument("--label_2test", type=str, default=None)
@@ -732,7 +733,7 @@ def main():
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
   ## fix emb into 0
-  if args.aa_type_emb:
+  if args.reset_emb_zero:
     print ('\nreset token-type emb at position 0 into 0\n')
     model.bert.embeddings.token_type_embeddings.weight.data[0] = 0
 

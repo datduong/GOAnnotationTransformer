@@ -245,6 +245,7 @@ def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--data_type", type=str, default=None)
   parser.add_argument("--aa_type_file", type=str, default=None)
   parser.add_argument("--pretrained_label_path", type=str, default=None)
   parser.add_argument("--label_2test", type=str, default=None)
@@ -386,11 +387,11 @@ def main():
     # prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split()
     # protein_name = [p for p in protein_name if p not in prot_change]
 
-    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-mf-prot-annot.tsv", dtype=str, sep="\t",header=None)
+    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/"+args.data_type+"-mf-prot-annot.tsv", dtype=str, sep="\t",header=None)
     protein_name = list ( protein_name[0] )
 
   else:
-    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf.tsv", dtype=str, sep="\t")
+    protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/"+args.data_type+"-mf.tsv", dtype=str, sep="\t")
     protein_name = list ( protein_name['Entry'] )
 
 
@@ -528,7 +529,7 @@ def main():
       if len(out[k])!=12:
         print ('fail {}'.format(k))
       else:
-        pickle.dump(out, open(os.path.join(args.output_dir,"ManualValidate/attention_"+k+".pickle"), 'wb') )
+        pickle.dump(out, open(os.path.join(args.output_dir,"ManualValidate/"+args.data_type+"_attention_"+k+".pickle"), 'wb') )
 
     ## update next counter, so we move to batch#2 in the raw text
     row_counter = end
