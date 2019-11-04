@@ -341,6 +341,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
 
+  print ('1st run')
+  print ( model.bert.embeddings_label.word_embeddings.weight )
+  print ( model.bert.embeddings_label.word_embeddings.weight.grad )
+
   for epoch_counter in train_iterator:
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
@@ -387,6 +391,12 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
           scaled_loss.backward()
       else:
         loss.backward()
+
+      # print ('see 0 grad, so not change')
+      # print ( model.bert.embeddings_label.word_embeddings.weight )
+      # print ( model.bert.embeddings_label.word_embeddings.weight.grad )
+      # if step > 10:
+      #   exit()
 
       tr_loss += loss.item()
       if (step + 1) % args.gradient_accumulation_steps == 0:
@@ -565,6 +575,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--reset_emb_zero", action="store_true", default=False)
   parser.add_argument("--aa_type_file", type=str, default=None)
   parser.add_argument("--pretrained_label_path", type=str, default=None)
@@ -741,6 +752,9 @@ def main():
     # config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
+  print ('\ninit weight (scale/shift)') 
+  model.init_weights() ## init weight (scale/shift)
+
   ## fix emb into 0
   if args.reset_emb_zero:
     print ('\nreset token-type emb at position 0 into 0\n')
@@ -750,7 +764,7 @@ def main():
   if args.pretrained_label_path is not None:
     print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
     ## have a pickle right now.
-    pretrained_label_vec = np.zeros((num_labels,768))
+    pretrained_label_vec = np.zeros((num_labels,256))
     temp = pickle.load(open(args.pretrained_label_path,"rb"))
     for counter, lab in enumerate( label_2test_array ):
       pretrained_label_vec[counter] = temp[re.sub("GO","GO:",lab)]
@@ -809,6 +823,11 @@ def main():
       checkpoints = list(os.path.dirname(c) for c in sorted(glob.glob(args.output_dir + '/**/' + WEIGHTS_NAME, recursive=True)))
       logging.getLogger("pytorch_transformers.modeling_utils").setLevel(logging.WARN)  # Reduce logging
     logger.info("Evaluate the following checkpoints: %s", checkpoints)
+
+    if args.checkpoint is not None: ## we don't have to do all checkpoints ??
+      checkpoints = [c for c in checkpoints if re.findall(args.checkpoint,c)]
+      print ('\nwill only do this one checkpoint {}'.format(checkpoints))
+
     for checkpoint in checkpoints:
       print( "\n\nEvaluate the following checkpoints: {} \n".format(checkpoint) )
       global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
