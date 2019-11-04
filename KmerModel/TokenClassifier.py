@@ -199,11 +199,9 @@ class BertEmbeddingsAA(nn.Module):
 
     if self.aa_type_emb:
       # @token_type_ids is batch x aa_len x domain_type --> output batch x aa_len x domain_type x dim
-      # print (token_type_ids.shape)
       token_type_embeddings = self.token_type_embeddings(token_type_ids)
       ## must sum over domain (additive effect)
       token_type_embeddings = torch.sum(token_type_embeddings,dim=2) # get batch x aa_len x dim
-      # print (token_type_embeddings.shape)
       embeddings = words_embeddings + position_embeddings  + token_type_embeddings
 
     else:
