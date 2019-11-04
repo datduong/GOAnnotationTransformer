@@ -53,10 +53,7 @@ import evaluation_metric
 
 
 MODEL_CLASSES = {
-  'gpt2': (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer),
-  'openai-gpt': (OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer),
-  'bert': (BertConfig, TokenClassifier.BertForTokenClassification2Emb, BertTokenizer), ## replace the standard @BertForTokenClassification
-  'roberta': (RobertaConfig, RobertaForMaskedLM, RobertaTokenizer)
+  'bert': (BertConfig, TokenClassifier.BertForTokenClassification2Emb, BertTokenizer)## replace the standard @BertForTokenClassification
 }
 
 
@@ -288,33 +285,25 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
         model.zero_grad()
         global_step += 1
 
-        if (epoch_counter>0) and args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
-          # Save model checkpoint
-          output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
-          if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-          model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
-          model_to_save.save_pretrained(output_dir)
-          torch.save(args, os.path.join(output_dir, 'training_args.bin'))
-          logger.info("Saving model checkpoint to %s", output_dir)
-
-        if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
-          # Log metrics
-          if args.local_rank == -1 and args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
-            results = evaluate(args, model, tokenizer,label_2test_array)
-            for key, value in results.items():
-              tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-
-          tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-          tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
-          logging_loss = tr_loss
-
       if args.max_steps > 0 and global_step > args.max_steps:
         epoch_iterator.close()
         break
 
     ## end 1 epoch
-    results = evaluate(args, model, tokenizer,label_2test_array)
+    print ('\n\neval end epoch {}'.format(epoch_counter))
+
+    ## to save some time, let's just save at end of epoch
+
+    output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
+    if not os.path.exists(output_dir):
+      os.makedirs(output_dir)
+    model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+    model_to_save.save_pretrained(output_dir)
+    torch.save(args, os.path.join(output_dir, 'training_args.bin'))
+    logger.info("Saving model checkpoint to %s", output_dir)
+
+    results = evaluate(args, model, tokenizer,label_2test_array, prefix=str(global_step))
+
     if results['eval_loss'] < eval_loss:
       eval_loss = results['eval_loss']
       last_best = epoch_counter
@@ -410,9 +399,9 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 
   output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
   with open(output_eval_file, "a+") as writer:
-    logger.info("***** Eval results {} *****".format(prefix))
+    # logger.info("***** Eval results {} *****".format(prefix))
     print("\n***** Eval results {} *****".format(prefix))
-    writer.write("\n***** Eval results {} *****".format(prefix))
+    # writer.write("\n***** Eval results {} *****".format(prefix))
     for key in sorted(result.keys()):
       print( "  {} = {}".format( key, str(result[key]) ) )
       # writer.write("%s = %s\n" % (key, str(result[key])))
@@ -579,12 +568,12 @@ def main():
 
 
   # Prepare model
+  config = BertConfig.from_pretrained(args.config_name) ## should we always override
+  config.label_size = len(label_2test_array) ## make sure we really get correct label
+
   if args.config_override:
-    config = BertConfig.from_pretrained(args.config_name) ## should we always override
-    config.label_size = len(label_2test_array) ## make sure we really get correct label
     model = model_class(config)
   else:
-    config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
 

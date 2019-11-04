@@ -341,10 +341,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
 
-  print ('1st run')
-  print ( model.bert.embeddings_label.word_embeddings.weight )
-  print ( model.bert.embeddings_label.word_embeddings.weight.grad )
-
   for epoch_counter in train_iterator:
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
@@ -391,12 +387,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
           scaled_loss.backward()
       else:
         loss.backward()
-
-      # print ('see 0 grad, so not change')
-      # print ( model.bert.embeddings_label.word_embeddings.weight )
-      # print ( model.bert.embeddings_label.word_embeddings.weight.grad )
-      # if step > 10:
-      #   exit()
 
       tr_loss += loss.item()
       if (step + 1) % args.gradient_accumulation_steps == 0:
@@ -752,8 +742,8 @@ def main():
     # config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
-  print ('\ninit weight (scale/shift)') 
-  model.init_weights() ## init weight (scale/shift)
+  # print ('\ninit weight (scale/shift)') 
+  # model.init_weights() ## init weight (scale/shift)
 
   ## fix emb into 0
   if args.reset_emb_zero:

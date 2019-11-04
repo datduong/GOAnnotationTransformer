@@ -366,18 +366,14 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
     self.classifier = nn.Linear(config.hidden_size, config.num_labels)
 
     # self.apply(self.init_weights)
-    print ('\nwe will call @init_weights outside after declare the model.\n')
-    # self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
-
-    # if args is not None: ## some stupid legacy
-    #   if args.pretrained_label_path is not None:
-    #     self.init_label_emb(args.pretrained_label_path)
+    # print ('\nwe will call @init_weights outside after declare the model.\n')
+    self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
   def init_label_emb(self,pretrained_weight):
     self.bert.embeddings_label.word_embeddings.weight.data.copy_(torch.from_numpy(pretrained_weight))
     self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
-    print ('see it set to false')
-    print (self.bert.embeddings_label.word_embeddings.weight)
+    ## by default, label emb will be passed into @init_weights
+    ## if we load a fixed emb, we have to also normalize like how init_weights does it. ???
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
         position_ids=None, head_mask=None, attention_mask_label=None):
@@ -422,6 +418,13 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
     super(BertForTokenClassification2EmbPPI, self).__init__(config)
 
     self.classifier = nn.Sequential( nn.Linear(config.hidden_size+256, config.hidden_size), nn.ReLU(), nn.Linear(config.hidden_size, config.num_labels) )
+
+    if config.init_classifer_layer == 'xavier':
+      nn.init.xavier_uniform_(self.classifier[0].weight)
+      nn.init.xavier_uniform_(self.classifier[2].weight)
+
+    if config.init_classifer_layer == 'default':
+      self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
         position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None):
