@@ -413,6 +413,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--pretrained_label_path", type=str, default=None)
   parser.add_argument("--label_2test", type=str, default=None)
   parser.add_argument("--bert_vocab", type=str, default=None)
@@ -632,7 +633,7 @@ def main():
     model.to(args.device)
 
 
-  # Evaluation
+    # Evaluation
   results = {}
   if args.do_eval and args.local_rank in [-1, 0]:
     checkpoints = [args.output_dir]
@@ -640,6 +641,11 @@ def main():
       checkpoints = list(os.path.dirname(c) for c in sorted(glob.glob(args.output_dir + '/**/' + WEIGHTS_NAME, recursive=True)))
       logging.getLogger("pytorch_transformers.modeling_utils").setLevel(logging.WARN)  # Reduce logging
     logger.info("Evaluate the following checkpoints: %s", checkpoints)
+
+    if args.checkpoint is not None: ## we don't have to do all checkpoints ??
+      checkpoints = [c for c in checkpoints if re.findall(args.checkpoint,c)]
+      print ('\nwill only do this one checkpoint {}'.format(checkpoints))
+
     for checkpoint in checkpoints:
       print( "\n\nEvaluate the following checkpoints: {} \n".format(checkpoint) )
       global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
