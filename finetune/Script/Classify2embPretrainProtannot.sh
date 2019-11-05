@@ -11,7 +11,7 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 # pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear768.Layer12/label_vector.pickle'
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear256.Layer12/label_vector.pickle'
 
-choice='2embPpiAnnotE256H1L12I768Set0/BertAve12Ep10e12Drop0.1Lr5e5None/' # Lr5e-5 Dr0.2
+choice='2embPpiAnnotE256H1L12I768Set0/BertAve12Ep10e12Drop0.1Lr5e5UnifUnfreeze/' # Lr5e-5 Dr0.2
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000 # 9500 10000
 
@@ -38,14 +38,16 @@ for ontology in 'mf' ; do
 
   # # 5040 batches train
   # # continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 2 --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --learning_rate 0.00005 --seed 2019 --fp16 --aa_type_emb --aa_type_file $aa_type_file --reset_emb_zero --config_override --pretrained_label_path $pretrained_label_path > $output_dir/train_point2.txt # --no_cuda
+  CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 2 --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --learning_rate 0.00005 --seed 2019 --fp16 --aa_type_emb --aa_type_file $aa_type_file --reset_emb_zero --config_override > $output_dir/train_point.txt # --no_cuda
+
+  ## --pretrained_label_path $pretrained_label_path
 
   # # ## testing phase --pretrained_label_path $pretrained_label_path
 
-  # checkpoint=70920
+  # checkpoint=110726
   # for test_data in 'test'; do # 'dev' 
   #   eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/'$test_data'-'$ontology'-prot-annot.tsv'
-  #   CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --fp16 --aa_type_emb --aa_type_file $aa_type_file --checkpoint $checkpoint > $output_dir/'eval_'$test_data'_check_point.txt'
+  #   CUDA_VISIBLE_DEVICES=6 python3 -u RunTokenClassifyProtData.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --fp16 --aa_type_emb --aa_type_file $aa_type_file --checkpoint $checkpoint > $output_dir/'eval_'$test_data'_check_point.txt'
   # done  # --pretrained_label_path $pretrained_label_path 
 
   ## view weights ?? 

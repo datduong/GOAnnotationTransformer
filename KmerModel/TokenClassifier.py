@@ -369,7 +369,8 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
 
   def init_label_emb(self,pretrained_weight):
     self.bert.embeddings_label.word_embeddings.weight.data.copy_(torch.from_numpy(pretrained_weight))
-    self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
+    if self.config.freeze_pretrained_vec == True: 
+      self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
     ## by default, label emb will be passed into @init_weights
     ## if we load a fixed emb, we have to also normalize like how init_weights does it. ???
 
