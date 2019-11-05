@@ -582,7 +582,7 @@ def main():
   if args.pretrained_label_path is not None: 
     print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
     ## have a pickle right now. 
-    pretrained_label_vec = np.zeros((num_labels,768))
+    pretrained_label_vec = np.zeros((num_labels,256))
     temp = pickle.load(open(args.pretrained_label_path,"rb"))
     for counter, lab in enumerate( label_2test_array ):
       pretrained_label_vec[counter] = temp[re.sub("GO","GO:",lab)]

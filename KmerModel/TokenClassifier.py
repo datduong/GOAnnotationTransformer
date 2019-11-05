@@ -212,6 +212,7 @@ class BertEmbeddingsAA(nn.Module):
     return embeddings
 
 
+
 class BertEmbeddingsLabel(nn.Module):
   """Construct the embeddings from word, position and token_type embeddings.
   """
@@ -299,6 +300,10 @@ class BertModel2Emb(BertPreTrainedModel):
       self.encoder.layer[layer].attention.prune_heads(heads)
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, attention_mask=None, token_type_ids=None, position_ids=None, head_mask=None):
+
+    ##!! to avoid a lot of re-structuring, let's define @input_ids=>protein_vector from interaction network
+    ## assume @input_ids is batch x 1 x dim, each batch is a protein so it has 1 vector
+
     # if attention_mask is None:
     #   attention_mask = torch.ones_like(input_ids) ## probably don't need this very much. if we pass in mask and token_type, which we always do for batch mode
     # if token_type_ids is None:
@@ -339,7 +344,11 @@ class BertModel2Emb(BertPreTrainedModel):
     embedding_output_label = self.embeddings_label(input_ids_label, position_ids=None, token_type_ids=None)
 
     # concat into the original embedding
-    embedding_output = torch.cat([embedding_output,embedding_output_label], dim=1) ## @embedding_output is batch x num_aa x dim so append @embedding_output_label to dim=1 (basically adding more words to @embedding_output)
+    if self.config.ppi_front:
+      ## masking may vary, because some proteins don't have vec emb
+      embedding_output = torch.cat([input_ids,embedding_output,embedding_output_label], dim=1) ## we add protein_vector as variable @input_ids
+    else:
+      embedding_output = torch.cat([embedding_output,embedding_output_label], dim=1) ## @embedding_output is batch x num_aa x dim so append @embedding_output_label to dim=1 (basically adding more words to @embedding_output)
 
     # @embedding_output is just some type of embedding, the @encoder will apply attention weights
     encoder_outputs = self.encoder(embedding_output,
@@ -356,9 +365,9 @@ class BertModel2Emb(BertPreTrainedModel):
 class BertForTokenClassification2Emb (BertPreTrainedModel):
 
   def __init__(self, config):
+
     super(BertForTokenClassification2Emb, self).__init__(config)
     self.num_labels = 2 # config.num_labels ## for us, each output vector is "yes/no", so we should keep this at self.num_labels=2 to avoid any strange error later
-
     self.bert = BertModel2Emb(config)
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
     self.classifier = nn.Linear(config.hidden_size, config.num_labels)
@@ -369,7 +378,7 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
 
   def init_label_emb(self,pretrained_weight):
     self.bert.embeddings_label.word_embeddings.weight.data.copy_(torch.from_numpy(pretrained_weight))
-    if self.config.freeze_pretrained_vec == True: 
+    if self.config.freeze_pretrained_vec == True:
       self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
     ## by default, label emb will be passed into @init_weights
     ## if we load a fixed emb, we have to also normalize like how init_weights does it. ???
