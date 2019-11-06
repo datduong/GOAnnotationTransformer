@@ -56,7 +56,8 @@ import evaluation_metric
 
 
 MODEL_CLASSES = {
-  'bert': (BertConfig, TokenClassifier.BertForTokenClassification2EmbPPI, BertTokenizer) ## replace the standard @BertForTokenClassification
+  'ppi': (BertConfig, TokenClassifier.BertForTokenClassification2EmbPPI, BertTokenizer), ## replace the standard @BertForTokenClassification
+  'noppi': (BertConfig, TokenClassifier.BertForTokenClassification2Emb, BertTokenizer) ## replace the standard @BertForTokenClassification
 }
 
 
@@ -109,17 +110,18 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate)
 
 
 class TextDataset(Dataset):
-  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None, evaluate=None):
+  def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None, evaluate=None, config=None):
     # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
 
     self.args = args
 
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
-    if args.aa_type_emb:
-      directory = os.path.join(directory , 'aa_ppi_annot_cache')
-    else:
-      directory = os.path.join(directory , 'aa_ppi_cache')
+    # if args.aa_type_emb:
+    #   directory = os.path.join(directory , 'aa_ppi_annot_cache')
+    # else:
+    #   directory = os.path.join(directory , 'aa_ppi_cache')
+    directory = os.path.join(directory , args.cache_name) ## !! strictly enforce name
     if not os.path.exists(directory):
       os.mkdir(directory)
 
@@ -206,6 +208,14 @@ class TextDataset(Dataset):
         ## pad @this_aa to max len
         mask_aa = [1] * len_withClsSep + [0] * ( max_aa_len - len_withClsSep ) ## attend to non-pad
         this_aa = this_aa + [0] * ( max_aa_len - len_withClsSep ) ## padding
+
+        if config.ppi_front: ## put ppi vector in front ... PPIvec CLS--aa--SEP GOvec ... do we need to do CLS PPIvec SEP--aa--SEP GOvec SEP ??
+          if np.sum(self.ppi_vec[counter]) == 0:
+            mask_value = [0] ## vector not exist, mask 0
+          else:
+            mask_value = [1]
+          mask_aa = mask_value + mask_aa
+
         self.input_ids_aa.append( this_aa )
         self.mask_ids_aa.append (mask_aa)
 
@@ -261,8 +271,8 @@ class TextDataset(Dataset):
               torch.tensor(self.ppi_vec[item]) )
 
 
-def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
-  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args, evaluate=evaluate)
+def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False, config=None):
+  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args, evaluate=evaluate, config=config)
   return dataset
 
 
@@ -274,7 +284,7 @@ def set_seed(args):
     torch.cuda.manual_seed_all(args.seed)
 
 
-def train(args, train_dataset, model, tokenizer, label_2test_array):
+def train(args, train_dataset, model, tokenizer, label_2test_array, config=None):
   """ Train the model """
 
   num_labels = len(label_2test_array)
@@ -347,19 +357,31 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
       ## !!!  WE ARE NOT GOING TO TRAIN MASKED-LM
 
-      max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
+
+      if config.ppi_front:
+        max_len_in_batch = int( torch.max ( torch.sum(batch[3][:,1::],1) ) ) ## exclude 1st column, only need max len of AA
+        max_len_in_mask = max_len_in_batch + 1
+      else:
+        max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
+        max_len_in_mask = max_len_in_batch
+
       input_ids_aa = batch[1][:,0:max_len_in_batch].to(args.device)
       input_ids_label = batch[2].to(args.device) ## also pass in SEP
-      attention_mask = torch.cat( (batch[3][:,0:max_len_in_batch] , torch.ones(input_ids_label.shape, dtype=torch.long) ), dim=1 ).to(args.device)
+
+      attention_mask = torch.cat( (batch[3][:,0:max_len_in_mask] , torch.ones(input_ids_label.shape, dtype=torch.long) ), dim=1 ).to(args.device)
 
       labels = batch[0].to(args.device) ## already in batch_size x num_label
       ## must append 0 positions to the front, so that we mask out AA
-      labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
-        torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## SEP is at last position on label size ??? should there be one ??
-      # labels_mask[:,-1] = 0 ## must mask SEP in the label side
-      # labels_mask = labels_mask.to(args.device) ## test all labels
+      labels_mask = torch.cat((torch.zeros(input_ids_aa.shape[0], max_len_in_mask),
+                               torch.ones(input_ids_label.shape)), dim=1).to(args.device)  # SEP is at last position on label size ??? should there be one ??
 
-      ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
+      if args.model_type == 'ppi':
+        if config.ppi_front:
+          ppi_vec = batch[4].unsqueeze(1).to(args.device)
+        else:
+          ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
+      else:
+        ppi_vec = None
 
       if args.aa_type_emb:
         ## batch x aa_len x type
@@ -373,7 +395,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
 
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
+      outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
@@ -437,7 +459,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
     logger.info("Saving model checkpoint to %s", output_dir)
 
-    results = evaluate(args, model, tokenizer,label_2test_array, prefix=str(global_step))
+    results = evaluate(args, model, tokenizer,label_2test_array, prefix=str(global_step), config=config)
     # for key, value in results.items():
     #   tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
 
@@ -471,14 +493,14 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
   return global_step, tr_loss / global_step
 
 
-def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
+def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 
   num_labels = len(label_2test_array)
 
   # Loop to handle MNLI double evaluation (matched, mis-matched)
   eval_output_dir = args.output_dir
 
-  eval_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=True)
+  eval_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=True, config=config)
 
   if not os.path.exists(eval_output_dir) and args.local_rank in [-1, 0]:
     os.makedirs(eval_output_dir)
@@ -503,17 +525,30 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
   for batch in tqdm(eval_dataloader, desc="Evaluating"):
     # batch = batch.to(args.device)
 
-    max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
+    if config.ppi_front:
+      max_len_in_batch = int( torch.max ( torch.sum(batch[3][:,1::],1) ) ) ## exclude 1st column, only need max len of AA
+      max_len_in_mask = max_len_in_batch + 1
+    else:
+      max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
+      max_len_in_mask = max_len_in_batch
+
     input_ids_aa = batch[1][:,0:max_len_in_batch].to(args.device)
-    input_ids_label = batch[2].to(args.device)
-    attention_mask = torch.cat( (batch[3][:,0:max_len_in_batch] , torch.ones(input_ids_label.shape,dtype=torch.long) ), dim=1 ).to(args.device)
+    input_ids_label = batch[2].to(args.device) ## also pass in SEP
+
+    attention_mask = torch.cat( (batch[3][:,0:max_len_in_mask] , torch.ones(input_ids_label.shape, dtype=torch.long) ), dim=1 ).to(args.device)
 
     labels = batch[0].to(args.device) ## already in batch_size x num_label
     ## must append 0 positions to the front, so that we mask out AA
-    labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
-      torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## test all labels
+    labels_mask = torch.cat((torch.zeros(input_ids_aa.shape[0], max_len_in_mask),
+                             torch.ones(input_ids_label.shape)), dim=1).to(args.device)
 
-    ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make
+    if args.model_type == 'ppi':
+      if config.ppi_front:
+        ppi_vec = batch[4].unsqueeze(1).to(args.device)
+      else:
+        ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
+    else:
+      ppi_vec = None
 
     if args.aa_type_emb:
       aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
@@ -525,7 +560,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     # print (aa_type)
 
     with torch.no_grad():
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
+      outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
@@ -565,6 +600,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--reset_emb_zero", action="store_true", default=False)
   parser.add_argument("--aa_type_file", type=str, default=None)
@@ -742,7 +778,7 @@ def main():
     # config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
-  # print ('\ninit weight (scale/shift)') 
+  # print ('\ninit weight (scale/shift)')
   # model.init_weights() ## init weight (scale/shift)
 
   ## fix emb into 0
@@ -774,12 +810,12 @@ def main():
     if args.local_rank not in [-1, 0]:
       torch.distributed.barrier()  # Barrier to make sure only the first process in distributed training process the dataset, and the others will use the cache
 
-    train_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False)
+    train_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False, config=config)
 
     if args.local_rank == 0:
       torch.distributed.barrier()
 
-    global_step, tr_loss = train(args, train_dataset, model, tokenizer,label_2test_array)
+    global_step, tr_loss = train(args, train_dataset, model, tokenizer, label_2test_array, config=config)
     logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
 
@@ -823,7 +859,7 @@ def main():
       global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
       model = model_class.from_pretrained(checkpoint)
       model.to(args.device)
-      result = evaluate(args, model, tokenizer, label_2test_array, prefix=global_step)
+      result = evaluate(args, model, tokenizer, label_2test_array, prefix=global_step, config=config)
       result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
       results.update(result)
 

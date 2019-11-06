@@ -212,7 +212,6 @@ class BertEmbeddingsAA(nn.Module):
     return embeddings
 
 
-
 class BertEmbeddingsLabel(nn.Module):
   """Construct the embeddings from word, position and token_type embeddings.
   """
@@ -347,6 +346,7 @@ class BertModel2Emb(BertPreTrainedModel):
     if self.config.ppi_front:
       ## masking may vary, because some proteins don't have vec emb
       embedding_output = torch.cat([input_ids,embedding_output,embedding_output_label], dim=1) ## we add protein_vector as variable @input_ids
+
     else:
       embedding_output = torch.cat([embedding_output,embedding_output_label], dim=1) ## @embedding_output is batch x num_aa x dim so append @embedding_output_label to dim=1 (basically adding more words to @embedding_output)
 
@@ -384,7 +384,9 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
     ## if we load a fixed emb, we have to also normalize like how init_weights does it. ???
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
-        position_ids=None, head_mask=None, attention_mask_label=None):
+        position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None):
+
+    ## !! put @prot_vec=None anyway to not get error, but we will not use @prot_vec at all in this function
 
     ## !! add @attention_mask_label
     ## !! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side.
@@ -425,7 +427,8 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
   def __init__(self, config):
     super(BertForTokenClassification2EmbPPI, self).__init__(config)
 
-    self.classifier = nn.Sequential( nn.Linear(config.hidden_size+256, config.hidden_size), nn.ReLU(), nn.Linear(config.hidden_size, config.num_labels) )
+    if not self.config.ppi_front: 
+      self.classifier = nn.Sequential( nn.Linear(config.hidden_size+256, config.hidden_size), nn.ReLU(), nn.Linear(config.hidden_size, config.num_labels) )
 
     if config.init_classifer_layer == 'xavier':
       nn.init.xavier_uniform_(self.classifier[0].weight)
@@ -449,7 +452,8 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
     ## append the prot_vec
     ## @prot_vec should be batch x 1 x dim so that we can broadcast append ?
     sequence_output = self.dropout(sequence_output)
-    sequence_output = torch.cat((sequence_output, prot_vec), dim=2)
+    if not self.config.ppi_front: 
+      sequence_output = torch.cat((sequence_output, prot_vec), dim=2)
 
     logits = self.classifier(sequence_output)
 
