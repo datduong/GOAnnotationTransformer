@@ -166,12 +166,9 @@ class BertEmbeddingsAA(nn.Module):
     # label should not need to have ordering ?
     self.position_embeddings = nn.Embedding(config.max_position_embeddings, config.hidden_size)
 
-    try:
-      self.aa_type_emb = config.aa_type_emb ## may see error for some legacy call ??
-    except:
-      self.aa_type_emb = False
+    self.config = config
 
-    if self.aa_type_emb:
+    if self.config.aa_type_emb:
       print ('\n\nturn on the token-type style embed.\n\n')
       ## okay to say 4 groups + 1 extra , we need special token to map to all 0, so CLS SEP PAD --> group 0
       ## 20 major amino acids --> 4 major groups
@@ -197,7 +194,7 @@ class BertEmbeddingsAA(nn.Module):
     words_embeddings = self.word_embeddings(input_ids)
     position_embeddings = self.position_embeddings(position_ids)
 
-    if self.aa_type_emb:
+    if self.config.aa_type_emb:
       # @token_type_ids is batch x aa_len x domain_type --> output batch x aa_len x domain_type x dim
       token_type_embeddings = self.token_type_embeddings(token_type_ids)
       ## must sum over domain (additive effect)
@@ -217,6 +214,9 @@ class BertEmbeddingsLabel(nn.Module):
   """
   def __init__(self, config):
     super(BertEmbeddingsLabel, self).__init__()
+
+    self.config = config
+
     self.word_embeddings = nn.Embedding(config.label_size, config.hidden_size) ## , padding_idx=0
     # label should not need to have ordering ?
     # self.position_embeddings = nn.Embedding(config.max_position_embeddings, config.hidden_size)
@@ -224,7 +224,10 @@ class BertEmbeddingsLabel(nn.Module):
 
     # self.LayerNorm is not snake-cased to stick with TensorFlow model variable name and be able to load
     # any TensorFlow checkpoint file
-    self.LayerNorm = BertLayerNorm(config.hidden_size, eps=config.layer_norm_eps)
+    if self.config.scale_label_vec: ## if we freeze, then we will not use any layer norm. let's try using the vectors as they are.
+      self.LayerNorm = BertLayerNorm(config.hidden_size, eps=config.layer_norm_eps)
+
+    ## should always drop to avoid overfit
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
   def forward(self, input_ids, token_type_ids=None, position_ids=None):
@@ -235,13 +238,17 @@ class BertEmbeddingsLabel(nn.Module):
     # if token_type_ids is None:
     #   token_type_ids = torch.zeros_like(input_ids)
 
-    words_embeddings = self.word_embeddings(input_ids)
+    embeddings = self.word_embeddings(input_ids)
     # position_embeddings = self.position_embeddings(position_ids)
     # token_type_embeddings = self.token_type_embeddings(token_type_ids)
 
-    embeddings = words_embeddings # + position_embeddings + token_type_embeddings
-    embeddings = self.LayerNorm(embeddings)
+    # embeddings = words_embeddings # + position_embeddings + token_type_embeddings
+    if self.config.scale_label_vec:
+      embeddings = self.LayerNorm(embeddings)
+
+    ## should always drop to avoid overfit
     embeddings = self.dropout(embeddings)
+
     return embeddings
 
 
@@ -377,8 +384,8 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
     self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
   def init_label_emb(self,pretrained_weight):
-    self.bert.embeddings_label.word_embeddings.weight.data.copy_(torch.from_numpy(pretrained_weight))
-    if self.config.freeze_pretrained_vec == True:
+    self.bert.embeddings_label.word_embeddings.weight.data.copy_( torch.from_numpy(pretrained_weight).cuda() )
+    if self.config.pretrained_vec and self.config.freeze_pretrained_vec:
       self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
     ## by default, label emb will be passed into @init_weights
     ## if we load a fixed emb, we have to also normalize like how init_weights does it. ???
@@ -427,7 +434,7 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
   def __init__(self, config):
     super(BertForTokenClassification2EmbPPI, self).__init__(config)
 
-    if not self.config.ppi_front: 
+    if not self.config.ppi_front:
       self.classifier = nn.Sequential( nn.Linear(config.hidden_size+256, config.hidden_size), nn.ReLU(), nn.Linear(config.hidden_size, config.num_labels) )
 
     if config.init_classifer_layer == 'xavier':
@@ -452,7 +459,7 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
     ## append the prot_vec
     ## @prot_vec should be batch x 1 x dim so that we can broadcast append ?
     sequence_output = self.dropout(sequence_output)
-    if not self.config.ppi_front: 
+    if not self.config.ppi_front:
       sequence_output = torch.cat((sequence_output, prot_vec), dim=2)
 
     logits = self.classifier(sequence_output)

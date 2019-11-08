@@ -114,10 +114,11 @@ class TextDataset(Dataset):
     # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
 
     self.args = args
+    self.config = config
 
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
-    # if args.aa_type_emb:
+    # if config.aa_type_emb:
     #   directory = os.path.join(directory , 'aa_ppi_annot_cache')
     # else:
     #   directory = os.path.join(directory , 'aa_ppi_cache')
@@ -139,7 +140,7 @@ class TextDataset(Dataset):
         self.mask_ids_aa = pickle.load(handle)
       with open(cached_features_file+'ppi_vec', 'rb') as handle:
         self.ppi_vec = pickle.load(handle)
-      if args.aa_type_emb:
+      if config.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'rb') as handle:
           self.aa_type_emb = pickle.load(handle)
 
@@ -167,7 +168,7 @@ class TextDataset(Dataset):
       self.input_ids_label = []
       self.mask_ids_aa = []
       self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
-      if args.aa_type_emb:
+      if config.aa_type_emb:
         self.aa_type_emb = []
 
       fin = open(file_path,"r",encoding='utf-8')
@@ -219,7 +220,7 @@ class TextDataset(Dataset):
         self.input_ids_aa.append( this_aa )
         self.mask_ids_aa.append (mask_aa)
 
-        if args.aa_type_emb:
+        if config.aa_type_emb:
           ### !!! need to get token type emb of AA in protein
           ## in evaluation mode, do not need to random assign UNK
           AA = ReadProtData(text[4],len_withClsSep-2,max_aa_len,annot_data,annot_name_sorted,evaluate=evaluate)
@@ -248,7 +249,7 @@ class TextDataset(Dataset):
       with open(cached_features_file+'ppi_vec', 'wb') as handle:
           pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-      if args.aa_type_emb:
+      if config.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'wb') as handle:
           pickle.dump(self.aa_type_emb, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -256,7 +257,7 @@ class TextDataset(Dataset):
     return len(self.input_ids_aa)
 
   def __getitem__(self, item):
-    if self.args.aa_type_emb:
+    if self.config.aa_type_emb:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
               torch.tensor(self.input_ids_label[item]),
@@ -383,7 +384,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
       else:
         ppi_vec = None
 
-      if args.aa_type_emb:
+      if config.aa_type_emb:
         ## batch x aa_len x type
         aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
       else:
@@ -550,7 +551,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
     else:
       ppi_vec = None
 
-    if args.aa_type_emb:
+    if config.aa_type_emb:
       aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
     else:
       aa_type = None
@@ -608,7 +609,6 @@ def main():
   parser.add_argument("--label_2test", type=str, default=None)
   parser.add_argument("--bert_vocab", type=str, default=None)
   parser.add_argument("--config_override", action="store_true")
-  parser.add_argument("--aa_type_emb", action="store_true", default=False)
 
   ## Required parameters
   parser.add_argument("--train_data_file", default=None, type=str, required=True,
@@ -761,6 +761,10 @@ def main():
   config = BertConfig.from_pretrained(args.config_name) ## should we always override
   config.label_size = len(label_2test_array) ## make sure we really get correct label
 
+  if (config.pretrained_vec) and (args.pretrained_label_path is None):
+    print ('\n\ncheck that pretrained label vecs are properly turned on/off.')
+    exit()
+
   if args.aa_type_file is not None: ## read protein sequence extra data
     print ('load in aa_type_file {}'.format(args.aa_type_file))
     annot_data = pickle.load ( open ( args.aa_type_file, 'rb' ) )
@@ -796,6 +800,7 @@ def main():
       pretrained_label_vec[counter] = temp[re.sub("GO","GO:",lab)]
     #
     model.init_label_emb(pretrained_label_vec)
+
 
   model.to(args.device)
 
