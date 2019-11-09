@@ -13,12 +13,12 @@ pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear25
 choice='2embPpiAnnotE256H1L12I512Set0/NoPpiNoTypeScaleTrainBert12Ep10e10Drop0.1' # Lr5e-5 Dr0.2
 model_type='noppi'
 cache_name='NoPpiNoType'
-checkpoint=70920 ## 110726
+checkpoint=38720 ## 110726
 
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000 # 9500 10000
 
-for ontology in 'cc' ; do
+for ontology in 'bp' ; do
 
   if [[ $ontology == 'bp' ]]
   then
