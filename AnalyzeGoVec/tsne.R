@@ -17,9 +17,9 @@ colnames(tsne_out) = c('name','dim1','dim2','ic','color1')
 
 # windows() 
 
-ggplot(tsne_out, aes(x = dim1, y = dim2, color=factor(color1), size=100/ic)) + 
+ggplot(tsne_out, aes(x = dim1, y = dim2, color=factor(color1), size=100*ic)) + 
   geom_point(alpha=.8) + 
-  theme_bw() + 
+  theme_linedraw() + theme_light() + 
   geom_text_repel(
     data = subset(tsne_out, color1 > 0),
     aes(label = name),
@@ -28,6 +28,9 @@ ggplot(tsne_out, aes(x = dim1, y = dim2, color=factor(color1), size=100/ic)) +
     point.padding = unit(0.3, "lines")
   ) + 
   ggtitle (this_title) + 
-  theme(
-    plot.title = element_text(size=20, face="bold") )
+  labs(size = "100IC") +
+  theme(legend.position="left",plot.title = element_text(hjust = 0.5)) +
+  guides(colour = FALSE) + 
+  guides(size = guide_legend(override.aes = list(size=5))) 
+
 
