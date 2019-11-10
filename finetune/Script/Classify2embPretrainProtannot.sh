@@ -18,7 +18,7 @@ checkpoint=20136 ## 110726
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000 # 9500 10000
 
-for ontology in 'mf' ; do
+for ontology in 'bp' ; do
 
   if [[ $ontology == 'bp' ]]
   then
@@ -42,15 +42,15 @@ for ontology in 'mf' ; do
   cd $server/BertGOAnnotation/finetune/
 
   # continue training use @model_name_or_path and turn off @config_override
-  # CUDA_VISIBLE_DEVICES=3 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 2 --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --learning_rate 0.0001 --seed 2019 --fp16 --config_override --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt # --no_cuda
+  CUDA_VISIBLE_DEVICES=2 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 6 --per_gpu_eval_batch_size 6 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --learning_rate 0.0001 --seed 2019 --fp16 --config_override > $output_dir/train_point.txt # --no_cuda
 
   ## --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
   ## testing phase --pretrained_label_path $pretrained_label_path
-  for test_data in 'test' ; do # 'dev'
-    eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/'$test_data'-'$ontology'-prot-annot.tsv'
-    CUDA_VISIBLE_DEVICES=6 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 4 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --fp16 --checkpoint $checkpoint > $output_dir/'eval_'$test_data'_check_point_max.txt'
-  done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
+  # for test_data in 'test' ; do # 'dev'
+  #   eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/'$test_data'-'$ontology'-prot-annot.tsv'
+  #   CUDA_VISIBLE_DEVICES=6 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 4 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --fp16 --checkpoint $checkpoint > $output_dir/'eval_'$test_data'_check_point_max.txt'
+  # done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
   ## view weights ??
   # cd $server/BertGOAnnotation/SeeAttention/
