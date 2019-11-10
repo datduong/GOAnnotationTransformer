@@ -28,10 +28,6 @@ def TakeMax (prob,label_array,children):
   for col,name in enumerate(label_array): ## for each observation
     # if col == 0:
     if len(children[name])> 0 : 
-      print ('\n col/ name/ value')
-      print (prob[ : , col ])
-      print (prob[ : , children[name] ])
-      print (np.max ( prob[ : , children[name] ], 1 ))
       prob[ : , col ] = np.max ( prob[ : , children[name] ], 1 ) ## replace the column of this label @name, with the max-over-row of its children
   return prob
 
