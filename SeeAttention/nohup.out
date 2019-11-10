@@ -1,0 +1,1429 @@
+/u/local/apps/R/3.4.0/gcc-4.9.3_MKL-2017.0/bin/Rscript: /u/local/apps/R/3.4.0/gcc-4.9.3_MKL-2017.0/bin/Rscript: cannot execute binary file
+
+---------------------
+Welcome to dendextend version 1.12.0
+Type citation('dendextend') for how to cite the package.
+
+Type browseVignettes(package = 'dendextend') for the package vignette.
+The github page is: https://github.com/talgalili/dendextend/
+
+Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues
+Or contact: <tal.galili@gmail.com>
+
+	To suppress this message use:  suppressPackageStartupMessages(library(dendextend))
+---------------------
+
+
+Attaching package: ‘dendextend’
+
+The following object is masked from ‘package:stats’:
+
+    cutree
+
+       50% 
+-0.3846305 
+       50% 
+-0.4258187 
+       50% 
+-0.7498238 
+       50% 
+-0.3588719 
+       50% 
+-0.5675959 
+      50% 
+-0.315231 
+       50% 
+-0.6154614 
+      50% 
+-1.647112 
+      50% 
+-3.255958 
+      50% 
+-0.903633 
+       50% 
+-0.3272254 
+       50% 
+-0.3032043 
+       50% 
+-0.3846305 
+       50% 
+-0.4258187 
+       50% 
+-0.7498238 
+       50% 
+-0.3588719 
+       50% 
+-0.5675959 
+      50% 
+-0.315231 
+       50% 
+-0.6154614 
+      50% 
+-1.647112 
+      50% 
+-3.255958 
+      50% 
+-0.903633 
+       50% 
+-0.3272254 
+       50% 
+-0.3032043 
+       50% 
+-0.3846305 
+       50% 
+-0.4258187 
+       50% 
+-0.7498238 
+       50% 
+-0.3588719 
+       50% 
+-0.5675959 
+      50% 
+-0.315231 
+       50% 
+-0.6154614 
+      50% 
+-1.647112 
+      50% 
+-3.255958 
+      50% 
+-0.903633 
+       50% 
+-0.3272254 
+       50% 
+-0.3032043 
+       50% 
+-0.3846305 
+       50% 
+-0.4258187 
+       50% 
+-0.7498238 
+       50% 
+-0.3588719 
+       50% 
+-0.5675959 
+      50% 
+-0.315231 
+       50% 
+-0.6154614 
+      50% 
+-1.647112 
+      50% 
+-3.255958 
+      50% 
+-0.903633 
+       50% 
+-0.3272254 
+       50% 
+-0.3032043 
+
+---------------------
+Welcome to dendextend version 1.12.0
+Type citation('dendextend') for how to cite the package.
+
+Type browseVignettes(package = 'dendextend') for the package vignette.
+The github page is: https://github.com/talgalili/dendextend/
+
+Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues
+Or contact: <tal.galili@gmail.com>
+
+	To suppress this message use:  suppressPackageStartupMessages(library(dendextend))
+---------------------
+
+
+Attaching package: ‘dendextend’
+
+The following object is masked from ‘package:stats’:
+
+    cutree
+
+[1] "O54992"
+[1] "O54992/O54992layer0head0.csv"
+       50% 
+-0.3846305 
+[1] "O54992/O54992layer1head0.csv"
+       50% 
+-0.4258187 
+[1] "O54992/O54992layer2head0.csv"
+       50% 
+-0.7498238 
+[1] "O54992/O54992layer3head0.csv"
+       50% 
+-0.3588719 
+[1] "O54992/O54992layer4head0.csv"
+       50% 
+-0.5675959 
+[1] "O54992/O54992layer5head0.csv"
+      50% 
+-0.315231 
+[1] "O54992/O54992layer6head0.csv"
+       50% 
+-0.6154614 
+[1] "O54992/O54992layer7head0.csv"
+      50% 
+-1.647112 
+[1] "O54992/O54992layer8head0.csv"
+      50% 
+-3.255958 
+[1] "O54992/O54992layer9head0.csv"
+      50% 
+-0.903633 
+[1] "O54992/O54992layer10head0.csv"
+       50% 
+-0.3272254 
+[1] "O54992/O54992layer11head0.csv"
+       50% 
+-0.3032043 
+[1] "O54992/O54992layer0head0.csv"
+       50% 
+-0.3846305 
+[1] "O54992/O54992layer1head0.csv"
+       50% 
+-0.4258187 
+[1] "O54992/O54992layer2head0.csv"
+       50% 
+-0.7498238 
+[1] "O54992/O54992layer3head0.csv"
+       50% 
+-0.3588719 
+[1] "O54992/O54992layer4head0.csv"
+       50% 
+-0.5675959 
+[1] "O54992/O54992layer5head0.csv"
+      50% 
+-0.315231 
+[1] "O54992/O54992layer6head0.csv"
+       50% 
+-0.6154614 
+[1] "O54992/O54992layer7head0.csv"
+      50% 
+-1.647112 
+[1] "O54992/O54992layer8head0.csv"
+      50% 
+-3.255958 
+[1] "O54992/O54992layer9head0.csv"
+      50% 
+-0.903633 
+[1] "O54992/O54992layer10head0.csv"
+       50% 
+-0.3272254 
+[1] "O54992/O54992layer11head0.csv"
+       50% 
+-0.3032043 
+[1] "O54992/O54992layer0head0.csv"
+       50% 
+-0.3846305 
+[1] "O54992/O54992layer1head0.csv"
+       50% 
+-0.4258187 
+[1] "O54992/O54992layer2head0.csv"
+       50% 
+-0.7498238 
+[1] "O54992/O54992layer3head0.csv"
+       50% 
+-0.3588719 
+[1] "O54992/O54992layer4head0.csv"
+       50% 
+-0.5675959 
+[1] "O54992/O54992layer5head0.csv"
+      50% 
+-0.315231 
+[1] "O54992/O54992layer6head0.csv"
+       50% 
+-0.6154614 
+[1] "O54992/O54992layer7head0.csv"
+      50% 
+-1.647112 
+[1] "O54992/O54992layer8head0.csv"
+      50% 
+-3.255958 
+[1] "O54992/O54992layer9head0.csv"
+      50% 
+-0.903633 
+[1] "O54992/O54992layer10head0.csv"
+       50% 
+-0.3272254 
+[1] "O54992/O54992layer11head0.csv"
+       50% 
+-0.3032043 
+[1] "O54992/O54992layer0head0.csv"
+       50% 
+-0.3846305 
+[1] "O54992/O54992layer1head0.csv"
+       50% 
+-0.4258187 
+[1] "O54992/O54992layer2head0.csv"
+       50% 
+-0.7498238 
+[1] "O54992/O54992layer3head0.csv"
+       50% 
+-0.3588719 
+[1] "O54992/O54992layer4head0.csv"
+       50% 
+-0.5675959 
+[1] "O54992/O54992layer5head0.csv"
+      50% 
+-0.315231 
+[1] "O54992/O54992layer6head0.csv"
+       50% 
+-0.6154614 
+[1] "O54992/O54992layer7head0.csv"
+      50% 
+-1.647112 
+[1] "O54992/O54992layer8head0.csv"
+      50% 
+-3.255958 
+[1] "O54992/O54992layer9head0.csv"
+      50% 
+-0.903633 
+[1] "O54992/O54992layer10head0.csv"
+       50% 
+-0.3272254 
+[1] "O54992/O54992layer11head0.csv"
+       50% 
+-0.3032043 
+[1] "Q6X632"
+[1] "Q6X632/Q6X632layer0head0.csv"
+       50% 
+-0.4703487 
+[1] "Q6X632/Q6X632layer1head0.csv"
+       50% 
+-0.5299652 
+[1] "Q6X632/Q6X632layer2head0.csv"
+       50% 
+-0.5567163 
+[1] "Q6X632/Q6X632layer3head0.csv"
+       50% 
+-0.8528726 
+[1] "Q6X632/Q6X632layer4head0.csv"
+       50% 
+-0.9369667 
+[1] "Q6X632/Q6X632layer5head0.csv"
+       50% 
+-0.6031279 
+[1] "Q6X632/Q6X632layer6head0.csv"
+       50% 
+-0.5757059 
+[1] "Q6X632/Q6X632layer7head0.csv"
+       50% 
+-0.7772984 
+[1] "Q6X632/Q6X632layer8head0.csv"
+      50% 
+-3.135116 
+[1] "Q6X632/Q6X632layer9head0.csv"
+       50% 
+-0.6067307 
+[1] "Q6X632/Q6X632layer10head0.csv"
+       50% 
+-0.3856867 
+[1] "Q6X632/Q6X632layer11head0.csv"
+       50% 
+-0.2252336 
+[1] "Q6X632/Q6X632layer0head0.csv"
+       50% 
+-0.4703487 
+[1] "Q6X632/Q6X632layer1head0.csv"
+       50% 
+-0.5299652 
+[1] "Q6X632/Q6X632layer2head0.csv"
+       50% 
+-0.5567163 
+[1] "Q6X632/Q6X632layer3head0.csv"
+       50% 
+-0.8528726 
+[1] "Q6X632/Q6X632layer4head0.csv"
+       50% 
+-0.9369667 
+[1] "Q6X632/Q6X632layer5head0.csv"
+       50% 
+-0.6031279 
+[1] "Q6X632/Q6X632layer6head0.csv"
+       50% 
+-0.5757059 
+[1] "Q6X632/Q6X632layer7head0.csv"
+       50% 
+-0.7772984 
+[1] "Q6X632/Q6X632layer8head0.csv"
+      50% 
+-3.135116 
+[1] "Q6X632/Q6X632layer9head0.csv"
+       50% 
+-0.6067307 
+[1] "Q6X632/Q6X632layer10head0.csv"
+       50% 
+-0.3856867 
+[1] "Q6X632/Q6X632layer11head0.csv"
+       50% 
+-0.2252336 
+[1] "Q6X632/Q6X632layer0head0.csv"
+       50% 
+-0.4703487 
+[1] "Q6X632/Q6X632layer1head0.csv"
+       50% 
+-0.5299652 
+[1] "Q6X632/Q6X632layer2head0.csv"
+       50% 
+-0.5567163 
+[1] "Q6X632/Q6X632layer3head0.csv"
+       50% 
+-0.8528726 
+[1] "Q6X632/Q6X632layer4head0.csv"
+       50% 
+-0.9369667 
+[1] "Q6X632/Q6X632layer5head0.csv"
+       50% 
+-0.6031279 
+[1] "Q6X632/Q6X632layer6head0.csv"
+       50% 
+-0.5757059 
+[1] "Q6X632/Q6X632layer7head0.csv"
+       50% 
+-0.7772984 
+[1] "Q6X632/Q6X632layer8head0.csv"
+      50% 
+-3.135116 
+[1] "Q6X632/Q6X632layer9head0.csv"
+       50% 
+-0.6067307 
+[1] "Q6X632/Q6X632layer10head0.csv"
+       50% 
+-0.3856867 
+[1] "Q6X632/Q6X632layer11head0.csv"
+       50% 
+-0.2252336 
+
+---------------------
+Welcome to dendextend version 1.12.0
+Type citation('dendextend') for how to cite the package.
+
+Type browseVignettes(package = 'dendextend') for the package vignette.
+The github page is: https://github.com/talgalili/dendextend/
+
+Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues
+Or contact: <tal.galili@gmail.com>
+
+	To suppress this message use:  suppressPackageStartupMessages(library(dendextend))
+---------------------
+
+
+Attaching package: ‘dendextend’
+
+The following object is masked from ‘package:stats’:
+
+    cutree
+
+[1] "O54992"
+[1] "O54992/O54992layer0head0.csv"
+       50% 
+-0.3846305 
+[1] "O54992/O54992layer1head0.csv"
+       50% 
+-0.4258187 
+[1] "O54992/O54992layer2head0.csv"
+       50% 
+-0.7498238 
+[1] "O54992/O54992layer3head0.csv"
+       50% 
+-0.3588719 
+[1] "O54992/O54992layer4head0.csv"
+       50% 
+-0.5675959 
+[1] "O54992/O54992layer5head0.csv"
+      50% 
+-0.315231 
+[1] "O54992/O54992layer6head0.csv"
+       50% 
+-0.6154614 
+[1] "O54992/O54992layer7head0.csv"
+      50% 
+-1.647112 
+[1] "O54992/O54992layer8head0.csv"
+      50% 
+-3.255958 
+[1] "O54992/O54992layer9head0.csv"
+      50% 
+-0.903633 
+[1] "O54992/O54992layer10head0.csv"
+       50% 
+-0.3272254 
+[1] "O54992/O54992layer11head0.csv"
+       50% 
+-0.3032043 
+[1] "O54992/O54992layer0head0.csv"
+       50% 
+-0.6169706 
+[1] "O54992/O54992layer1head0.csv"
+      50% 
+-0.807299 
+[1] "O54992/O54992layer2head0.csv"
+      50% 
+-1.187011 
+[1] "O54992/O54992layer3head0.csv"
+      50% 
+-1.424939 
+[1] "O54992/O54992layer4head0.csv"
+       50% 
+-0.6469777 
+[1] "O54992/O54992layer5head0.csv"
+      50% 
+-1.146305 
+[1] "O54992/O54992layer6head0.csv"
+       50% 
+-0.8309167 
+[1] "O54992/O54992layer7head0.csv"
+      50% 
+-1.409781 
+[1] "O54992/O54992layer8head0.csv"
+      50% 
+-1.547737 
+[1] "O54992/O54992layer9head0.csv"
+       50% 
+-0.7280394 
+[1] "O54992/O54992layer10head0.csv"
+      50% 
+-1.488401 
+[1] "O54992/O54992layer11head0.csv"
+       50% 
+-0.4380243 
+[1] "O54992/O54992layer0head0.csv"
+       50% 
+-0.3737169 
+[1] "O54992/O54992layer1head0.csv"
+       50% 
+-0.6211611 
+[1] "O54992/O54992layer2head0.csv"
+       50% 
+-0.7359149 
+[1] "O54992/O54992layer3head0.csv"
+       50% 
+-0.4287256 
+[1] "O54992/O54992layer4head0.csv"
+      50% 
+-1.049897 
+[1] "O54992/O54992layer5head0.csv"
+      50% 
+-1.516845 
+[1] "O54992/O54992layer6head0.csv"
+      50% 
+-1.218581 
+[1] "O54992/O54992layer7head0.csv"
+     50% 
+-2.91507 
+[1] "O54992/O54992layer8head0.csv"
+      50% 
+-2.625298 
+[1] "O54992/O54992layer9head0.csv"
+      50% 
+-2.076214 
+[1] "O54992/O54992layer10head0.csv"
+       50% 
+-0.4790103 
+[1] "O54992/O54992layer11head0.csv"
+       50% 
+-0.3795522 
+[1] "O54992/O54992layer0head0.csv"
+       50% 
+-0.5446309 
+[1] "O54992/O54992layer1head0.csv"
+      50% 
+-0.810185 
+[1] "O54992/O54992layer2head0.csv"
+      50% 
+-1.395945 
+[1] "O54992/O54992layer3head0.csv"
+      50% 
+-1.290105 
+[1] "O54992/O54992layer4head0.csv"
+       50% 
+-0.9031085 
+[1] "O54992/O54992layer5head0.csv"
+     50% 
+-3.28675 
+[1] "O54992/O54992layer6head0.csv"
+       50% 
+-0.7488858 
+[1] "O54992/O54992layer7head0.csv"
+      50% 
+-1.665413 
+[1] "O54992/O54992layer8head0.csv"
+      50% 
+-0.786113 
+[1] "O54992/O54992layer9head0.csv"
+      50% 
+-1.859803 
+[1] "O54992/O54992layer10head0.csv"
+     50% 
+-2.35642 
+[1] "O54992/O54992layer11head0.csv"
+       50% 
+-0.7178469 
+[1] "Q6X632"
+[1] "Q6X632/Q6X632layer0head0.csv"
+       50% 
+-0.4703487 
+[1] "Q6X632/Q6X632layer1head0.csv"
+       50% 
+-0.5299652 
+[1] "Q6X632/Q6X632layer2head0.csv"
+       50% 
+-0.5567163 
+[1] "Q6X632/Q6X632layer3head0.csv"
+       50% 
+-0.8528726 
+[1] "Q6X632/Q6X632layer4head0.csv"
+       50% 
+-0.9369667 
+[1] "Q6X632/Q6X632layer5head0.csv"
+       50% 
+-0.6031279 
+[1] "Q6X632/Q6X632layer6head0.csv"
+       50% 
+-0.5757059 
+[1] "Q6X632/Q6X632layer7head0.csv"
+       50% 
+-0.7772984 
+[1] "Q6X632/Q6X632layer8head0.csv"
+      50% 
+-3.135116 
+[1] "Q6X632/Q6X632layer9head0.csv"
+       50% 
+-0.6067307 
+[1] "Q6X632/Q6X632layer10head0.csv"
+       50% 
+-0.3856867 
+[1] "Q6X632/Q6X632layer11head0.csv"
+       50% 
+-0.2252336 
+[1] "Q6X632/Q6X632layer0head0.csv"
+       50% 
+-0.5747013 
+[1] "Q6X632/Q6X632layer1head0.csv"
+       50% 
+-0.5817344 
+[1] "Q6X632/Q6X632layer2head0.csv"
+       50% 
+-0.8209237 
+[1] "Q6X632/Q6X632layer3head0.csv"
+      50% 
+-1.470152 
+[1] "Q6X632/Q6X632layer4head0.csv"
+       50% 
+-0.4659971 
+[1] "Q6X632/Q6X632layer5head0.csv"
+       50% 
+-0.6644713 
+[1] "Q6X632/Q6X632layer6head0.csv"
+      50% 
+-1.718155 
+[1] "Q6X632/Q6X632layer7head0.csv"
+      50% 
+-1.024411 
+[1] "Q6X632/Q6X632layer8head0.csv"
+       50% 
+-0.8789208 
+[1] "Q6X632/Q6X632layer9head0.csv"
+      50% 
+-1.568595 
+[1] "Q6X632/Q6X632layer10head0.csv"
+       50% 
+-0.5183992 
+[1] "Q6X632/Q6X632layer11head0.csv"
+       50% 
+-0.3976388 
+[1] "Q6X632/Q6X632layer0head0.csv"
+       50% 
+-0.4589281 
+[1] "Q6X632/Q6X632layer1head0.csv"
+       50% 
+-0.4781564 
+[1] "Q6X632/Q6X632layer2head0.csv"
+       50% 
+-0.5953432 
+[1] "Q6X632/Q6X632layer3head0.csv"
+      50% 
+-1.434543 
+[1] "Q6X632/Q6X632layer4head0.csv"
+       50% 
+-0.7583761 
+[1] "Q6X632/Q6X632layer5head0.csv"
+      50% 
+-2.117811 
+[1] "Q6X632/Q6X632layer6head0.csv"
+      50% 
+-1.959648 
+[1] "Q6X632/Q6X632layer7head0.csv"
+      50% 
+-1.009457 
+[1] "Q6X632/Q6X632layer8head0.csv"
+      50% 
+-6.572912 
+[1] "Q6X632/Q6X632layer9head0.csv"
+      50% 
+-1.026559 
+[1] "Q6X632/Q6X632layer10head0.csv"
+       50% 
+-0.2994649 
+[1] "Q6X632/Q6X632layer11head0.csv"
+       50% 
+-0.2698041 
+[1] "Q6X632/Q6X632layer0head0.csv"
+       50% 
+-0.5018812 
+[1] "Q6X632/Q6X632layer1head0.csv"
+       50% 
+-0.5701607 
+[1] "Q6X632/Q6X632layer2head0.csv"
+       50% 
+-0.6188216 
+[1] "Q6X632/Q6X632layer3head0.csv"
+       50% 
+-0.5423857 
+[1] "Q6X632/Q6X632layer4head0.csv"
+       50% 
+-0.6861585 
+[1] "Q6X632/Q6X632layer5head0.csv"
+      50% 
+-3.165441 
+[1] "Q6X632/Q6X632layer6head0.csv"
+      50% 
+-1.523493 
+[1] "Q6X632/Q6X632layer7head0.csv"
+      50% 
+-1.863994 
+[1] "Q6X632/Q6X632layer8head0.csv"
+      50% 
+-1.516297 
+[1] "Q6X632/Q6X632layer9head0.csv"
+      50% 
+-4.124234 
+[1] "Q6X632/Q6X632layer10head0.csv"
+       50% 
+-0.5942706 
+[1] "Q6X632/Q6X632layer11head0.csv"
+       50% 
+-0.2545231 
+[1] "P0A812"
+[1] "P0A812/P0A812layer0head0.csv"
+       50% 
+-0.2476988 
+[1] "P0A812/P0A812layer1head0.csv"
+       50% 
+-0.2919174 
+[1] "P0A812/P0A812layer2head0.csv"
+       50% 
+-0.4301248 
+[1] "P0A812/P0A812layer3head0.csv"
+       50% 
+-0.5174802 
+[1] "P0A812/P0A812layer4head0.csv"
+       50% 
+-0.8399243 
+[1] "P0A812/P0A812layer5head0.csv"
+       50% 
+-0.3720201 
+[1] "P0A812/P0A812layer6head0.csv"
+       50% 
+-0.7969315 
+[1] "P0A812/P0A812layer7head0.csv"
+      50% 
+-1.523794 
+[1] "P0A812/P0A812layer8head0.csv"
+      50% 
+-3.081384 
+[1] "P0A812/P0A812layer9head0.csv"
+       50% 
+-0.6046794 
+[1] "P0A812/P0A812layer10head0.csv"
+       50% 
+-0.4539701 
+[1] "P0A812/P0A812layer11head0.csv"
+         50% 
+-0.006907157 
+[1] "P0A812/P0A812layer0head0.csv"
+      50% 
+-0.326447 
+[1] "P0A812/P0A812layer1head0.csv"
+       50% 
+-0.5069589 
+[1] "P0A812/P0A812layer2head0.csv"
+       50% 
+-0.4990042 
+[1] "P0A812/P0A812layer3head0.csv"
+      50% 
+-1.335086 
+[1] "P0A812/P0A812layer4head0.csv"
+       50% 
+-0.5793007 
+[1] "P0A812/P0A812layer5head0.csv"
+       50% 
+-0.5137969 
+[1] "P0A812/P0A812layer6head0.csv"
+       50% 
+-0.5529965 
+[1] "P0A812/P0A812layer7head0.csv"
+       50% 
+-0.7981854 
+[1] "P0A812/P0A812layer8head0.csv"
+       50% 
+-0.5804878 
+[1] "P0A812/P0A812layer9head0.csv"
+       50% 
+-0.4856839 
+[1] "P0A812/P0A812layer10head0.csv"
+       50% 
+-0.7767439 
+[1] "P0A812/P0A812layer11head0.csv"
+       50% 
+-0.3043944 
+[1] "P0A812/P0A812layer0head0.csv"
+       50% 
+-0.2397281 
+[1] "P0A812/P0A812layer1head0.csv"
+      50% 
+-0.277175 
+[1] "P0A812/P0A812layer2head0.csv"
+       50% 
+-0.3110464 
+[1] "P0A812/P0A812layer3head0.csv"
+       50% 
+-0.5303273 
+[1] "P0A812/P0A812layer4head0.csv"
+       50% 
+-0.6942226 
+[1] "P0A812/P0A812layer5head0.csv"
+      50% 
+-1.112768 
+[1] "P0A812/P0A812layer6head0.csv"
+       50% 
+-0.8222366 
+[1] "P0A812/P0A812layer7head0.csv"
+  50% 
+-1.16 
+[1] "P0A812/P0A812layer8head0.csv"
+      50% 
+-3.119667 
+[1] "P0A812/P0A812layer9head0.csv"
+       50% 
+-0.6119634 
+[1] "P0A812/P0A812layer10head0.csv"
+       50% 
+-0.2266115 
+[1] "P0A812/P0A812layer11head0.csv"
+       50% 
+-0.2801067 
+[1] "P0A812/P0A812layer0head0.csv"
+       50% 
+-0.2760919 
+[1] "P0A812/P0A812layer1head0.csv"
+       50% 
+-0.5403062 
+[1] "P0A812/P0A812layer2head0.csv"
+     50% 
+-1.00611 
+[1] "P0A812/P0A812layer3head0.csv"
+       50% 
+-0.8951671 
+[1] "P0A812/P0A812layer4head0.csv"
+      50% 
+-0.671426 
+[1] "P0A812/P0A812layer5head0.csv"
+      50% 
+-1.347134 
+[1] "P0A812/P0A812layer6head0.csv"
+      50% 
+-1.155975 
+[1] "P0A812/P0A812layer7head0.csv"
+       50% 
+-0.6611953 
+[1] "P0A812/P0A812layer8head0.csv"
+       50% 
+-0.5264182 
+[1] "P0A812/P0A812layer9head0.csv"
+      50% 
+-1.615676 
+[1] "P0A812/P0A812layer10head0.csv"
+       50% 
+-0.4343454 
+[1] "P0A812/P0A812layer11head0.csv"
+        50% 
+-0.08760924 
+[1] "Q96B01"
+[1] "Q96B01/Q96B01layer0head0.csv"
+       50% 
+-0.2586809 
+[1] "Q96B01/Q96B01layer1head0.csv"
+       50% 
+-0.1928345 
+[1] "Q96B01/Q96B01layer2head0.csv"
+       50% 
+-0.3164567 
+[1] "Q96B01/Q96B01layer3head0.csv"
+       50% 
+-0.2047823 
+[1] "Q96B01/Q96B01layer4head0.csv"
+      50% 
+-0.495964 
+[1] "Q96B01/Q96B01layer5head0.csv"
+       50% 
+-0.3378274 
+[1] "Q96B01/Q96B01layer6head0.csv"
+      50% 
+-1.647184 
+[1] "Q96B01/Q96B01layer7head0.csv"
+      50% 
+-2.893627 
+[1] "Q96B01/Q96B01layer8head0.csv"
+     50% 
+-1.14332 
+[1] "Q96B01/Q96B01layer9head0.csv"
+      50% 
+-0.825861 
+[1] "Q96B01/Q96B01layer10head0.csv"
+       50% 
+-0.1275145 
+[1] "Q96B01/Q96B01layer11head0.csv"
+      50% 
+-0.103812 
+[1] "Q96B01/Q96B01layer0head0.csv"
+       50% 
+-0.3462087 
+[1] "Q96B01/Q96B01layer1head0.csv"
+       50% 
+-0.5015307 
+[1] "Q96B01/Q96B01layer2head0.csv"
+       50% 
+-0.3244805 
+[1] "Q96B01/Q96B01layer3head0.csv"
+       50% 
+-0.5511031 
+[1] "Q96B01/Q96B01layer4head0.csv"
+      50% 
+-0.477578 
+[1] "Q96B01/Q96B01layer5head0.csv"
+       50% 
+-0.5638587 
+[1] "Q96B01/Q96B01layer6head0.csv"
+       50% 
+-0.8231706 
+[1] "Q96B01/Q96B01layer7head0.csv"
+      50% 
+-0.783043 
+[1] "Q96B01/Q96B01layer8head0.csv"
+     50% 
+-1.37268 
+[1] "Q96B01/Q96B01layer9head0.csv"
+       50% 
+-0.3516771 
+[1] "Q96B01/Q96B01layer10head0.csv"
+       50% 
+-0.8888896 
+[1] "Q96B01/Q96B01layer11head0.csv"
+       50% 
+-0.4530551 
+[1] "Q96B01/Q96B01layer0head0.csv"
+       50% 
+-0.2436288 
+[1] "Q96B01/Q96B01layer1head0.csv"
+       50% 
+-0.2677537 
+[1] "Q96B01/Q96B01layer2head0.csv"
+     50% 
+-0.29179 
+[1] "Q96B01/Q96B01layer3head0.csv"
+       50% 
+-0.1255823 
+[1] "Q96B01/Q96B01layer4head0.csv"
+      50% 
+-0.355269 
+[1] "Q96B01/Q96B01layer5head0.csv"
+      50% 
+-0.543033 
+[1] "Q96B01/Q96B01layer6head0.csv"
+     50% 
+-1.17369 
+[1] "Q96B01/Q96B01layer7head0.csv"
+      50% 
+-1.982765 
+[1] "Q96B01/Q96B01layer8head0.csv"
+      50% 
+-2.023228 
+[1] "Q96B01/Q96B01layer9head0.csv"
+      50% 
+-2.092953 
+[1] "Q96B01/Q96B01layer10head0.csv"
+       50% 
+-0.1066389 
+[1] "Q96B01/Q96B01layer11head0.csv"
+       50% 
+-0.2061057 
+[1] "Q96B01/Q96B01layer0head0.csv"
+       50% 
+-0.2918153 
+[1] "Q96B01/Q96B01layer1head0.csv"
+       50% 
+-0.3076342 
+[1] "Q96B01/Q96B01layer2head0.csv"
+      50% 
+-1.013449 
+[1] "Q96B01/Q96B01layer3head0.csv"
+       50% 
+-0.9141358 
+[1] "Q96B01/Q96B01layer4head0.csv"
+       50% 
+-0.3311495 
+[1] "Q96B01/Q96B01layer5head0.csv"
+      50% 
+-1.213685 
+[1] "Q96B01/Q96B01layer6head0.csv"
+       50% 
+-0.5104329 
+[1] "Q96B01/Q96B01layer7head0.csv"
+       50% 
+-0.7791639 
+[1] "Q96B01/Q96B01layer8head0.csv"
+       50% 
+-0.8700821 
+[1] "Q96B01/Q96B01layer9head0.csv"
+       50% 
+-0.8450955 
+[1] "Q96B01/Q96B01layer10head0.csv"
+      50% 
+-1.967413 
+[1] "Q96B01/Q96B01layer11head0.csv"
+      50% 
+-0.249827 
+[1] "Q5VV41"
+[1] "Q5VV41/Q5VV41layer0head0.csv"
+      50% 
+-0.623851 
+[1] "Q5VV41/Q5VV41layer1head0.csv"
+       50% 
+-0.5359405 
+[1] "Q5VV41/Q5VV41layer2head0.csv"
+       50% 
+-0.9180716 
+[1] "Q5VV41/Q5VV41layer3head0.csv"
+       50% 
+-0.7857247 
+[1] "Q5VV41/Q5VV41layer4head0.csv"
+       50% 
+-0.7656063 
+[1] "Q5VV41/Q5VV41layer5head0.csv"
+       50% 
+-0.7397517 
+[1] "Q5VV41/Q5VV41layer6head0.csv"
+      50% 
+-1.633954 
+[1] "Q5VV41/Q5VV41layer7head0.csv"
+      50% 
+-4.108312 
+[1] "Q5VV41/Q5VV41layer8head0.csv"
+       50% 
+-0.7721392 
+[1] "Q5VV41/Q5VV41layer9head0.csv"
+      50% 
+-1.500662 
+[1] "Q5VV41/Q5VV41layer10head0.csv"
+       50% 
+-0.3039874 
+[1] "Q5VV41/Q5VV41layer11head0.csv"
+       50% 
+-0.4823989 
+[1] "Q5VV41/Q5VV41layer0head0.csv"
+       50% 
+-0.7474663 
+[1] "Q5VV41/Q5VV41layer1head0.csv"
+       50% 
+-0.9229089 
+[1] "Q5VV41/Q5VV41layer2head0.csv"
+      50% 
+-1.145816 
+[1] "Q5VV41/Q5VV41layer3head0.csv"
+      50% 
+-1.286639 
+[1] "Q5VV41/Q5VV41layer4head0.csv"
+     50% 
+-0.76921 
+[1] "Q5VV41/Q5VV41layer5head0.csv"
+      50% 
+-1.015661 
+[1] "Q5VV41/Q5VV41layer6head0.csv"
+     50% 
+-4.83272 
+[1] "Q5VV41/Q5VV41layer7head0.csv"
+      50% 
+-2.658534 
+[1] "Q5VV41/Q5VV41layer8head0.csv"
+      50% 
+-2.002133 
+[1] "Q5VV41/Q5VV41layer9head0.csv"
+      50% 
+-1.392416 
+[1] "Q5VV41/Q5VV41layer10head0.csv"
+      50% 
+-1.592077 
+[1] "Q5VV41/Q5VV41layer11head0.csv"
+       50% 
+-0.6817244 
+[1] "Q5VV41/Q5VV41layer0head0.csv"
+       50% 
+-0.6098406 
+[1] "Q5VV41/Q5VV41layer1head0.csv"
+       50% 
+-0.7173337 
+[1] "Q5VV41/Q5VV41layer2head0.csv"
+      50% 
+-2.677009 
+[1] "Q5VV41/Q5VV41layer3head0.csv"
+       50% 
+-0.8825723 
+[1] "Q5VV41/Q5VV41layer4head0.csv"
+      50% 
+-1.504391 
+[1] "Q5VV41/Q5VV41layer5head0.csv"
+      50% 
+-3.097113 
+[1] "Q5VV41/Q5VV41layer6head0.csv"
+      50% 
+-2.392096 
+[1] "Q5VV41/Q5VV41layer7head0.csv"
+      50% 
+-1.836848 
+[1] "Q5VV41/Q5VV41layer8head0.csv"
+      50% 
+-4.906057 
+[1] "Q5VV41/Q5VV41layer9head0.csv"
+      50% 
+-1.827351 
+[1] "Q5VV41/Q5VV41layer10head0.csv"
+       50% 
+-0.6706143 
+[1] "Q5VV41/Q5VV41layer11head0.csv"
+      50% 
+-0.392593 
+[1] "Q5VV41/Q5VV41layer0head0.csv"
+       50% 
+-0.7827952 
+[1] "Q5VV41/Q5VV41layer1head0.csv"
+       50% 
+-0.6637327 
+[1] "Q5VV41/Q5VV41layer2head0.csv"
+      50% 
+-1.564521 
+[1] "Q5VV41/Q5VV41layer3head0.csv"
+      50% 
+-2.513117 
+[1] "Q5VV41/Q5VV41layer4head0.csv"
+       50% 
+-0.8053241 
+[1] "Q5VV41/Q5VV41layer5head0.csv"
+      50% 
+-2.904865 
+[1] "Q5VV41/Q5VV41layer6head0.csv"
+      50% 
+-2.436743 
+[1] "Q5VV41/Q5VV41layer7head0.csv"
+      50% 
+-4.971505 
+[1] "Q5VV41/Q5VV41layer8head0.csv"
+      50% 
+-2.463408 
+[1] "Q5VV41/Q5VV41layer9head0.csv"
+       50% 
+-0.9861229 
+[1] "Q5VV41/Q5VV41layer10head0.csv"
+      50% 
+-3.119806 
+[1] "Q5VV41/Q5VV41layer11head0.csv"
+      50% 
+-0.481106 
+[1] "Q6FJA3"
+[1] "Q6FJA3/Q6FJA3layer0head0.csv"
+       50% 
+-0.4884291 
+[1] "Q6FJA3/Q6FJA3layer1head0.csv"
+       50% 
+-0.5564717 
+[1] "Q6FJA3/Q6FJA3layer2head0.csv"
+       50% 
+-0.5368505 
+[1] "Q6FJA3/Q6FJA3layer3head0.csv"
+       50% 
+-0.7696771 
+[1] "Q6FJA3/Q6FJA3layer4head0.csv"
+      50% 
+-0.888624 
+[1] "Q6FJA3/Q6FJA3layer5head0.csv"
+      50% 
+-0.581399 
+[1] "Q6FJA3/Q6FJA3layer6head0.csv"
+       50% 
+-0.7597631 
+[1] "Q6FJA3/Q6FJA3layer7head0.csv"
+      50% 
+-1.364945 
+[1] "Q6FJA3/Q6FJA3layer8head0.csv"
+      50% 
+-2.658076 
+[1] "Q6FJA3/Q6FJA3layer9head0.csv"
+       50% 
+-0.6803299 
+[1] "Q6FJA3/Q6FJA3layer10head0.csv"
+       50% 
+-0.6399105 
+[1] "Q6FJA3/Q6FJA3layer11head0.csv"
+       50% 
+-0.2386803 
+[1] "Q6FJA3/Q6FJA3layer0head0.csv"
+      50% 
+-0.578023 
+[1] "Q6FJA3/Q6FJA3layer1head0.csv"
+       50% 
+-0.6751033 
+[1] "Q6FJA3/Q6FJA3layer2head0.csv"
+       50% 
+-0.7581857 
+[1] "Q6FJA3/Q6FJA3layer3head0.csv"
+      50% 
+-1.293132 
+[1] "Q6FJA3/Q6FJA3layer4head0.csv"
+       50% 
+-0.6688057 
+[1] "Q6FJA3/Q6FJA3layer5head0.csv"
+       50% 
+-0.6142079 
+[1] "Q6FJA3/Q6FJA3layer6head0.csv"
+       50% 
+-0.7910204 
+[1] "Q6FJA3/Q6FJA3layer7head0.csv"
+       50% 
+-0.8660578 
+[1] "Q6FJA3/Q6FJA3layer8head0.csv"
+       50% 
+-0.6802562 
+[1] "Q6FJA3/Q6FJA3layer9head0.csv"
+       50% 
+-0.9699428 
+[1] "Q6FJA3/Q6FJA3layer10head0.csv"
+       50% 
+-0.7920663 
+[1] "Q6FJA3/Q6FJA3layer11head0.csv"
+       50% 
+-0.4565784 
+[1] "Q6FJA3/Q6FJA3layer0head0.csv"
+       50% 
+-0.5056185 
+[1] "Q6FJA3/Q6FJA3layer1head0.csv"
+       50% 
+-0.4935764 
+[1] "Q6FJA3/Q6FJA3layer2head0.csv"
+      50% 
+-0.472989 
+[1] "Q6FJA3/Q6FJA3layer3head0.csv"
+       50% 
+-0.8388337 
+[1] "Q6FJA3/Q6FJA3layer4head0.csv"
+       50% 
+-0.7549161 
+[1] "Q6FJA3/Q6FJA3layer5head0.csv"
+      50% 
+-1.378567 
+[1] "Q6FJA3/Q6FJA3layer6head0.csv"
+      50% 
+-1.019564 
+[1] "Q6FJA3/Q6FJA3layer7head0.csv"
+      50% 
+-1.116654 
+[1] "Q6FJA3/Q6FJA3layer8head0.csv"
+      50% 
+-2.837894 
+[1] "Q6FJA3/Q6FJA3layer9head0.csv"
+       50% 
+-0.8253495 
+[1] "Q6FJA3/Q6FJA3layer10head0.csv"
+       50% 
+-0.4698615 
+[1] "Q6FJA3/Q6FJA3layer11head0.csv"
+      50% 
+-0.489014 
+[1] "Q6FJA3/Q6FJA3layer0head0.csv"
+       50% 
+-0.5345078 
+[1] "Q6FJA3/Q6FJA3layer1head0.csv"
+       50% 
+-0.6575469 
+[1] "Q6FJA3/Q6FJA3layer2head0.csv"
+       50% 
+-0.9474624 
+[1] "Q6FJA3/Q6FJA3layer3head0.csv"
+       50% 
+-0.9064775 
+[1] "Q6FJA3/Q6FJA3layer4head0.csv"
+       50% 
+-0.7549714 
+[1] "Q6FJA3/Q6FJA3layer5head0.csv"
+      50% 
+-1.494358 
+[1] "Q6FJA3/Q6FJA3layer6head0.csv"
+      50% 
+-1.242922 
+[1] "Q6FJA3/Q6FJA3layer7head0.csv"
+       50% 
+-0.8301084 
+[1] "Q6FJA3/Q6FJA3layer8head0.csv"
+       50% 
+-0.7858881 
+[1] "Q6FJA3/Q6FJA3layer9head0.csv"
+      50% 
+-2.132224 
+[1] "Q6FJA3/Q6FJA3layer10head0.csv"
+       50% 
+-0.5647124 
+[1] "Q6FJA3/Q6FJA3layer11head0.csv"
+       50% 
+-0.3006639 
+[1] "Q9HWK6"
+[1] "Q9HWK6/Q9HWK6layer0head0.csv"
+       50% 
+-0.3783454 
+[1] "Q9HWK6/Q9HWK6layer1head0.csv"
+       50% 
+-0.4713443 
+[1] "Q9HWK6/Q9HWK6layer2head0.csv"
+       50% 
+-0.5363156 
+[1] "Q9HWK6/Q9HWK6layer3head0.csv"
+       50% 
+-0.7160597 
+[1] "Q9HWK6/Q9HWK6layer4head0.csv"
+       50% 
+-0.7998237 
+[1] "Q9HWK6/Q9HWK6layer5head0.csv"
+       50% 
+-0.5924941 
+[1] "Q9HWK6/Q9HWK6layer6head0.csv"
+       50% 
+-0.6027533 
+[1] "Q9HWK6/Q9HWK6layer7head0.csv"
+       50% 
+-0.9712644 
+[1] "Q9HWK6/Q9HWK6layer8head0.csv"
+      50% 
+-2.715669 
+[1] "Q9HWK6/Q9HWK6layer9head0.csv"
+       50% 
+-0.5386998 
+[1] "Q9HWK6/Q9HWK6layer10head0.csv"
+       50% 
+-0.3131528 
+[1] "Q9HWK6/Q9HWK6layer11head0.csv"
+       50% 
+-0.1584044 
+[1] "Q9HWK6/Q9HWK6layer0head0.csv"
+       50% 
+-0.4613845 
+[1] "Q9HWK6/Q9HWK6layer1head0.csv"
+       50% 
+-0.6008547 
+[1] "Q9HWK6/Q9HWK6layer2head0.csv"
+       50% 
+-0.6873906 
+[1] "Q9HWK6/Q9HWK6layer3head0.csv"
+      50% 
+-1.117784 
+[1] "Q9HWK6/Q9HWK6layer4head0.csv"
+       50% 
+-0.5643409 
+[1] "Q9HWK6/Q9HWK6layer5head0.csv"
+       50% 
+-0.5579148 
+[1] "Q9HWK6/Q9HWK6layer6head0.csv"
+      50% 
+-1.133585 
+[1] "Q9HWK6/Q9HWK6layer7head0.csv"
+       50% 
+-0.9763815 
+[1] "Q9HWK6/Q9HWK6layer8head0.csv"
+       50% 
+-0.8191804 
+[1] "Q9HWK6/Q9HWK6layer9head0.csv"
+      50% 
+-1.169963 
+[1] "Q9HWK6/Q9HWK6layer10head0.csv"
+       50% 
+-0.5868197 
+[1] "Q9HWK6/Q9HWK6layer11head0.csv"
+       50% 
+-0.4661153 
+[1] "Q9HWK6/Q9HWK6layer0head0.csv"
+       50% 
+-0.3918369 
+[1] "Q9HWK6/Q9HWK6layer1head0.csv"
+       50% 
+-0.4280785 
+[1] "Q9HWK6/Q9HWK6layer2head0.csv"
+       50% 
+-0.4558357 
+[1] "Q9HWK6/Q9HWK6layer3head0.csv"
+       50% 
+-0.9260428 
+[1] "Q9HWK6/Q9HWK6layer4head0.csv"
+       50% 
+-0.5984427 
+[1] "Q9HWK6/Q9HWK6layer5head0.csv"
+      50% 
+-1.860669 
+[1] "Q9HWK6/Q9HWK6layer6head0.csv"
+      50% 
+-1.326161 
+[1] "Q9HWK6/Q9HWK6layer7head0.csv"
+       50% 
+-0.9033918 
+[1] "Q9HWK6/Q9HWK6layer8head0.csv"
+      50% 
+-3.417381 
+[1] "Q9HWK6/Q9HWK6layer9head0.csv"
+       50% 
+-0.8952181 
+[1] "Q9HWK6/Q9HWK6layer10head0.csv"
+       50% 
+-0.2655436 
+[1] "Q9HWK6/Q9HWK6layer11head0.csv"
+       50% 
+-0.2443972 
+[1] "Q9HWK6/Q9HWK6layer0head0.csv"
+       50% 
+-0.4167949 
+[1] "Q9HWK6/Q9HWK6layer1head0.csv"
+       50% 
+-0.6504681 
+[1] "Q9HWK6/Q9HWK6layer2head0.csv"
+       50% 
+-0.7770468 
+[1] "Q9HWK6/Q9HWK6layer3head0.csv"
+       50% 
+-0.7290959 
+[1] "Q9HWK6/Q9HWK6layer4head0.csv"
+       50% 
+-0.6937778 
+[1] "Q9HWK6/Q9HWK6layer5head0.csv"
+     50% 
+-1.64279 
+[1] "Q9HWK6/Q9HWK6layer6head0.csv"
+      50% 
+-1.548352 
+[1] "Q9HWK6/Q9HWK6layer7head0.csv"
+      50% 
+-1.058002 
+[1] "Q9HWK6/Q9HWK6layer8head0.csv"
+       50% 
+-0.7847564 
+[1] "Q9HWK6/Q9HWK6layer9head0.csv"
+      50% 
+-3.167647 
+[1] "Q9HWK6/Q9HWK6layer10head0.csv"
+       50% 
+-0.8940346 
+[1] "Q9HWK6/Q9HWK6layer11head0.csv"
+       50% 
+-0.2235992 

@@ -1,0 +1,929 @@
+
+
+
+train
+mf
+
+
+
+found but not match sequence Q00532
+found but not match sequence Q10743
+found but not match sequence P54252
+diff but same len P06881 [56]
+diff but same len P28332 [1]
+found but not match sequence Q12983
+found but not match sequence Q99873
+diff but same len O60678 [507]
+found but not match sequence P17405
+found but not match sequence Q96AP0
+diff but same len P21127 [ 96 257]
+diff but same len Q8NCS7 [682 693 694]
+diff but same len P08921 [111]
+diff but same len Q9ULX6 [457]
+found but not match sequence Q9JLH5
+diff but same len P24462 [408]
+found but not match sequence P55194
+found but not match sequence Q8NDD1
+found but not match sequence O43889
+found but not match sequence Q6RKD8
+found but not match sequence O43665
+diff but same len Q59WF4 [ 33  41  80  88 183 380]
+found but not match sequence Q922S4
+diff but same len Q6P5W5 [157 371]
+found but not match sequence P34925
+found but not match sequence P17136
+found but not match sequence Q6ZSM3
+diff but same len Q9NPH0 [315]
+found but not match sequence Q9UJ41
+diff but same len Q9Y6F1 [99]
+diff but same len Q59X23 [211]
+found but not match sequence Q6DKI1
+found but not match sequence Q9UI36
+found but not match sequence P51513
+diff but same len Q6XZB0 [420]
+diff but same len Q62866 [7]
+diff but same len Q54305 [  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18
+  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  38
+  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56
+  57  58  59  60  61  62  63  64  66  67  68  69  70  71  72  73  74  75
+  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  93  94
+  95  96  97  98  99 100 101 102 104 105 106 107 108 109 110 111 112 113
+ 114 115 116 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132
+ 133 134 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151
+ 152 153 154 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170
+ 171 172 174 175 176 177 178 179 180 181 182 183 184 186 187 188 189 190
+ 191 192 194 195 196 197 198 199 200 201 202 203 204 205 206 207 208 209
+ 210 212 213 214 215 216 217 218 219 220 221 222 223 225 226 240]
+diff but same len P41777 [140]
+found but not match sequence Q9UKL0
+found but not match sequence Q9BV68
+diff but same len Q15165 [310]
+diff but same len P87207 [ 2 17 28 54 66 80 84]
+diff but same len P80303 [302]
+diff but same len P18433 [138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 155 157
+ 158 159 160 161 163 164 165 166 167 168 169 170 171 172 173 174 175 176
+ 177 178 179]
+diff but same len Q70HW3 [40]
+found but not match sequence P38979
+diff but same len P82921 [49]
+diff but same len Q9H307 [440]
+found but not match sequence P10567
+diff but same len P14598 [98]
+found but not match sequence P51579
+diff but same len Q4FZB7 [8]
+diff but same len Q8IU60 [15]
+found but not match sequence P0CC12
+diff but same len Q96CV9 [321]
+found but not match sequence Q6ZPK0
+found but not match sequence Q9NR21
+found but not match sequence P97639
+found but not match sequence Q6P3W2
+diff but same len O74198 [221]
+diff but same len P27448 [409]
+found but not match sequence Q09M05
+found but not match sequence Q8N2Q7
+diff but same len Q9HCS2 [ 89 187]
+found but not match sequence Q38997
+found but not match sequence Q86Y91
+found but not match sequence O17798
+found but not match sequence Q8VBV4
+found but not match sequence Q9P055
+diff but same len P16871 [ 65 137]
+found but not match sequence P40305
+diff but same len Q59SU1 [526 539]
+diff but same len Q9Y672 [303]
+diff but same len P20236 [341 408]
+diff but same len Q86UA6 [102]
+diff but same len Q9CWZ3 [42]
+found but not match sequence Q3MJ16
+found but not match sequence Q6TGQ8
+found but not match sequence Q9NXE4
+found but not match sequence O54803
+diff but same len Q9Y5N5 [ 33 145 165]
+diff but same len P46587 [576 580]
+diff but same len P30418 [326]
+found but not match sequence P06803
+diff but same len P01877 [ 92 101 278 295 325 334]
+found but not match sequence P11309
+found but not match sequence Q13938
+found but not match sequence P18089
+found but not match sequence Q59SF7
+found but not match sequence Q9UBK8
+found but not match sequence Q6ULP2
+diff but same len P48200 [158]
+found but not match sequence Q8JZL2
+found but not match sequence Q9UJX0
+diff but same len Q9P8W1 [ 40 184 455]
+found but not match sequence P21917
+diff but same len P15502 [466 467 468]
+found but not match sequence O95718
+diff but same len Q709F0 [156]
+found but not match sequence O75319
+diff but same len Q5A446 [411]
+diff but same len P13747 [127]
+diff but same len Q5A477 [29]
+diff but same len O43824 [170]
+found but not match sequence Q8VYF5
+found but not match sequence Q9HBE4
+diff but same len Q873N2 [267 293]
+found but not match sequence C5H429
+found but not match sequence Q9NPC1
+diff but same len P46592 [ 69 136]
+diff but same len P12368 [124]
+found but not match sequence Q86VX9
+found but not match sequence Q14393
+found but not match sequence Q149L7
+diff but same len Q13555 [395 397]
+found but not match sequence Q00175
+found but not match sequence A1Z1Q3
+found but not match sequence Q8INF0
+found but not match sequence Q8IS44
+diff but same len Q59WH0 [335]
+found but not match sequence Q9H3H3
+found but not match sequence O35547
+diff but same len P00850 [ 11 179 184 186]
+diff but same len P78599 [304]
+found but not match sequence Q96D42
+diff but same len P03070 [530 548]
+diff but same len P14408 [480]
+diff but same len Q5ABU7 [324]
+found but not match sequence Q0WP12
+diff but same len O75150 [614]
+found but not match sequence Q8NCA5
+diff but same len Q86WJ1 [884]
+diff but same len Q5AP53 [225 656]
+found but not match sequence P05177
+found but not match sequence P06968
+found but not match sequence P11553
+found but not match sequence Q9NZS2
+diff but same len P28574 [15 78]
+found but not match sequence Q9HD36
+found but not match sequence O14772
+found but not match sequence Q8H151
+found but not match sequence P14091
+diff but same len P49187 [174 175]
+diff but same len O08565 [142 143]
+found but not match sequence P26378
+diff but same len P52500 [27]
+found but not match sequence O01704
+found but not match sequence P9WFK7
+found but not match sequence Q6DFW0
+found but not match sequence Q9BUX1
+found but not match sequence Q99518
+diff but same len P11509 [391]
+diff but same len P01258 [56]
+diff but same len P56817 [480]
+found but not match sequence O43169
+diff but same len P29717 [366]
+found but not match sequence P01834
+diff but same len A0M8Q6 [33]
+found but not match sequence O60645
+diff but same len Q6NTF7 [139]
+total type 1450
+
+
+
+train
+cc
+
+
+
+found but not match sequence Q00532
+found but not match sequence Q10743
+diff but same len P06881 [56]
+found but not match sequence P30988
+found but not match sequence P51559
+diff but same len P28332 [1]
+found but not match sequence Q12983
+found but not match sequence Q99873
+diff but same len P40953 [ 46  51 348 459 461 478 572]
+found but not match sequence P17405
+diff but same len P25063 [43]
+found but not match sequence Q96AP0
+diff but same len Q8NCS7 [682 693 694]
+diff but same len P08921 [111]
+diff but same len Q9ULX6 [457]
+found but not match sequence Q3E906
+diff but same len Q5AGC4 [ 38  40 178]
+diff but same len P24462 [408]
+found but not match sequence Q8NDD1
+found but not match sequence O43889
+found but not match sequence Q6P4E1
+found but not match sequence Q5K4L6
+found but not match sequence O43665
+found but not match sequence Q9JHG6
+diff but same len P97797 [ 28  66  73  82  85  86  89  90  95 113 117 127 193 223 350 364]
+found but not match sequence Q9NXR1
+found but not match sequence Q9UMY4
+diff but same len Q9NQ36 [711]
+diff but same len Q6P5W5 [157 371]
+found but not match sequence A8MU46
+found but not match sequence P34925
+found but not match sequence Q9ET66
+found but not match sequence P17136
+found but not match sequence Q24322
+found but not match sequence Q86VZ5
+diff but same len Q5AL49 [648]
+diff but same len Q5A044 [ 24  26  43 125 407]
+found but not match sequence Q5AA33
+found but not match sequence Q8TCX5
+diff but same len Q9NPH0 [315]
+found but not match sequence Q9BWM7
+diff but same len Q9Y6F1 [99]
+diff but same len Q59X23 [211]
+found but not match sequence Q9WVR1
+found but not match sequence P51513
+found but not match sequence Q9EQ00
+found but not match sequence P51172
+diff but same len Q6XZB0 [420]
+diff but same len Q62866 [7]
+diff but same len P41777 [140]
+found but not match sequence P02340
+found but not match sequence Q9BV68
+diff but same len Q80VM9 [395]
+found but not match sequence Q9H5P4
+found but not match sequence Q8JZW5
+diff but same len Q70HW3 [40]
+diff but same len P57054 [8]
+diff but same len P82921 [49]
+diff but same len Q9H307 [440]
+found but not match sequence P0CC17
+found but not match sequence P10567
+found but not match sequence P51579
+diff but same len Q8IU60 [15]
+found but not match sequence P0CC12
+found but not match sequence P0C623
+found but not match sequence Q8BXP5
+diff but same len Q96CV9 [321]
+found but not match sequence Q9NR21
+found but not match sequence Q96S16
+diff but same len Q9Y4K4 [472 568]
+diff but same len O74198 [221]
+diff but same len P27448 [409]
+found but not match sequence P01837
+found but not match sequence Q9Y468
+diff but same len P01880 [329]
+diff but same len Q9HCS2 [ 89 187]
+found but not match sequence Q86Y91
+diff but same len Q08431 [75]
+found but not match sequence Q7TSN2
+found but not match sequence O17798
+found but not match sequence Q8VBV4
+found but not match sequence Q924H2
+diff but same len Q14954 [90]
+found but not match sequence Q52LJ0
+diff but same len P16871 [ 65 137]
+found but not match sequence P40305
+diff but same len Q59SU1 [526 539]
+diff but same len Q9CWZ3 [42]
+found but not match sequence Q9BU40
+diff but same len P87020 [ 89 100 153 158]
+diff but same len P16284 [124]
+found but not match sequence Q6TGQ8
+found but not match sequence Q9NXE4
+diff but same len Q9Y5N5 [ 33 145 165]
+diff but same len P46587 [576 580]
+found but not match sequence Q96SB3
+found but not match sequence Q59S06
+diff but same len Q41131 [175]
+diff but same len P01877 [ 92 101 278 295 325 334]
+found but not match sequence P11309
+diff but same len Q5AMJ5 [96]
+found but not match sequence P18089
+diff but same len Q96LW4 [167]
+found but not match sequence Q9Y6F6
+found but not match sequence Q59SF7
+found but not match sequence Q9UBK8
+found but not match sequence O43653
+diff but same len Q16822 [120]
+found but not match sequence Q8JZL2
+found but not match sequence Q9V3J3
+diff but same len Q8IWA4 [522]
+found but not match sequence O35732
+diff but same len Q49A26 [458]
+found but not match sequence P21917
+diff but same len P15502 [466 467 468]
+found but not match sequence O95718
+diff but same len Q4V328 [178]
+diff but same len Q6UXS9 [ 67 237]
+diff but same len Q709F0 [156]
+found but not match sequence O75319
+diff but same len Q5A446 [411]
+diff but same len P13747 [127]
+diff but same len P02765 [247 255]
+diff but same len Q5A477 [29]
+found but not match sequence Q8NGT1
+diff but same len Q9Y483 [139]
+diff but same len Q13505 [62]
+found but not match sequence Q9VVR1
+diff but same len P17046 [  3   4   5   6   7 258]
+found but not match sequence Q96EL1
+diff but same len P61758 [122]
+diff but same len Q9Y5E6 [201]
+found but not match sequence P56556
+found but not match sequence C5H429
+found but not match sequence Q9NPC1
+diff but same len P12368 [124]
+diff but same len Q8NEM0 [760]
+diff but same len Q59XX2 [166 169 190 192 203 204 236 265 268 286 292 306 321 327 351]
+diff but same len Q9NPI6 [482]
+found but not match sequence Q14393
+found but not match sequence Q149L7
+diff but same len Q13555 [395 397]
+diff but same len P08235 [179 240]
+found but not match sequence Q00175
+diff but same len P83777 [26]
+found but not match sequence Q8INF0
+found but not match sequence Q7Z3E5
+diff but same len Q5AMT2 [136]
+found but not match sequence Q96D42
+found but not match sequence Q18680
+diff but same len Q59XM1 [153]
+found but not match sequence P86471
+diff but same len P14408 [480]
+diff but same len Q5ABU7 [324]
+found but not match sequence Q0WP12
+diff but same len O75150 [614]
+diff but same len Q86WJ1 [884]
+diff but same len Q5AP53 [225 656]
+diff but same len Q5A119 [ 80  84  87 433 489 564 569]
+found but not match sequence P05177
+found but not match sequence P06968
+found but not match sequence Q9NZS2
+diff but same len Q14953 [  1 131 184 194]
+found but not match sequence Q8CH19
+found but not match sequence Q9HD36
+found but not match sequence O14772
+diff but same len Q13111 [949]
+found but not match sequence Q8H151
+found but not match sequence Q17390
+diff but same len P49187 [174 175]
+diff but same len O08565 [142 143]
+found but not match sequence Q9NRG7
+found but not match sequence P41439
+diff but same len P52500 [27]
+found but not match sequence O01704
+found but not match sequence Q6P4F2
+diff but same len Q5AIA1 [358]
+diff but same len O75638 [ 5 88]
+diff but same len Q9NXW2 [335]
+found but not match sequence Q9Y592
+found but not match sequence Q99518
+found but not match sequence Q99J72
+diff but same len P11509 [391]
+diff but same len P01258 [56]
+found but not match sequence Q8IYX3
+diff but same len P56817 [480]
+diff but same len P29717 [366]
+found but not match sequence Q14943
+found but not match sequence P01834
+diff but same len A0M8Q6 [33]
+found but not match sequence O60645
+diff but same len Q6NTF7 [139]
+diff but same len P39827 [337]
+found but not match sequence Q8N954
+total type 1655
+
+
+
+train
+bp
+
+
+
+diff but same len Q5APU2 [ 77  92 101 151 204 206 297 354 443]
+found but not match sequence Q00532
+diff but same len P06881 [56]
+found but not match sequence P30988
+found but not match sequence P51559
+diff but same len P28332 [1]
+found but not match sequence Q12983
+found but not match sequence Q99873
+diff but same len P40953 [ 46  51 348 459 461 478 572]
+found but not match sequence P37655
+diff but same len O60678 [507]
+found but not match sequence P17405
+found but not match sequence Q96AP0
+diff but same len P21127 [ 96 257]
+diff but same len P08921 [111]
+diff but same len Q9ULX6 [457]
+found but not match sequence Q9JLH5
+found but not match sequence O43889
+found but not match sequence Q99674
+found but not match sequence Q6RKD8
+found but not match sequence O43665
+found but not match sequence Q9JHG6
+found but not match sequence Q922S4
+found but not match sequence Q91V81
+diff but same len Q5AHG6 [ 19 700]
+found but not match sequence P34925
+found but not match sequence Q9ET66
+found but not match sequence P17136
+diff but same len Q5AL49 [648]
+diff but same len Q59XP0 [ 86 106 129 199 216 402]
+diff but same len Q9NPH0 [315]
+diff but same len Q9Y6F1 [99]
+diff but same len Q59X23 [211]
+found but not match sequence Q9WVR1
+found but not match sequence Q9UI36
+diff but same len P24393 [94 95]
+found but not match sequence P51513
+found but not match sequence Q9EQ00
+diff but same len Q6XZB0 [420]
+diff but same len Q62866 [7]
+diff but same len O60462 [122]
+diff but same len P41777 [140]
+found but not match sequence P00536
+found but not match sequence Q9UKL0
+found but not match sequence Q9BV68
+diff but same len Q15165 [310]
+diff but same len Q59RA0 [ 13  32 312]
+diff but same len Q80VM9 [395]
+diff but same len P21698 [159]
+diff but same len P87207 [ 2 17 28 54 66 80 84]
+found but not match sequence P20917
+diff but same len P18433 [138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 155 157
+ 158 159 160 161 163 164 165 166 167 168 169 170 171 172 173 174 175 176
+ 177 178 179]
+diff but same len Q70HW3 [40]
+found but not match sequence P38979
+diff but same len P57054 [8]
+diff but same len Q9H307 [440]
+found but not match sequence P10567
+diff but same len P14598 [98]
+found but not match sequence P51579
+diff but same len Q8IU60 [15]
+found but not match sequence P0CC12
+found but not match sequence Q94071
+diff but same len Q3ZCV2 [204]
+found but not match sequence Q8BXP5
+diff but same len Q96CV9 [321]
+found but not match sequence Q6ZPK0
+diff but same len Q9Y4K4 [472 568]
+found but not match sequence Q6P3W2
+diff but same len O74198 [221]
+diff but same len P27448 [409]
+found but not match sequence P01837
+found but not match sequence Q9Y468
+diff but same len P54317 [360]
+found but not match sequence O75477
+found but not match sequence Q38997
+diff but same len Q08431 [75]
+found but not match sequence Q7TSN2
+found but not match sequence Q924H2
+diff but same len Q14954 [90]
+found but not match sequence P13678
+found but not match sequence Q9P055
+diff but same len Q9BZL6 [834]
+diff but same len P16871 [ 65 137]
+found but not match sequence P40305
+diff but same len Q59SU1 [526 539]
+diff but same len Q9Y672 [303]
+diff but same len P18935 [142 151 260]
+diff but same len P20236 [341 408]
+found but not match sequence P58400
+diff but same len Q86UA6 [102]
+found but not match sequence Q9BU40
+found but not match sequence Q0PMG2
+diff but same len P87020 [ 89 100 153 158]
+diff but same len P16284 [124]
+found but not match sequence Q6TGQ8
+found but not match sequence Q9NXE4
+diff but same len Q59X38 [464 516]
+diff but same len Q9Y5N5 [ 33 145 165]
+diff but same len P46587 [576 580]
+found but not match sequence Q5K4R0
+found but not match sequence P26440
+found but not match sequence Q96SB3
+diff but same len P01877 [ 92 101 278 295 325 334]
+found but not match sequence P11309
+found but not match sequence Q13938
+found but not match sequence Q9Y679
+diff but same len Q59MA6 [179 531]
+diff but same len Q96LW4 [167]
+found but not match sequence Q59SF7
+found but not match sequence Q13065
+diff but same len P48200 [158]
+found but not match sequence P49287
+diff but same len Q59SR6 [262]
+diff but same len Q16822 [120]
+found but not match sequence Q8JZL2
+found but not match sequence Q9V3J3
+found but not match sequence Q9UJX0
+diff but same len Q8IWA4 [522]
+found but not match sequence O35732
+diff but same len P15502 [466 467 468]
+found but not match sequence O95718
+diff but same len Q709F0 [156]
+found but not match sequence Q9Z217
+diff but same len Q59SN6 [ 25  57  63  64 178 333]
+found but not match sequence O75319
+diff but same len Q5A446 [411]
+diff but same len P13747 [127]
+diff but same len P02765 [247 255]
+found but not match sequence Q8VYF5
+diff but same len Q9Y483 [139]
+found but not match sequence Q9VVR1
+found but not match sequence Q9NZL4
+found but not match sequence Q59PW0
+diff but same len Q8TD94 [46 57]
+found but not match sequence Q9HBE4
+diff but same len P17046 [  3   4   5   6   7 258]
+diff but same len Q9Y5E6 [201]
+diff but same len Q59WV0 [ 43 136 239]
+found but not match sequence O09032
+diff but same len Q873N2 [267 293]
+found but not match sequence P56556
+found but not match sequence Q9NPC1
+diff but same len P46592 [ 69 136]
+diff but same len Q8NEM0 [760]
+diff but same len Q9NPI6 [482]
+diff but same len O94069 [63 80]
+found but not match sequence P05812
+found but not match sequence Q149L7
+diff but same len P08235 [179 240]
+found but not match sequence Q00175
+found but not match sequence A1Z1Q3
+found but not match sequence Q8INF0
+found but not match sequence Q8IS44
+diff but same len Q59WH0 [335]
+diff but same len Q566V9 [ 8 20]
+found but not match sequence O35547
+diff but same len P00850 [ 11 179 184 186]
+diff but same len Q5AMT2 [136]
+diff but same len P78599 [304]
+diff but same len Q9Y337 [152]
+found but not match sequence Q18680
+diff but same len P53704 [15 62]
+diff but same len P03070 [530 548]
+found but not match sequence P86471
+diff but same len P14408 [480]
+diff but same len Q5ABU7 [324]
+diff but same len O75150 [614]
+diff but same len P93771 [351 352]
+found but not match sequence Q5ACW8
+diff but same len Q86WJ1 [884]
+diff but same len Q5AP53 [225 656]
+found but not match sequence P16911
+found but not match sequence P05177
+found but not match sequence P11553
+found but not match sequence Q5A201
+found but not match sequence Q9NZS2
+diff but same len P28574 [15 78]
+diff but same len Q14953 [  1 131 184 194]
+found but not match sequence Q9HD36
+found but not match sequence O14772
+found but not match sequence A9JRD8
+found but not match sequence Q8H151
+found but not match sequence P14091
+diff but same len P49187 [174 175]
+diff but same len O08565 [142 143]
+diff but same len Q5AD13 [130 360]
+found but not match sequence P26378
+found but not match sequence P41439
+diff but same len P52500 [27]
+found but not match sequence O01704
+found but not match sequence Q6P4F2
+found but not match sequence P9WFK7
+diff but same len Q04782 [65 66]
+found but not match sequence Q9Y592
+found but not match sequence Q99518
+found but not match sequence Q99J72
+found but not match sequence Q5A1D3
+diff but same len P11509 [391]
+diff but same len P01258 [56]
+diff but same len P56817 [480]
+found but not match sequence O65704
+diff but same len P29717 [366]
+found but not match sequence Q27367
+found but not match sequence Q14943
+found but not match sequence P01834
+found but not match sequence Q03060
+diff but same len Q6NTF7 [139]
+diff but same len P39827 [337]
+total type 1629
+
+
+
+dev
+mf
+
+
+
+diff but same len Q5APU2 [ 77  92 101 151 204 206 297 354 443]
+found but not match sequence P30988
+found but not match sequence Q6NT52
+diff but same len P25063 [43]
+found but not match sequence Q3E906
+found but not match sequence Q9WVR1
+diff but same len O60462 [122]
+found but not match sequence P02340
+found but not match sequence P0CC17
+diff but same len Q08874 [ 8 40 47 51]
+diff but same len Q9Y4K4 [472 568]
+found but not match sequence Q9Y468
+diff but same len P54317 [360]
+found but not match sequence Q8WY54
+found but not match sequence O75477
+diff but same len Q9BZL6 [834]
+found but not match sequence Q52LJ0
+diff but same len P87020 [ 89 100 153 158]
+diff but same len Q96LW4 [167]
+diff but same len Q16822 [120]
+found but not match sequence Q5A3P6
+found but not match sequence O35732
+diff but same len Q49A26 [458]
+diff but same len Q9Y483 [139]
+found but not match sequence Q9NZL4
+found but not match sequence O09032
+diff but same len O94069 [63 80]
+diff but same len P08235 [179 240]
+diff but same len Q5AMT2 [136]
+diff but same len Q9Y337 [152]
+diff but same len P53704 [15 62]
+diff but same len Q13111 [949]
+found but not match sequence P41439
+found but not match sequence Q6P4F2
+diff but same len Q04782 [65 66]
+total type 938
+
+
+
+dev
+cc
+
+
+
+found but not match sequence P54252
+found but not match sequence O46203
+diff but same len P21127 [ 96 257]
+found but not match sequence Q6RKD8
+found but not match sequence Q96HR9
+found but not match sequence Q922S4
+found but not match sequence P01871
+found but not match sequence Q6ZSM3
+found but not match sequence Q920H1
+diff but same len Q59XP0 [ 86 106 129 199 216 402]
+found but not match sequence Q9UJ41
+found but not match sequence P0C645
+diff but same len O60462 [122]
+found but not match sequence P00536
+found but not match sequence Q9UKL0
+diff but same len Q15165 [310]
+found but not match sequence P20917
+diff but same len P80303 [302]
+diff but same len P18433 [138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 155 157
+ 158 159 160 161 163 164 165 166 167 168 169 170 171 172 173 174 175 176
+ 177 178 179]
+found but not match sequence P38979
+found but not match sequence Q9GZS1
+diff but same len P14598 [98]
+diff but same len P57096 [4]
+found but not match sequence Q6ZPK0
+diff but same len Q08874 [ 8 40 47 51]
+diff but same len P54317 [360]
+found but not match sequence Q8WY54
+found but not match sequence O75477
+found but not match sequence Q8N2Q7
+diff but same len Q9BZL6 [834]
+diff but same len Q9Y672 [303]
+diff but same len Q86UA6 [102]
+found but not match sequence Q3MJ16
+found but not match sequence Q13938
+found but not match sequence Q9Y679
+found but not match sequence Q6ULP2
+diff but same len Q5AEM8 [7]
+found but not match sequence O09032
+found but not match sequence A1Z1Q3
+found but not match sequence O35547
+diff but same len Q9Y337 [152]
+diff but same len Q59XW9 [214]
+found but not match sequence P14091
+found but not match sequence Q6DFW0
+found but not match sequence Q9BUX1
+found but not match sequence O43169
+found but not match sequence Q3ZB98
+total type 1075
+
+
+
+dev
+bp
+
+
+
+found but not match sequence P54252
+diff but same len P25063 [43]
+found but not match sequence O46203
+diff but same len Q8NCS7 [682 693 694]
+diff but same len P24462 [408]
+diff but same len Q59WF4 [ 33  41  80  88 183 380]
+found but not match sequence Q9NXR1
+found but not match sequence P01871
+found but not match sequence Q24322
+found but not match sequence Q6ZSM3
+found but not match sequence Q9UJ41
+found but not match sequence P51172
+found but not match sequence P02340
+diff but same len Q13046 [64]
+diff but same len P82921 [49]
+found but not match sequence Q9GZS1
+found but not match sequence P0CC17
+diff but same len Q5AP90 [521]
+diff but same len Q08874 [ 8 40 47 51]
+found but not match sequence P97639
+found but not match sequence Q09M05
+found but not match sequence Q8WY54
+found but not match sequence Q8N2Q7
+found but not match sequence Q86Y91
+found but not match sequence O17798
+found but not match sequence Q8VBV4
+found but not match sequence Q52LJ0
+found but not match sequence Q3MJ16
+diff but same len P30418 [326]
+found but not match sequence P06803
+found but not match sequence Q59S06
+found but not match sequence P18089
+found but not match sequence Q9UBK8
+found but not match sequence P21917
+diff but same len Q5A477 [29]
+diff but same len P12368 [124]
+diff but same len Q59XX2 [166 169 190 192 203 204 236 265 268 286 292 306 321 327 351]
+found but not match sequence Q14393
+diff but same len Q5AI97 [65]
+diff but same len Q13555 [395 397]
+found but not match sequence Q9UGI6
+found but not match sequence Q0WP12
+diff but same len Q8N9W5 [364]
+diff but same len Q5A119 [ 80  84  87 433 489 564 569]
+diff but same len Q13111 [949]
+found but not match sequence Q17390
+diff but same len Q90257 [97]
+diff but same len O75185 [164]
+diff but same len Q5AJC1 [122 157 162 482 484 513]
+found but not match sequence Q9BUX1
+diff but same len A0M8Q6 [33]
+total type 1071
+
+
+
+test
+mf
+
+
+
+diff but same len Q5AEK8 [144 173]
+diff but same len Q5A6T5 [219 240 403]
+found but not match sequence Q09349
+diff but same len Q59M56 [43]
+diff but same len P02774 [435 444]
+diff but same len P16662 [267]
+found but not match sequence Q11098
+diff but same len P30530 [265]
+found but not match sequence Q9UGR2
+found but not match sequence Q9NUD5
+found but not match sequence Q9UMY4
+diff but same len Q99J99 [101 106]
+diff but same len Q92777 [ 33  35  60  63  70  73  81 103 104]
+found but not match sequence O75486
+found but not match sequence Q24322
+found but not match sequence Q86VZ5
+found but not match sequence P09838
+diff but same len Q9XFJ8 [25]
+found but not match sequence Q9BQ50
+diff but same len Q5AMG5 [556]
+diff but same len Q59XP0 [ 86 106 129 199 216 402]
+found but not match sequence Q9UM00
+diff but same len P04179 [15]
+found but not match sequence Q9V429
+diff but same len Q9NUL3 [197]
+found but not match sequence Q9Z0W1
+found but not match sequence P51172
+diff but same len Q5ABV6 [410 515]
+found but not match sequence Q8TCT6
+diff but same len Q5AP80 [632]
+found but not match sequence Q6ZDF3
+found but not match sequence Q9NSU2
+found but not match sequence P34283
+total type 801
+
+
+
+test
+cc
+
+
+
+found but not match sequence Q09349
+diff but same len Q59M56 [43]
+diff but same len P02774 [435 444]
+found but not match sequence Q96S15
+diff but same len P16662 [267]
+found but not match sequence Q11098
+diff but same len P30530 [265]
+diff but same len Q149S1 [261]
+found but not match sequence Q07654
+diff but same len Q9P202 [363 751]
+diff but same len Q99J99 [101 106]
+found but not match sequence G5E8Z2
+diff but same len Q9BYE2 [585]
+found but not match sequence Q9Y6A9
+found but not match sequence O75486
+diff but same len Q8N5C8 [393]
+diff but same len Q9XFJ8 [25]
+found but not match sequence Q9UM00
+found but not match sequence O43493
+found but not match sequence P01850
+diff but same len P04179 [15]
+diff but same len P11378 [110]
+found but not match sequence P01848
+found but not match sequence Q9V429
+diff but same len Q9NUL3 [197]
+found but not match sequence Q9Z0W1
+found but not match sequence Q96GP6
+found but not match sequence Q8TCT6
+found but not match sequence Q6ZQV5
+diff but same len Q5AP80 [632]
+found but not match sequence Q9NSU2
+found but not match sequence P53846
+found but not match sequence P34283
+diff but same len Q5AJU7 [139]
+total type 833
+
+
+
+test
+bp
+
+
+
+diff but same len Q5AEK8 [144 173]
+found but not match sequence Q5AQ36
+diff but same len Q5A6T5 [219 240 403]
+found but not match sequence Q09349
+diff but same len Q7SZC2 [47]
+diff but same len Q59M56 [43]
+found but not match sequence P01737
+diff but same len P02774 [435 444]
+found but not match sequence Q96S15
+found but not match sequence P01733
+diff but same len P16662 [267]
+diff but same len P30530 [265]
+diff but same len Q149S1 [261]
+diff but same len Q5ABD9 [650 698 787 813]
+found but not match sequence Q07654
+diff but same len P97797 [ 28  66  73  82  85  86  89  90  95 113 117 127 193 223 350 364]
+diff but same len Q9P202 [363 751]
+found but not match sequence Q9UMY4
+diff but same len Q99J99 [101 106]
+diff but same len Q92777 [ 33  35  60  63  70  73  81 103 104]
+found but not match sequence G5E8Z2
+found but not match sequence P04435
+found but not match sequence Q9Y6A9
+diff but same len Q99P68 [71]
+found but not match sequence O75486
+diff but same len Q8N5C8 [393]
+diff but same len Q9ZHQ1 [135 136]
+found but not match sequence Q86VZ5
+found but not match sequence P09838
+diff but same len Q59TB2 [535]
+diff but same len Q9XFJ8 [25]
+found but not match sequence Q9BQ50
+found but not match sequence Q91029
+found but not match sequence P04437
+found but not match sequence Q9UM00
+found but not match sequence P01850
+diff but same len P04179 [15]
+diff but same len P11378 [110]
+found but not match sequence P01848
+found but not match sequence Q9V429
+found but not match sequence Q9Z0W1
+diff but same len Q5AH87 [185]
+diff but same len Q59LX5 [266]
+found but not match sequence P09531
+diff but same len Q5ABV6 [410 515]
+found but not match sequence Q8TCT6
+found but not match sequence P97525
+diff but same len Q5AP80 [632]
+found but not match sequence Q6ZDF3
+found but not match sequence O13168
+found but not match sequence Q9NSU2
+found but not match sequence P53846
+found but not match sequence P34283
+diff but same len Q5AJU7 [139]
+total type 873
+data type dev len 938
+data type train len 1450
+data type test len 801
+not in train 282
+total unique type 1732
+data type dev len 1075
+data type train len 1655
+data type test len 833
+not in train 250
+total unique type 1905
+data type dev len 1071
+data type train len 1629
+data type test len 873
+not in train 264
+total unique type 1893

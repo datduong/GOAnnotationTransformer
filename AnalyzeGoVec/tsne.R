@@ -4,8 +4,15 @@ library('ggplot2', help, pos = 2, lib.loc = NULL)
 
 set.seed(1)
 
-fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
-this_title = 'Bert12'
+setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/bp/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeEp10e10Drop0.1/')
+
+
+# GOvecFromModel
+# fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
+# this_title = 'Bert12'
+
+fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
+this_title = 'GOvecFromModel'
 
 numcol = ncol(fin)
 GOvec = as.matrix(fin[ , 2:(numcol-2) ])
@@ -15,7 +22,7 @@ tsne_out = tsne$Y
 tsne_out = data.frame( cbind ( fin[,1], tsne_out, fin[,(numcol-1):numcol] ) )
 colnames(tsne_out) = c('name','dim1','dim2','ic','color1')
 
-# windows() 
+windows() 
 
 ggplot(tsne_out, aes(x = dim1, y = dim2, color=factor(color1), size=100*ic)) + 
   geom_point(alpha=.8) + 
@@ -23,7 +30,7 @@ ggplot(tsne_out, aes(x = dim1, y = dim2, color=factor(color1), size=100*ic)) +
   geom_text_repel(
     data = subset(tsne_out, color1 > 0),
     aes(label = name),
-    size = 5,
+    size = 4,
     box.padding = unit(0.35, "lines"),
     point.padding = unit(0.3, "lines")
   ) + 
