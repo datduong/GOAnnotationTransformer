@@ -33,6 +33,7 @@ sys.path.append("/u/scratch/d/datduong/BertGOAnnotation")
 import KmerModel.TokenClassifier as TokenClassifier
 import evaluation_metric
 
+import PosthocCorrect 
 
 MODEL_CLASSES = {
   'bert': (BertConfig, TokenClassifier.BertForTokenClassification2EmbPPI, BertTokenizer) ## replace the standard @BertForTokenClassification
