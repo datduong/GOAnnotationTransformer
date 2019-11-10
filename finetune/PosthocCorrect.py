@@ -23,11 +23,11 @@ def GetDescentNode (graph,label_array):
 
 
 def TakeMax (prob,label_array,children):
+  # notice, do not need to do recusrive max, because max(x, max(y,z)) = max(x,y,z)
   # @prob is num_sample x num_label
   # for each row get column of its children, take max and replace.
   for col,name in enumerate(label_array): ## for each observation
-    # if col == 0:
-    if len(children[name])> 0 : 
+    if len(children[name])> 0 :
       prob[ : , col ] = np.max ( prob[ : , children[name] ], 1 ) ## replace the column of this label @name, with the max-over-row of its children
   return prob
 
