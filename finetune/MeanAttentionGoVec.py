@@ -354,6 +354,9 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 
     ## !! take average of last hidden layer
     hidden_GOvec = outputs[-2][12] ## batch x max_len x dim
+    print (hidden_GOvec.shape)
+    print (outputs[-1][2].shape)
+
     hidden_GOvec = hidden_GOvec[ :, max_len_in_batch::, : ] ## we remove AA, which goes from 0 to @max_len_in_batch.
     hidden_GOvec = torch.sum ( hidden_GOvec, 0 ) ## sum over batch 
     if ave_GOvec is None: 
