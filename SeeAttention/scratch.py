@@ -24,6 +24,8 @@ input_ids1 = tokenizer.encode("Hello, my dog is cute")  # Batch size 1
 input_ids2 = tokenizer.encode("Hello, my dog is one")
 input_ids = torch.tensor ( [input_ids1,input_ids2] ) 
 outputs = model(input_ids)
+# (loss), prediction_scores, seq_relationship_score, (hidden_states), (attentions)
+hidden = outputs[-2]
 
 layers = outputs[-1] ## 12 layers
 
