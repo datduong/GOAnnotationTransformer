@@ -8,11 +8,11 @@ setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/bp/fold_1/2embPpiAnnotE256H1L1
 
 
 # GOvecFromModel
-# fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
-# this_title = 'Bert12'
+fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
+this_title = 'Bert12'
 
-fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
-this_title = 'GOvecFromModel'
+# fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
+# this_title = 'GOvecFromModel'
 
 numcol = ncol(fin)
 GOvec = as.matrix(fin[ , 2:(numcol-2) ])
@@ -25,8 +25,9 @@ colnames(tsne_out) = c('name','dim1','dim2','ic','color1')
 windows() 
 
 ggplot(tsne_out, aes(x = dim1, y = dim2, color=factor(color1), size=100*ic)) + 
-  geom_point(alpha=.8) + 
+  geom_point(alpha=.8, color='gray40' ) + 
   theme_linedraw() + theme_light() + 
+  geom_point(alpha=.8, data=subset(tsne_out, color1 > 0) , aes(x = dim1, y = dim2, color=factor(color1), size=100*ic ) ) + 
   geom_text_repel(
     data = subset(tsne_out, color1 > 0),
     aes(label = name),
@@ -34,6 +35,13 @@ ggplot(tsne_out, aes(x = dim1, y = dim2, color=factor(color1), size=100*ic)) +
     box.padding = unit(0.35, "lines"),
     point.padding = unit(0.3, "lines")
   ) + 
+  # geom_text_repel(
+  #   data = subset(tsne_out, color1 == 0),
+  #   aes(label = name),
+  #   size = 2,
+  #   box.padding = unit(0.35, "lines"),
+  #   point.padding = unit(0.3, "lines")
+  # ) + 
   ggtitle (this_title) + 
   labs(size = "100IC") +
   theme(legend.position="left",plot.title = element_text(hjust = 0.5)) +

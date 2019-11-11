@@ -23,12 +23,16 @@ id_to_name = {id_: data.get('name') for id_, data in graph.nodes(data=True) if '
 # do TSNE or PCA
 
 this_list = {'mf': ['GO:0030291', 'GO:0000980'],
-             'bp': ['GO:0051052', 'GO:0018193'],
+             'bp': ['GO:0051052', 'GO:0018193', 'GO:0097352', 'GO:0045666'],
              'cc': ['GO:0005743', 'GO:0098791']}
 
 onto_type_dict = {'mf': 90594, 'bp': 116144, 'cc': 127647}
 
+
 for onto_type,onto_checkpoint in onto_type_dict.items() :
+
+  if onto_type != 'bp': 
+    continue
 
   # P08090  GO:0030291
   # GO:0000980
