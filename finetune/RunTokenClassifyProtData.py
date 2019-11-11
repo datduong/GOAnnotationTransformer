@@ -595,25 +595,17 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
       # writer.write("%s = %s\n" % (key, str(result[key])))
 
   ## apply post hoc max
-  print ('before')
-  print (prediction)
-
-  prediction = PosthocCorrect.PosthocMax(label_2test_array,prediction)
-  print ('after')
-  print (prediction)
-
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-  # evaluation_metric.print_metrics( result )
-
-  output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
-  with open(output_eval_file, "a+") as writer:
-    logger.info("***** Eval results Posthoc max {} *****".format(prefix))
-    print("\n***** Eval results Posthoc max {} *****".format(prefix))
-    writer.write("\n***** Eval results Posthoc max {} *****".format(prefix))
-    for key in sorted(result.keys()):
-      print( "  {} = {}".format( key, str(result[key]) ) )
-      # writer.write("%s = %s\n" % (key, str(result[key])))
-
+  # prediction = PosthocCorrect.PosthocMax(label_2test_array,prediction)
+  # result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
+  # # evaluation_metric.print_metrics( result )
+  # output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
+  # with open(output_eval_file, "a+") as writer:
+  #   logger.info("***** Eval results Posthoc max {} *****".format(prefix))
+  #   print("\n***** Eval results Posthoc max {} *****".format(prefix))
+  #   writer.write("\n***** Eval results Posthoc max {} *****".format(prefix))
+  #   for key in sorted(result.keys()):
+  #     print( "  {} = {}".format( key, str(result[key]) ) )
+  #     # writer.write("%s = %s\n" % (key, str(result[key])))
 
   return result
 
