@@ -312,6 +312,8 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
   nb_eval_steps = 0
   model.eval()
 
+  prediction = None
+  true_label = None
   ave_GOvec = None
 
   for batch in tqdm(eval_dataloader, desc="Evaluating"):
@@ -352,28 +354,52 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
+
     ## !! take average of last hidden layer
     hidden_GOvec = outputs[-2][12] ## batch x max_len x dim
-    print (hidden_GOvec.shape)
-    print (outputs[-1][2].shape)
-
     hidden_GOvec = hidden_GOvec[ :, max_len_in_batch::, : ] ## we remove AA, which goes from 0 to @max_len_in_batch.
-    hidden_GOvec = torch.sum ( hidden_GOvec, 0 ) ## sum over batch 
-    if ave_GOvec is None: 
+    hidden_GOvec = torch.sum ( hidden_GOvec, 0 ) ## sum over batch
+    if ave_GOvec is None:
       ave_GOvec = hidden_GOvec
     else:
       ave_GOvec = ave_GOvec + hidden_GOvec
 
-    nb_eval_steps += 1
 
-  ## need to average out. 
+    nb_eval_steps += 1
+    ## track output
+    norm_prob = torch.softmax( outputs[1], 1 ) ## still label x 2
+    norm_prob = norm_prob.detach().cpu().numpy()[:,1] ## size is label
+
+    if prediction is None:
+      ## track predicted probability
+      true_label = batch[0].data.numpy()
+      prediction = np.reshape(norm_prob, ( batch[0].shape ) ) ## num actual sample v.s. num label
+    else:
+      true_label = np.vstack ( (true_label, batch[0].data.numpy() ) )
+      prediction = np.vstack ( (prediction, np.reshape( norm_prob, ( batch[0].shape ) ) ) )
+
+
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
+  # evaluation_metric.print_metrics( result )
+  result['eval_loss'] = eval_loss / nb_eval_steps
+
+  output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
+  with open(output_eval_file, "a+") as writer:
+    logger.info("***** Eval results {} *****".format(prefix))
+    print("\n***** Eval results {} *****".format(prefix))
+    writer.write("\n***** Eval results {} *****".format(prefix))
+    for key in sorted(result.keys()):
+      print( "  {} = {}".format( key, str(result[key]) ) )
+      # writer.write("%s = %s\n" % (key, str(result[key])))
+
+  ## need to average out.
   ave_GOvec = ave_GOvec.detach().cpu().numpy() / len(eval_dataset)
   print ('hidden go vec dim {}'.format(ave_GOvec.shape))
   ## write out
-  fout = open(args.output_dir + "/GOvecFromHidden12BestCheckpoint.tsv","w")
-  for index,name in enumerate(label_2test_array) : 
+  fout = open(args.output_dir + "/" + args.govec_outname + ".tsv","w")
+  for index,name in enumerate(label_2test_array) :
     fout.write(name + '\t' + '\t'.join(str(s) for s in ave_GOvec[index]) + '\n')
-  fout.write()
+  fout.close()
 
   return 0
 
@@ -381,6 +407,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--govec_outname", type=str, default='train')
   parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--reset_emb_zero", action="store_true", default=False)
@@ -581,7 +608,7 @@ def main():
     for checkpoint in checkpoints:
       print( "\n\nEvaluate the following checkpoints: {} \n".format(checkpoint) )
       global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
-      model = model_class.from_pretrained(checkpoint)
+      model = model_class.from_pretrained(checkpoint, config=config) ## override config
       model.to(args.device)
       result = evaluate(args, model, tokenizer, label_2test_array, prefix=global_step, config=config)
 

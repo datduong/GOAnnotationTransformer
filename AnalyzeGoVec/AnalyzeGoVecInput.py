@@ -26,13 +26,13 @@ this_list = {'mf': ['GO:0030291', 'GO:0000980'],
              'bp': ['GO:0051052', 'GO:0018193', 'GO:0097352', 'GO:0045666'],
              'cc': ['GO:0005743', 'GO:0098791']}
 
-onto_type_dict = {'mf': 90594, 'bp': 116144, 'cc': 127647}
-
+# onto_type_dict = {'mf': 90594, 'bp': 116144, 'cc': 127647}
+onto_type_dict = {'mf': 80528, 'bp': 145180, 'cc': 141830}
 
 for onto_type,onto_checkpoint in onto_type_dict.items() :
 
-  if onto_type != 'bp': 
-    continue
+  # if onto_type != 'bp':
+  #   continue
 
   # P08090  GO:0030291
   # GO:0000980
@@ -41,7 +41,9 @@ for onto_type,onto_checkpoint in onto_type_dict.items() :
   for t in this_list[onto_type]:
     color[t] = sorted ( [t] + list ( networkx.descendants(graph, t ) ) ) ## return parents https://www.ebi.ac.uk/QuickGO/term/GO:0000002
 
-  os.chdir('/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto_type+'/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeEp10e10Drop0.1/checkpoint-'+str(onto_checkpoint))
+  os.chdir('/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto_type+'/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/checkpoint-'+str(onto_checkpoint))
+
+
   ## need to label a branch to plot later.
   model_params = torch.load('pytorch_model.bin')
   ## get the GO vec trained jointly with AA sequence
@@ -84,3 +86,4 @@ for onto_type,onto_checkpoint in onto_type_dict.items() :
 
   #
   fout.close()
+

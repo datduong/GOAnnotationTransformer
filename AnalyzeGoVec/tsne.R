@@ -4,15 +4,21 @@ library('ggplot2', help, pos = 2, lib.loc = NULL)
 
 set.seed(1)
 
-setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/bp/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeEp10e10Drop0.1/')
+setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/bp/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/')
 
 
 # GOvecFromModel
-fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
-this_title = 'Bert12'
+# fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
+# this_title = 'Bert12'
 
-# fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
-# this_title = 'GOvecFromModel'
+fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
+this_title = 'GOvecFromModel'
+
+fin2 = read.csv("GOvecFromModelHiddenLayer12test.tsv",sep="\t",header=F,stringsAsFactors=F)
+this_title = 'GOvecFromModelHiddenLayer12 initbert'
+numcol = ncol(fin)
+fin = cbind(fin2, fin[,(numcol-1):numcol] ) ## append ic and color
+
 
 numcol = ncol(fin)
 GOvec = as.matrix(fin[ , 2:(numcol-2) ])
@@ -43,9 +49,9 @@ ggplot(tsne_out, aes(x = dim1, y = dim2, color=factor(color1), size=100*ic)) +
   #   point.padding = unit(0.3, "lines")
   # ) + 
   ggtitle (this_title) + 
-  labs(size = "100IC") +
-  theme(legend.position="left",plot.title = element_text(hjust = 0.5)) +
-  guides(colour = FALSE) + 
-  guides(size = guide_legend(override.aes = list(size=5))) 
+  # labs(size = "100IC") +
+  # theme(legend.position="left",plot.title = element_text(hjust = 0.5)) +
+  guides(colour=FALSE, size=FALSE) #+ 
+  # guides(size = guide_legend(override.aes = list(size=5))) 
 
 

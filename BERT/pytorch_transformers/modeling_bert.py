@@ -341,10 +341,10 @@ class BertEncoder(nn.Module):
         all_attentions = ()
         for i, layer_module in enumerate(self.layer):
             if self.output_hidden_states:
-                all_hidden_states = all_hidden_states + (hidden_states,)
+                all_hidden_states = all_hidden_states + (hidden_states,) ## add @hidden_states before calling @layer_module, so add original emb. 
 
             layer_outputs = layer_module(hidden_states, attention_mask, head_mask[i])
-            hidden_states = layer_outputs[0]
+            hidden_states = layer_outputs[0] ## new @hidden_states
 
             if self.output_attentions:
                 all_attentions = all_attentions + (layer_outputs[1],)
