@@ -79,7 +79,7 @@ def aa_type_emb (one_aa):
 AA_type = {}
 
 ## record where the protein have change sequence
-prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split()
+# prot_change = 'P56817 Q0WP12 O43824 Q6ZPK0'.split()
 
 for data_type in ['train','dev','test']:
   for ontology in ['mf','cc','bp']: # 'cc','bp',
