@@ -230,6 +230,7 @@ class BertEmbeddingsLabel(nn.Module):
     ## should always drop to avoid overfit
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
+
   def forward(self, input_ids, token_type_ids=None, position_ids=None):
     # seq_length = input_ids.size(1)
     # if position_ids is None:
@@ -297,6 +298,12 @@ class BertModel2Emb(BertPreTrainedModel):
     self.embeddings.word_embeddings = new_embeddings
     return self.embeddings.word_embeddings
 
+  def _resize_label_embeddings(self, new_num_tokens):
+    old_embeddings = self.embeddings_label.word_embeddings
+    new_embeddings = self._get_resized_embeddings(old_embeddings, new_num_tokens)
+    self.embeddings_label.word_embeddings = new_embeddings
+    return self.embeddings_label.word_embeddings
+
   def _prune_heads(self, heads_to_prune):
     """ Prunes heads of the model.
       heads_to_prune: dict of {layer_num: list of heads to prune in this layer}
@@ -304,6 +311,35 @@ class BertModel2Emb(BertPreTrainedModel):
     """
     for layer, heads in heads_to_prune.items():
       self.encoder.layer[layer].attention.prune_heads(heads)
+
+  def resize_label_embeddings(self, new_num_tokens=None):
+    """ Resize input token embeddings matrix of the model if new_num_tokens != config.vocab_size.
+    Take care of tying weights embeddings afterwards if the model class has a `tie_weights()` method.
+
+    Arguments:
+
+      new_num_tokens: (`optional`) int:
+        New number of tokens in the embedding matrix. Increasing the size will add newly initialized vectors at the end. Reducing the size will remove vectors from the end.
+        If not provided or None: does nothing and just returns a pointer to the input tokens ``torch.nn.Embeddings`` Module of the model.
+
+    Return: ``torch.nn.Embeddings``
+      Pointer to the input tokens Embeddings Module of the model
+    """
+    base_model = getattr(self, self.base_model_prefix, self)  # get the base model if needed
+    model_embeds = base_model._resize_label_embeddings(new_num_tokens)
+    if new_num_tokens is None:
+      return model_embeds
+
+    # Update base model and current model config
+    self.config.label_size = new_num_tokens
+    base_model.label_size = new_num_tokens
+
+    # Tie weights again if needed
+    if hasattr(self, 'tie_weights'):
+      self.tie_weights()
+
+    return model_embeds
+
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, attention_mask=None, token_type_ids=None, position_ids=None, head_mask=None):
 
@@ -386,9 +422,10 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
   def init_label_emb(self,pretrained_weight):
     self.bert.embeddings_label.word_embeddings.weight.data.copy_( torch.from_numpy(pretrained_weight).cuda() )
     if self.config.pretrained_vec and self.config.freeze_pretrained_vec:
+      ## by default, label emb will be passed into @init_weights
+      ## if we load a fixed emb, we have to also normalize like how init_weights does it. ???
       self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
-    ## by default, label emb will be passed into @init_weights
-    ## if we load a fixed emb, we have to also normalize like how init_weights does it. ???
+
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
         position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None):

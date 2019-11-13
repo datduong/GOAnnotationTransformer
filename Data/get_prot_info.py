@@ -91,19 +91,16 @@ def format_write(tup): ## tuple
   return re.sub(r';$','',out)
 
 ## get some data like zinc fingers etc..
-path = '/u/scratch/d/datduong/deepgo/data/train/fold_1/'
+path = '/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/'
 os.chdir(path)
 
-data_type = "test"
-onto_type = 'mf'
+# data_type = "test"
+# onto_type = 'mf'
 
 for data_type in ['train','dev','test']:
   for onto_type in ['mf','cc','bp']:
 
-    print ('\n\n')
-    print (data_type)
-    print (onto_type)
-    print ('\n\n')
+    print ('\n\n') ; print (data_type) ; print (onto_type) ; print ('\n\n')
 
     fin = pd.read_csv(path+data_type+'-'+onto_type+'.tsv',sep='\t') # Entry Gene ontology IDs Sequence  Prot Emb
     prot_name = list (fin['Entry'])
@@ -186,7 +183,7 @@ for onto_type in ['mf','cc','bp']:
   for data_type in ['dev','train','test']: #,'dev','test'
     prot_label_type = pickle.load(open(data_type+'_'+onto_type+'_prot_annot_type_topo.pickle','rb'))
     print ('data type {} len {}'.format(data_type,len(prot_label_type)))
-    ## get top domain only... may be too much to fit all types?
+    # get top domain only... may be too much to fit all types?
     # https://able.bio/rhett/sort-a-python-dictionary-by-value-or-key--84te6gv
     counter = 0
     for key, value in sorted(prot_label_type.items(), key=lambda kv: kv[1], reverse=True):
@@ -207,6 +204,6 @@ for onto_type in ['mf','cc','bp']:
 
 
   print ('\nnot in train {}'.format(len(not_in_train)))
-  pickle.dump(all_prot_annot,open(onto_type+'_all_prot_annot_topo.pickle','wb'))
+  pickle.dump(all_prot_annot,open(onto_type+'_all_prot_annot_type_topo.pickle','wb'))
   print ('\ntotal unique type {}'.format(len(all_prot_annot)))
 

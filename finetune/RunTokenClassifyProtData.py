@@ -289,7 +289,11 @@ def set_seed(args):
 def train(args, train_dataset, model, tokenizer, label_2test_array, config=None):
   """ Train the model """
 
-  num_labels = len(label_2test_array)
+  if args.new_num_labels is None: 
+    num_labels = len(label_2test_array)
+  else: 
+    num_labels = args.new_num_labels
+
   print ('num_labels {}'.format(num_labels))
 
   if args.local_rank in [-1, 0]:
@@ -497,7 +501,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
 
 def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 
-  num_labels = len(label_2test_array)
+  if args.new_num_labels is None: 
+    num_labels = len(label_2test_array)
+  else: 
+    num_labels = args.new_num_labels
 
   # Loop to handle MNLI double evaluation (matched, mis-matched)
   eval_output_dir = args.output_dir
@@ -613,6 +620,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--new_num_labels", type=int, default=None)
   parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--reset_emb_zero", action="store_true", default=False)
@@ -771,7 +779,9 @@ def main():
   args.block_size = min(args.block_size, tokenizer.max_len_single_sentence)
 
   config = BertConfig.from_pretrained(args.config_name) ## should we always override
-  config.label_size = len(label_2test_array) ## make sure we really get correct label
+  
+  if args.new_num_labels is None: ## OTHERWISE, we are now expanding, so we will use @resize_token_embeddings
+    config.label_size = len(label_2test_array) ## make sure we really get correct label
 
   if (config.pretrained_vec) and (args.pretrained_label_path is None):
     print ('\n\ncheck that pretrained label vecs are properly turned on/off.')
@@ -804,10 +814,14 @@ def main():
 
   ## load pretrain label vectors ?
   if args.pretrained_label_path is not None:
+    if args.new_num_labels is not None: # run on more labels
+      print ('\nresize label emb to have more labels than trained model\n')
+      model.resize_label_embeddings(new_num_labels)
+      num_labels = new_num_labels 
+
     print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
-    ## have a pickle right now.
     pretrained_label_vec = np.zeros((num_labels,256))
-    temp = pickle.load(open(args.pretrained_label_path,"rb"))
+    temp = pickle.load(open(args.pretrained_label_path,"rb")) ## have a pickle right now... but it should be .txt for easier use
     for counter, lab in enumerate( label_2test_array ):
       pretrained_label_vec[counter] = temp[re.sub("GO","GO:",lab)]
     #
