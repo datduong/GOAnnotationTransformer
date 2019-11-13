@@ -20,6 +20,10 @@ tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertForPreTraining(config)
 model.eval() 
 
+model.resize_token_embeddings(60000)
+
+model.bert.embeddings(torch.LongTensor(np.array([[0,60000],[4,50000]])))
+
 input_ids1 = tokenizer.encode("Hello, my dog is cute")  # Batch size 1
 input_ids2 = tokenizer.encode("Hello, my dog is one")
 input_ids = torch.tensor ( [input_ids1,input_ids2] ) 

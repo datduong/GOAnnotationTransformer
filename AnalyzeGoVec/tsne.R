@@ -8,16 +8,16 @@ setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/bp/fold_1/2embPpiAnnotE256H1L1
 
 
 # GOvecFromModel
-# fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
-# this_title = 'Bert12'
+fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
+this_title = 'Bert12'
 
-fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
-this_title = 'GOvecFromModel'
+# fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
+# this_title = 'GOvecFromModel'
 
-fin2 = read.csv("GOvecFromHidden12BestCheckpoint.tsv",sep="\t",header=F,stringsAsFactors=F)
-this_title = 'GOvecFromModelHiddenLayer12'
-numcol = ncol(fin)
-fin = cbind(fin2, fin[,(numcol-1):numcol] ) ## append ic and color
+# fin2 = read.csv("GOvecFromHidden12BestCheckpoint.tsv",sep="\t",header=F,stringsAsFactors=F)
+# this_title = 'GOvecFromModelHiddenLayer12'
+# numcol = ncol(fin)
+# fin = cbind(fin2, fin[,(numcol-1):numcol] ) ## append ic and color
 
 
 numcol = ncol(fin)

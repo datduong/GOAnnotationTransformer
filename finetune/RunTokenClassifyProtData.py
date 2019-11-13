@@ -507,7 +507,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
     num_labels = args.new_num_labels
 
   print ('num_labels {}'.format(num_labels))
-  print ('len 2test {}'.format(len(label_2test_array)))
+  print ('len label to test {}'.format(len(label_2test_array)))
 
   # Loop to handle MNLI double evaluation (matched, mis-matched)
   eval_output_dir = args.output_dir
@@ -796,11 +796,9 @@ def main():
   print ('\nsee config before init model')
   print (config)
 
-  if args.config_override:
-    # config = BertConfig.from_pretrained(args.config_name) ## should we always override
+  if args.config_override and (args.new_num_labels is None) :
     model = model_class(config)
   else:
-    # config = config_class.from_pretrained(args.config_name if args.config_name else args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
   # print ('\ninit weight (scale/shift)')
@@ -814,9 +812,10 @@ def main():
   ## load pretrain label vectors ?
   if args.pretrained_label_path is not None:
     if args.new_num_labels is not None: # run on more labels
-      print ('\nresize label emb to have more labels than trained model\n')
       model.bert.resize_label_embeddings(args.new_num_labels)
       num_labels = args.new_num_labels
+      print ('\nresize label emb to have more labels than trained model')
+      print (model.bert.embeddings_label.word_embeddings)
 
     print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
     pretrained_label_vec = np.zeros((num_labels,256))
@@ -872,6 +871,9 @@ def main():
     tokenizer = tokenizer_class.from_pretrained(args.output_dir, do_lower_case=args.do_lower_case)
     model.to(args.device)
 
+  if args.new_num_labels is not None:
+    result = evaluate(args, model, tokenizer, label_2test_array, prefix='zeroshot', config=config)
+    return result
 
   # Evaluation
   results = {}
