@@ -86,9 +86,9 @@ for data_type in ['train','dev','test']:
 
     long_count = 0
 
-    fin = "/u/scratch/d/datduong/deepgo/data/train/fold_1/"+data_type+"-"+ontology+"-prot-annot-topo.tsv"
+    fin = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/"+data_type+"-"+ontology+"-prot-annot.tsv"
     # fin = '/u/scratch/d/donle225/mutagenesis/output_files/'+data_type+"-"+ontology+'.tsv'
-    fout = "/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/"+data_type+"-"+ontology+"-prot-annot-topo.tsv"
+    fout = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/"+data_type+"-"+ontology+"-prot-annot-input.tsv"
 
     df = pd.read_csv(fin,sep="\t",dtype=str)
     # df = pd.read_csv(fin,sep="\t",index_col=0)
@@ -136,7 +136,6 @@ for data_type in ['train','dev','test']:
         type_name = row['Type']
 
       fout.write(row['Entry'] + '\t' + " ".join(new_seq) + "\t" + " ".join(go_list)+ "\t" + " ".join(row['Prot Emb'].strip().split(';')) + "\t"+ type_name + "\n")
-
 
     fout.close()
     print ('long seq counter {}'.format(long_count))

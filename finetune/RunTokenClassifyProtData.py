@@ -289,9 +289,9 @@ def set_seed(args):
 def train(args, train_dataset, model, tokenizer, label_2test_array, config=None):
   """ Train the model """
 
-  if args.new_num_labels is None: 
+  if args.new_num_labels is None:
     num_labels = len(label_2test_array)
-  else: 
+  else:
     num_labels = args.new_num_labels
 
   print ('num_labels {}'.format(num_labels))
@@ -501,10 +501,13 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
 
 def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 
-  if args.new_num_labels is None: 
+  if args.new_num_labels is None:
     num_labels = len(label_2test_array)
-  else: 
+  else:
     num_labels = args.new_num_labels
+
+  print ('num_labels {}'.format(num_labels))
+  print ('len 2test {}'.format(len(label_2test_array)))
 
   # Loop to handle MNLI double evaluation (matched, mis-matched)
   eval_output_dir = args.output_dir
@@ -563,10 +566,6 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
       aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
     else:
       aa_type = None
-
-    # print (input_ids_aa.shape)
-    # print (aa_type.shape)
-    # print (aa_type)
 
     with torch.no_grad():
       outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
@@ -779,7 +778,7 @@ def main():
   args.block_size = min(args.block_size, tokenizer.max_len_single_sentence)
 
   config = BertConfig.from_pretrained(args.config_name) ## should we always override
-  
+
   if args.new_num_labels is None: ## OTHERWISE, we are now expanding, so we will use @resize_token_embeddings
     config.label_size = len(label_2test_array) ## make sure we really get correct label
 
@@ -816,8 +815,8 @@ def main():
   if args.pretrained_label_path is not None:
     if args.new_num_labels is not None: # run on more labels
       print ('\nresize label emb to have more labels than trained model\n')
-      model.resize_label_embeddings(new_num_labels)
-      num_labels = new_num_labels 
+      model.bert.resize_label_embeddings(args.new_num_labels)
+      num_labels = args.new_num_labels
 
     print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
     pretrained_label_vec = np.zeros((num_labels,256))
@@ -827,6 +826,8 @@ def main():
     #
     model.init_label_emb(pretrained_label_vec)
 
+  print ('\nsee model\n')
+  print (model)
 
   model.to(args.device)
 

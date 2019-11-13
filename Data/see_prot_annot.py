@@ -13,10 +13,10 @@ os.chdir(path)
 
 
 for onto_type in ['mf','cc','bp']: 
-  train = pickle.load(open('train_'+onto_type+'_prot_annot_type_topo.pickle','rb'))
+  train = pickle.load(open('train_'+onto_type+'_prot_annot_type.pickle','rb'))
   train_count = {}
   ## must select something to be 'UNK' so that we can handle unseen domain
-  fout = open('train_'+onto_type+'_prot_annot_type_topo.txt','w')
+  fout = open('train_'+onto_type+'_prot_annot_type.txt','w')
   fout.write('Type\tCount\tUnkChance\n')
   for key in sorted (train.keys()) :  # key, value in sorted(train.items(), key=lambda kv: kv[1], reverse=True)
     value = train[key]
@@ -27,7 +27,7 @@ for onto_type in ['mf','cc','bp']:
     train_count[key] = [value,chance]
   #
   fout.close() 
-  pickle.dump(train_count,open('train_'+onto_type+'_prot_annot_type_topo_count.pickle','wb'))
+  pickle.dump(train_count,open('train_'+onto_type+'_prot_annot_type_count.pickle','wb'))
 
 
 # z = nn.Embedding(4,5)

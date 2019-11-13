@@ -382,8 +382,20 @@ class BertModel2Emb(BertPreTrainedModel):
       head_mask = [None] * self.config.num_hidden_layers
 
     ## need to split the @input_ids into AA side and label side, @input_ids_aa @input_ids_label
+
+    print ('input')
+    print (input_ids_aa)
+    print ('input_ids_label')
+    print (input_ids_label)
+
     embedding_output = self.embeddings(input_ids_aa, position_ids=position_ids, token_type_ids=token_type_ids)
+    print ('embedding_output')
+    print (embedding_output)
+    print (embedding_output.shape)
     embedding_output_label = self.embeddings_label(input_ids_label, position_ids=None, token_type_ids=None)
+    print ('embedding_output_label')
+    print (embedding_output_label)
+    print (embedding_output_label.shape)
 
     # concat into the original embedding
     if self.config.ppi_front:
@@ -392,6 +404,8 @@ class BertModel2Emb(BertPreTrainedModel):
 
     else:
       embedding_output = torch.cat([embedding_output,embedding_output_label], dim=1) ## @embedding_output is batch x num_aa x dim so append @embedding_output_label to dim=1 (basically adding more words to @embedding_output)
+      print ('cat')
+      print (embedding_output.shape)
 
     # @embedding_output is just some type of embedding, the @encoder will apply attention weights
     encoder_outputs = self.encoder(embedding_output,
