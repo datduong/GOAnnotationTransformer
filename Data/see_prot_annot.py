@@ -12,7 +12,7 @@ path = '/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/'
 os.chdir(path)
 
 
-for onto_type in ['mf','cc','bp']: 
+for onto_type in ['mf','cc','bp']:
   train = pickle.load(open('train_'+onto_type+'_prot_annot_type.pickle','rb'))
   train_count = {}
   ## must select something to be 'UNK' so that we can handle unseen domain
@@ -21,12 +21,12 @@ for onto_type in ['mf','cc','bp']:
   for key in sorted (train.keys()) :  # key, value in sorted(train.items(), key=lambda kv: kv[1], reverse=True)
     value = train[key]
     chance = value // 10
-    if chance > 100: 
-      chance = 100 
+    if chance > 100:
+      chance = 100
     fout.write(key + "\t"+ str(value) + "\t" + str(chance)+'\n')
     train_count[key] = [value,chance]
   #
-  fout.close() 
+  fout.close()
   pickle.dump(train_count,open('train_'+onto_type+'_prot_annot_type_count.pickle','wb'))
 
 

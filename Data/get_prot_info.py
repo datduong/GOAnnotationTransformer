@@ -102,7 +102,7 @@ for data_type in ['train','dev','test']:
 
     print ('\n\n') ; print (data_type) ; print (onto_type) ; print ('\n\n')
 
-    fin = pd.read_csv(path+data_type+'-'+onto_type+'.tsv',sep='\t') # Entry Gene ontology IDs Sequence  Prot Emb
+    fin = pd.read_csv(path+data_type+'-'+onto_type+'-same-origin.tsv',sep='\t') # Entry Gene ontology IDs Sequence  Prot Emb
     prot_name = list (fin['Entry'])
 
     # uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-filtered-reviewed_yes_topology.tab','r')

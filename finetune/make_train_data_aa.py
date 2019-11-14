@@ -110,12 +110,6 @@ for data_type in ['train','dev','test']:
 
       new_seq = row['Sequence']
 
-      # for aa in new_seq:
-      #   if aa not in AA_type:
-      #     AA_type[aa] = 1
-      #   else:
-      #     pass
-
       # aa_type = [aa_type_emb(aa) for aa in new_seq]
       # aa_type = row['Type'] # Type Mutagenesis
       # aa_type_np = np.zeros(len(new_seq)) ## maximum length filled with zeros for now
@@ -127,8 +121,6 @@ for data_type in ['train','dev','test']:
 
       go_list = re.sub(r":","",row['Gene ontology IDs'])
       go_list = sorted(go_list.split(";"))
-      # fout.write(row['Entry'] + '\t' + " ".join(new_seq) + "\t" + " ".join(go_list)+ "\t" + " ".join(row['Prot Emb'].strip().split(';')) + "\t"+' '.join(str(aa) for aa in aa_type_np) + "\n")
-      # print (row['Type'])
 
       if row['Type'] is np.nan:
         type_name = 'none'
@@ -142,5 +134,3 @@ for data_type in ['train','dev','test']:
 
 
 ##
-print (len(AA_type))
-
