@@ -4,19 +4,20 @@ library('ggplot2', help, pos = 2, lib.loc = NULL)
 
 set.seed(1)
 
-setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/bp/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeEp10e10Drop0.1/')
+setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/mf/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/')
 
+# c/Users/dat/Documents/BertNotFtAARawSeqGO/mf/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
 
 # GOvecFromModel
-fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
-this_title = 'Bert12'
+# fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
+# this_title = 'Bert12'
 
 # fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
 # this_title = 'GOvecFromModel'
 
-# fin2 = read.csv("GOvecFromHidden12BestCheckpoint.tsv",sep="\t",header=F,stringsAsFactors=F)
-# this_title = 'GOvecFromModelHiddenLayer12'
-# numcol = ncol(fin)
+fin = read.csv("GOvecFromModelHiddenLayer12ExpandtestWithIc.tsv",sep="\t",header=F,stringsAsFactors=F)
+this_title = 'GOvecFromModelHiddenLayer12'
+numcol = ncol(fin)
 # fin = cbind(fin2, fin[,(numcol-1):numcol] ) ## append ic and color
 
 

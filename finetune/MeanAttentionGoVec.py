@@ -302,7 +302,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
   # Note that DistributedSampler samples randomly
   # eval_sampler = SequentialSampler(eval_dataset) if args.local_rank == -1 else DistributedSampler(eval_dataset)
   eval_sampler = RandomSampler(eval_dataset) if args.local_rank == -1 else DistributedSampler(eval_dataset) ## do this to avoid block of large data
-  eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size)
+  eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size, num_workers=2)
 
   # Eval!
   logger.info("***** Running evaluation {} *****".format(prefix))
@@ -383,7 +383,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
   # evaluation_metric.print_metrics( result )
   result['eval_loss'] = eval_loss / nb_eval_steps
 
-  output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
+  output_eval_file = os.path.join(eval_output_dir, "eval_results"+prefix+".txt")
   with open(output_eval_file, "a+") as writer:
     logger.info("***** Eval results {} *****".format(prefix))
     print("\n***** Eval results {} *****".format(prefix))
@@ -407,7 +407,9 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 def main():
   parser = argparse.ArgumentParser()
 
-  parser.add_argument("--govec_outname", type=str, default='train')
+  parser.add_argument("--govec_outname", type=str, default=None)
+  parser.add_argument("--save_prediction", action="store_true", default=False)
+  parser.add_argument("--new_num_labels", type=int, default=None)
   parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--reset_emb_zero", action="store_true", default=False)
@@ -566,9 +568,9 @@ def main():
   args.block_size = min(args.block_size, tokenizer.max_len_single_sentence)
 
   config = BertConfig.from_pretrained(args.config_name) ## should we always override
-  config.label_size = len(label_2test_array) ## make sure we really get correct label
-  config.output_attentions = True ## override @config
-  config.output_hidden_states = True
+
+  if args.new_num_labels is None: ## OTHERWISE, we are now expanding, so we will use @resize_token_embeddings
+    config.label_size = len(label_2test_array) ## make sure we really get correct label
 
   if (config.pretrained_vec) and (args.pretrained_label_path is None):
     print ('\n\ncheck that pretrained label vecs are properly turned on/off.')
@@ -580,12 +582,45 @@ def main():
     print ('len of aa_type_file without special token {}'.format(len(annot_data)))
     config.type_vocab_size = len(annot_data) + 2 # notice add 2 because PAD and UNK
 
+  config.output_attentions = True
+  config.output_hidden_states = True
+
   # Prepare model
   print ('\nsee config before init model')
   print (config)
 
-  ## we load model back into data, do not need to worry about initialization
-  model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
+  if args.config_override and (args.new_num_labels is None) :
+    model = model_class(config)
+  else:
+    model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
+
+  # print ('\ninit weight (scale/shift)')
+  # model.init_weights() ## init weight (scale/shift)
+
+  ## fix emb into 0
+  if args.reset_emb_zero:
+    print ('\nreset token-type emb at position 0 into 0\n')
+    model.bert.embeddings.token_type_embeddings.weight.data[0] = 0 ## only set 1st one to zero, which is padding
+
+  ## load pretrain label vectors ?
+  if args.pretrained_label_path is not None:
+    if args.new_num_labels is not None: # run on more labels
+      model.bert.resize_label_embeddings(args.new_num_labels)
+      num_labels = args.new_num_labels
+      print ('\nresize label emb to have more labels than trained model')
+      print (model.bert.embeddings_label.word_embeddings)
+
+    print ('\nload pretrained label vec {}\n'.format(args.pretrained_label_path))
+    pretrained_label_vec = np.zeros((num_labels,256))
+    temp = pickle.load(open(args.pretrained_label_path,"rb")) ## have a pickle right now... but it should be .txt for easier use
+    for counter, lab in enumerate( label_2test_array ):
+      pretrained_label_vec[counter] = temp[re.sub("GO","GO:",lab)]
+    #
+    model.init_label_emb(pretrained_label_vec)
+
+  print ('\nsee model\n')
+  print (model)
+
   model.to(args.device)
 
   if args.local_rank == 0:
@@ -593,7 +628,48 @@ def main():
 
   logger.info("Training/evaluation parameters %s", args)
 
+
+  # Training
+  if args.do_train:
+    if args.local_rank not in [-1, 0]:
+      torch.distributed.barrier()  # Barrier to make sure only the first process in distributed training process the dataset, and the others will use the cache
+
+    train_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False, config=config)
+
+    if args.local_rank == 0:
+      torch.distributed.barrier()
+
+    global_step, tr_loss = train(args, train_dataset, model, tokenizer, label_2test_array, config=config)
+    logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
+
+
+  # Saving best-practices: if you use save_pretrained for the model and tokenizer, you can reload them using from_pretrained()
+  if args.do_train and (args.local_rank == -1 or torch.distributed.get_rank() == 0):
+    # Create output directory if needed
+    if not os.path.exists(args.output_dir) and args.local_rank in [-1, 0]:
+      os.makedirs(args.output_dir)
+
+    logger.info("Saving model checkpoint to %s", args.output_dir)
+    # Save a trained model, configuration and tokenizer using `save_pretrained()`.
+    # They can then be reloaded using `from_pretrained()`
+    model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+    model_to_save.save_pretrained(args.output_dir)
+    tokenizer.save_pretrained(args.output_dir)
+
+    # Good practice: save your training arguments together with the trained model
+    torch.save(args, os.path.join(args.output_dir, 'training_args.bin'))
+
+    # Load a trained model and vocabulary that you have fine-tuned
+    model = model_class.from_pretrained(args.output_dir)
+    tokenizer = tokenizer_class.from_pretrained(args.output_dir, do_lower_case=args.do_lower_case)
+    model.to(args.device)
+
+  if args.new_num_labels is not None:
+    result = evaluate(args, model, tokenizer, label_2test_array, prefix='zeroshot', config=config)
+    return result
+
   # Evaluation
+  results = {}
   if args.do_eval and args.local_rank in [-1, 0]:
     checkpoints = [args.output_dir]
     if args.eval_all_checkpoints:
@@ -608,11 +684,13 @@ def main():
     for checkpoint in checkpoints:
       print( "\n\nEvaluate the following checkpoints: {} \n".format(checkpoint) )
       global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
-      model = model_class.from_pretrained(checkpoint, config=config) ## override config
+      model = model_class.from_pretrained(checkpoint)
       model.to(args.device)
       result = evaluate(args, model, tokenizer, label_2test_array, prefix=global_step, config=config)
+      result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
+      results.update(result)
 
-  return 0
+  return results
 
 
 if __name__ == "__main__":
