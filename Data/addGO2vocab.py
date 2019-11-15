@@ -32,3 +32,4 @@ fout.close()
 
 # vocab_bert.to_csv("/u/scratch/d/datduong/BERTPretrainedModel/cased_L-12_H-768_A-12AAraw2016/vocab+GO.txt",index=None,header=None)
 
+/local/auppunda/auppunda/EncodeGeneOntology
