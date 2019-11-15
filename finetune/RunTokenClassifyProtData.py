@@ -600,6 +600,10 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
       print( "  {} = {}".format( key, str(result[key]) ) )
       # writer.write("%s = %s\n" % (key, str(result[key])))
 
+  if args.save_prediction:
+    print ('\nsave prediction and gold standard, size num_ob x num_label\n') ## useful if we want to analyze each group of labels
+    pickle.dump( {'prediction':prediction, 'true_label':true_label} , open( os.path.join(eval_output_dir, 'save_prediction.pickle') , 'wb' ) )
+
   ## apply post hoc max
   # prediction = PosthocCorrect.PosthocMax(label_2test_array,prediction)
   # result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
@@ -619,6 +623,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument("--save_prediction", action="store_true", default=False)
   parser.add_argument("--new_num_labels", type=int, default=None)
   parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)

@@ -19,7 +19,7 @@ new_num_labels=1697
 block_size=2816 # mf and cc 1792 but bp has more term  2048
 save_every=7000 # 9500 10000
 
-for ontology in 'cc' 'bp' ; do
+for ontology in 'mf' 'cc' 'bp' ; do
 
   if [[ $ontology == 'bp' ]]
   then
@@ -31,6 +31,7 @@ for ontology in 'cc' 'bp' ; do
   if [[ $ontology == 'cc' ]]
   then
     new_num_labels=989
+    block_size=2816
     checkpoint=141830
   fi
 
@@ -61,7 +62,7 @@ for ontology in 'cc' 'bp' ; do
   ## testing phase --pretrained_label_path $pretrained_label_path
   for test_data in 'test' ; do # 'dev'
     eval_masklm_data='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-prot-annot-input.tsv'
-    CUDA_VISIBLE_DEVICES=3 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --reset_emb_zero --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
+    CUDA_VISIBLE_DEVICES=4 python3 -u RunTokenClassifyProtData.py --save_prediction --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --reset_emb_zero --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
   done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
 
