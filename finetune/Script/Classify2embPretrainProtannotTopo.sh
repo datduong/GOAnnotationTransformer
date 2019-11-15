@@ -18,10 +18,13 @@ checkpoint=80528 ## 110726
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000 # 9500 10000
 
-for ontology in 'mf' ; do
+batch_size=4
+
+for ontology in 'cc' 'bp'; do
 
   if [[ $ontology == 'bp' ]]
   then
+    batch_size=2
     block_size=2048
     checkpoint=116144
   fi
@@ -42,7 +45,7 @@ for ontology in 'mf' ; do
   cd $server/BertGOAnnotation/finetune/
 
   # continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 2 --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --learning_rate 0.0001 --seed 2019 --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt 
+  CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --learning_rate 0.0001 --seed 2019 --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt 
   ## --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
   ## testing phase --pretrained_label_path $pretrained_label_path
