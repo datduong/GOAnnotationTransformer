@@ -86,9 +86,9 @@ for data_type in ['train','dev','test']:
 
     long_count = 0
 
-    fin = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/"+data_type+"-"+ontology+"-prot-annot.tsv"
+    fin = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeTopoData/"+data_type+"-"+ontology+"-prot-annot-topo.tsv"
     # fin = '/u/scratch/d/donle225/mutagenesis/output_files/'+data_type+"-"+ontology+'.tsv'
-    fout = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/"+data_type+"-"+ontology+"-prot-annot-input.tsv"
+    fout = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeTopoData/"+data_type+"-"+ontology+"-input.tsv"
 
     df = pd.read_csv(fin,sep="\t",dtype=str)
     # df = pd.read_csv(fin,sep="\t",index_col=0)

@@ -20,7 +20,7 @@ save_every=7000 # 9500 10000
 
 batch_size=4
 
-for ontology in 'mf' ; do
+for ontology in 'bp'; do
 
   if [[ $ontology == 'bp' ]]
   then
@@ -50,8 +50,9 @@ for ontology in 'mf' ; do
 
   ## testing phase --pretrained_label_path $pretrained_label_path
   for test_data in 'test' 'train'; do # 'dev'
-    eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeTopoData/'$test_data'-'$ontology'-prot-annot-topo.tsv'
-    CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
+    eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeTopoData/'$test_data'-'$ontology'-prot-annot-topo.tsv' 
+    # --save_prediction 
+    CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
   done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
 

@@ -105,8 +105,8 @@ for data_type in ['train','dev','test']:
     fin = pd.read_csv(path+data_type+'-'+onto_type+'-same-origin.tsv',sep='\t') # Entry Gene ontology IDs Sequence  Prot Emb
     prot_name = list (fin['Entry'])
 
-    # uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-filtered-reviewed_yes_topology.tab','r')
-    uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-reviewed_yes.tab','r')
+    uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-filtered-reviewed_yes_topology.tab','r')
+    # uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-reviewed_yes.tab','r')
 
     # Entry Entry name  Status  Length  Gene ontology IDs
     # Region 5
@@ -122,7 +122,7 @@ for data_type in ['train','dev','test']:
     # seq 15
     # topology 16
 
-    fout = open ( path+data_type+'-'+onto_type+'-prot-annot.tsv', 'w' )
+    fout = open ( path+data_type+'-'+onto_type+'-prot-annot-topo.tsv', 'w' )
     fout.write('Entry\tGene ontology IDs\tSequence\tProt Emb\tType\n')
     col = 'Entry\tGene ontology IDs\tSequence\tProt Emb'.split('\t')
     prot_label_type = {} ## total annotation type on the protein sequence
@@ -152,7 +152,7 @@ for data_type in ['train','dev','test']:
       #   fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
       #   continue
 
-      for where_ in [6,8,10,11,12,13]: # 
+      for where_ in [6,8,10,11,12,13,16]: # 
         if len (line[where_]) > 0 :
           out, type_out = get_location (line[where_], where_change=where_change_index)
           prot_annot = prot_annot + out
@@ -174,16 +174,16 @@ for data_type in ['train','dev','test']:
     uniprot.close()
     print ('total type {}'.format(len(prot_label_type)))
 
-    pickle.dump(prot_label_type,open(data_type+'_'+onto_type+'_prot_annot_type.pickle','wb'))
+    pickle.dump(prot_label_type,open(data_type+'_'+onto_type+'_prot_annot_type_topo.pickle','wb'))
 
 
 
 for onto_type in ['mf','cc','bp']:
-  train = pickle.load(open('train_'+onto_type+'_prot_annot_type.pickle','rb'))
+  train = pickle.load(open('train_'+onto_type+'_prot_annot_type_topo.pickle','rb'))
   not_in_train = {} ## what can we do if domain not seen in train data ?
   all_prot_annot = {}
   for data_type in ['dev','train','test']: #,'dev','test'
-    prot_label_type = pickle.load(open(data_type+'_'+onto_type+'_prot_annot_type.pickle','rb'))
+    prot_label_type = pickle.load(open(data_type+'_'+onto_type+'_prot_annot_type_topo.pickle','rb'))
     print ('data type {} len {}'.format(data_type,len(prot_label_type)))
     # get top domain only... may be too much to fit all types?
     # https://able.bio/rhett/sort-a-python-dictionary-by-value-or-key--84te6gv
@@ -206,6 +206,6 @@ for onto_type in ['mf','cc','bp']:
 
 
   print ('\nnot in train {}'.format(len(not_in_train)))
-  pickle.dump(all_prot_annot,open(onto_type+'_all_prot_annot_type.pickle','wb'))
+  pickle.dump(all_prot_annot,open(onto_type+'_all_prot_annot_type_topo.pickle','wb'))
   print ('\ntotal unique type {}'.format(len(all_prot_annot)))
 
