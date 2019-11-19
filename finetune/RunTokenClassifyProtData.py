@@ -602,7 +602,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
 
   if args.save_prediction is not None:
     print ('\nsave prediction and gold standard, size num_ob x num_label\n') ## useful if we want to analyze each group of labels
-    pickle.dump( {'prediction':prediction, 'true_label':true_label} , open( os.path.join(eval_output_dir, save_prediction+'.pickle') , 'wb' ) )
+    pickle.dump( {'prediction':prediction, 'true_label':true_label} , open( os.path.join(eval_output_dir, args.save_prediction+'.pickle') , 'wb' ) )
 
   ## apply post hoc max
   # prediction = PosthocCorrect.PosthocMax(label_2test_array,prediction)
