@@ -9,6 +9,7 @@ sys.path.append("/local/datdb/BertGOAnnotation/finetune")
 import evaluation_metric
 import PosthocCorrect
 
+
 def eval (in_dict,sub_array=None):
   prediction = prediction_dict['prediction']
   true_label = prediction_dict['true_label']
@@ -24,7 +25,7 @@ def eval (in_dict,sub_array=None):
 
 # onto = 'bp'
 
-for onto in ['bp', 'mf', 'cc']:
+for onto in ['cc','mf','bp']:
 
   print ('\n\ntype {}'.format(onto))
 
@@ -44,7 +45,7 @@ for onto in ['bp', 'mf', 'cc']:
   ## want to compute accuracy on original set of labels, then on unseen labels
   ## possible original set prediction will change because we do joint prediction. so attention weight will affect outcome
 
-  prediction_dict = pickle.load(open("/local/datdb/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/save_prediction_expand.pickle","rb"))
+  prediction_dict = pickle.load(open("/local/datdb/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/prediction_train_all.pickle","rb"))
 
   print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
@@ -56,5 +57,3 @@ for onto in ['bp', 'mf', 'cc']:
 
   print ('\nunseen')
   evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos) )
-
-

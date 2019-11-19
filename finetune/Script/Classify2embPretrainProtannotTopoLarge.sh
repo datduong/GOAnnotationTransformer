@@ -15,15 +15,17 @@ model_type='ppi'
 cache_name='YesPpiYesType'
 checkpoint=110726 ## 110726
 block_size=2816
-batch_size=2
+
+save_prediction='prediction_train_all'
+
 save_every=7000 # 9500 10000
 
-for ontology in 'mf' 'cc' ; do
+for ontology in 'mf' 'cc' 'bp'; do
 
   if [[ $ontology == 'bp' ]]
   then
     block_size=4048
-    checkpoint=145180
+    checkpoint=116144
   fi
 
   if [[ $ontology == 'cc' ]]
@@ -54,10 +56,10 @@ for ontology in 'mf' 'cc' ; do
   ## --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
   ## testing phase --pretrained_label_path $pretrained_label_path
-  # for test_data in 'test' ; do # 'dev'
-  #   eval_masklm_data='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeTopoData/'$test_data'-'$ontology'-prot-annot-input.tsv'
-  #   CUDA_VISIBLE_DEVICES=3 python3 -u RunTokenClassifyProtData.py --save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
-  # done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
+  for test_data in 'test' ; do # 'dev'
+    eval_masklm_data='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-prot-annot-input.tsv'
+    CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
+  done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
 
 done
