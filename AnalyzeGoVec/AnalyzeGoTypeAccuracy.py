@@ -34,7 +34,7 @@ for onto in ['cc','mf','bp']:
   ## want to compute accuracy on original set of labels, then on unseen labels
   ## possible original set prediction will change because we do joint prediction. so attention weight will affect outcome
 
-  prediction_dict = pickle.load(open("/local/datdb/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/save_prediction.pickle","rb"))
+  prediction_dict = pickle.load(open("/local/datdb/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/save_prediction_expand.pickle","rb"))
 
   print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
