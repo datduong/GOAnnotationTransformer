@@ -2,10 +2,10 @@ import sys,re,os,pickle
 import numpy as np
 import pandas as pd
 
-sys.path.append("/local/datdb/BertGOAnnotation")
+sys.path.append("/u/scratch/d/datduong/BertGOAnnotation")
 import KmerModel.TokenClassifier as TokenClassifier
 
-sys.path.append("/local/datdb/BertGOAnnotation/finetune")
+sys.path.append("/u/scratch/d/datduong/BertGOAnnotation/finetune")
 import evaluation_metric
 import PosthocCorrect
 
@@ -17,7 +17,7 @@ def eval (in_dict,sub_array=None):
     prediction = prediction [ : , sub_array ] ## obs x label
     true_label = true_label [ : , sub_array ]
   #
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25])
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25,30,35,40])
   return result
 
 ## check accuracy of labels not seen in training.
@@ -29,10 +29,10 @@ for onto in ['cc','mf','bp']:
 
   print ('\n\ntype {}'.format(onto))
 
-  label_original = pd.read_csv('/local/datdb/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
+  label_original = pd.read_csv('/u/scratch/d/datduong/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
   label_original = set(list(label_original[0]))
 
-  label_large = pd.read_csv('/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'+onto+'.csv',sep="\t",header=None)
+  label_large = pd.read_csv('/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/deepgo.'+onto+'.csv',sep="\t",header=None)
   label_large = set(list(label_large[0]))
 
   label_unseen = sorted ( list ( label_large - label_original ) )
@@ -45,7 +45,9 @@ for onto in ['cc','mf','bp']:
   ## want to compute accuracy on original set of labels, then on unseen labels
   ## possible original set prediction will change because we do joint prediction. so attention weight will affect outcome
 
-  prediction_dict = pickle.load(open("/local/datdb/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/prediction_train_all.pickle","rb"))
+  # prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/prediction_train_all.pickle","rb"))
+
+  prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10/test-"+onto+"-prediction.pickle","rb"))
 
   print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 

@@ -272,6 +272,7 @@ def print_metrics(metrics):
   else:
     print("[MICRO] accuracy, precision, recall, f-measure")
     print("%.4f, %.4f, %.4f, %.4f" % (metrics["acc_micro"], metrics["prec_micro"], metrics["rec_micro"], metrics["f1_micro"]))
+
   for metric, val in metrics.items():
     if metric.find("rec_at") != -1:
       print("%s: %.4f" % (metric, val))
