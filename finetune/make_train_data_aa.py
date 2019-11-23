@@ -83,7 +83,6 @@ AA_type = {}
 
 for data_type in ['train','dev','test']:
   for ontology in ['mf','cc','bp']: # 'cc','bp',
-
     long_count = 0
 
     fin = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeTopoData/"+data_type+"-"+ontology+"-prot-annot-topo.tsv"
@@ -92,7 +91,6 @@ for data_type in ['train','dev','test']:
 
     df = pd.read_csv(fin,sep="\t",dtype=str)
     # df = pd.read_csv(fin,sep="\t",index_col=0)
-
     print (fin)
     print ( df.shape )
 

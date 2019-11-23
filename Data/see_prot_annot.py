@@ -8,26 +8,28 @@ import pandas as pd
 from tqdm import tqdm
 
 ## get some data like zinc fingers etc..
-path = '/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/'
+path = '/u/scratch/d/datduong/deepgo/data/train/fold_1/'
 os.chdir(path)
 
+annot_name_arr = ['_prot_annot_type', '_prot_annot_type_topo']
 
-for onto_type in ['mf','cc','bp']:
-  train = pickle.load(open('train_'+onto_type+'_prot_annot_type_topo.pickle','rb'))
-  train_count = {}
-  ## must select something to be 'UNK' so that we can handle unseen domain
-  fout = open('train_'+onto_type+'_prot_annot_type_topo.txt','w')
-  fout.write('Type\tCount\tUnkChance\n')
-  for key in sorted (train.keys()) :  # key, value in sorted(train.items(), key=lambda kv: kv[1], reverse=True)
-    value = train[key]
-    chance = value // 10
-    if chance > 100:
-      chance = 100
-    fout.write(key + "\t"+ str(value) + "\t" + str(chance)+'\n')
-    train_count[key] = [value,chance]
-  #
-  fout.close()
-  pickle.dump(train_count,open('train_'+onto_type+'_prot_annot_type_topo_count.pickle','wb'))
+for annot_name in annot_name_arr: 
+  for onto_type in ['mf','cc','bp']:
+    train = pickle.load(open('train_'+onto_type+annot_name+'.pickle','rb'))
+    train_count = {}
+    ## must select something to be 'UNK' so that we can handle unseen domain
+    fout = open('train_'+onto_type+annot_name+'.txt','w')
+    fout.write('Type\tCount\tUnkChance\n')
+    for key in sorted (train.keys()) :  # key, value in sorted(train.items(), key=lambda kv: kv[1], reverse=True)
+      value = train[key]
+      chance = value // 10
+      if chance > 100:
+        chance = 100
+      fout.write(key + "\t"+ str(value) + "\t" + str(chance)+'\n')
+      train_count[key] = [value,chance]
+    #
+    fout.close()
+    pickle.dump(train_count,open('train_'+onto_type+annot_name+'_count.pickle','wb'))
 
 
 # z = nn.Embedding(4,5)

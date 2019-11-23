@@ -5,6 +5,7 @@ import json
 import numpy as np
 import os
 import sys
+import re
 
 from sklearn.metrics import roc_curve, auc, hamming_loss
 from sklearn.metrics import average_precision_score
@@ -276,6 +277,18 @@ def print_metrics(metrics):
   for metric, val in metrics.items():
     if metric.find("rec_at") != -1:
       print("%s: %.4f" % (metric, val))
+
+  out_string = ""
+  k = sorted( [ k for k in metrics.keys() if re.match('^rec_at_', k)] )
+  for k_i in k:
+    out_string = out_string + "\t" + str(metrics[k_i])
+  print (out_string)
+
+  out_string = ""
+  k = sorted( [ k for k in metrics.keys() if re.match('^prec_at_', k)] )
+  for k_i in k:
+    out_string = out_string + "\t" + str(metrics[k_i])
+  print (out_string)
 
   print ('hamming loss {0:.4f}'.format(metrics['hamming loss']))
   print ('fmax score {0:.4f}'.format(metrics['fmax score']))

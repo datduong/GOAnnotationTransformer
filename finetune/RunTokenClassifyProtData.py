@@ -479,7 +479,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
       break_early = False
       print ('\nupdate lowest loss on epoch {}, {}\nreset break_early to False, see break_early variable {}'.format(epoch_counter,eval_loss,break_early))
     else:
-      if epoch_counter - last_best > 5 : ## break counter after 5 epoch
+      if epoch_counter - last_best > 3 : ## break counter after 5 epoch
         # break ## break early
         break_early = True
         print ('epoch {} set break_early to True, see break_early variable {}'.format(epoch_counter,break_early))
