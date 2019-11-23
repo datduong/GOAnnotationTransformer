@@ -301,7 +301,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
 
   args.train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
   train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
-  train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=4)
+  train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=3)
 
 
   if args.max_steps > 0:
@@ -479,7 +479,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
       break_early = False
       print ('\nupdate lowest loss on epoch {}, {}\nreset break_early to False, see break_early variable {}'.format(epoch_counter,eval_loss,break_early))
     else:
-      if epoch_counter - last_best > 5 : ## break counter after 5 epoch
+      if epoch_counter - last_best > 3 : ## break counter after 5 epoch
         # break ## break early
         break_early = True
         print ('epoch {} set break_early to True, see break_early variable {}'.format(epoch_counter,break_early))
@@ -521,7 +521,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
   # Note that DistributedSampler samples randomly
   eval_sampler = SequentialSampler(eval_dataset) # if args.local_rank == -1 else DistributedSampler(eval_dataset) ## use this if we want to merge with something complicated later downstream
   # eval_sampler = RandomSampler(eval_dataset) if args.local_rank == -1 else DistributedSampler(eval_dataset) ## do this to avoid block of large data
-  eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size, num_workers=4)
+  eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size, num_workers=3)
 
   # Eval!
   logger.info("***** Running evaluation {} *****".format(prefix))

@@ -66,7 +66,7 @@ for onto in ['cc','mf','bp']:
 
   get_acc (prediction_dict,label_seen_pos,label_unseen_pos,prefix="nn model")
 
-  prediction_dict_blast = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval100/test-"+onto+"-prediction.pickle","rb"))
+  prediction_dict_blast = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10/test-"+onto+"-prediction.pickle","rb"))
   ## mismatch row. must fix, because the new uniprot don't have some of these names anymore
   if onto == 'cc':
     prediction_dict_blast['prediction'] = np.delete(prediction_dict_blast['prediction'], [4265, 4598, 2609, 3586, 7884, 3768], axis=0)
