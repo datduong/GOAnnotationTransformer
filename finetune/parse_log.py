@@ -5,16 +5,17 @@
 import os, sys, re, pickle
 import numpy as np
 
-this_path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1'
-os.chdir(this_path)
-# file_list = ['AsIsPpiE768I768H6L8Drop0.2','AsIsE768I768H6L8Drop0.1','AsIsE768I768H6L8Drop0.2']
-file_list = os.listdir(this_path)
+MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
+MainSetting='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1'
 
-for f in sorted(file_list):
+for onto in ['mf','cc','bp']: 
+  this_path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto+'/fold_1/'+MainSetting
+  os.chdir(this_path)
+  #
   best = np.inf
   best_point = 'none'
   try:
-    fin = open(f+'/eval_dev_check_point.txt',"r")
+    fin = open('train_point.txt',"r")
   except:
     continue
   for line in fin :
@@ -26,7 +27,7 @@ for f in sorted(file_list):
         best = this_loss
         best_point = check_point
   fin.close()
-  print (f)
+  print ('\ntype {}'.format(onto))
   print ('point {} value {} '.format(best_point,best))
 
 
