@@ -6,7 +6,7 @@ import os, sys, re, pickle
 import numpy as np
 
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
-MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1'
+MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1Dcay10e2'
 
 for onto in ['mf','cc','bp']: 
   this_path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto+'/fold_1/'+MainSetting
@@ -39,7 +39,7 @@ import os, sys, re, pickle
 import numpy as np
 
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
-MainSetting='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1'
+MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1Dcay10e2'
 
 for onto in ['mf','cc','bp']: 
   print ('\ntype {}'.format(onto))
