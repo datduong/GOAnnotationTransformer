@@ -6,15 +6,15 @@ import os, sys, re, pickle
 import numpy as np
 
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
-MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1Dcay10e2'
+MainSetting='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeTopo/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1'
 
 for onto in ['mf','cc','bp']: 
-  this_path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto+'/fold_1/'+MainSetting
-  os.chdir(this_path)
   #
   best = np.inf
   best_point = 'none'
   try:
+    this_path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto+'/fold_1/'+MainSetting
+    os.chdir(this_path)
     fin = open('train_point.txt',"r")
   except:
     continue
@@ -39,14 +39,14 @@ import os, sys, re, pickle
 import numpy as np
 
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
-MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1Dcay10e2'
+MainSetting='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLargeTopo/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1'
 
 for onto in ['mf','cc','bp']: 
   print ('\ntype {}'.format(onto))
-  this_path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto+'/fold_1/'+MainSetting
-  os.chdir(this_path)
   #
   try:
+    this_path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto+'/fold_1/'+MainSetting
+    os.chdir(this_path)
     fin = open('eval_test_check_point.txt',"r")
   except:
     continue
