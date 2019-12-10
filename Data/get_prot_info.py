@@ -107,11 +107,6 @@ for data_type in ['test','train','dev']:
 
     # uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-filtered-reviewed_yes_topology.tab','r')
     uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-reviewed_yes.tab','r')
-    # uniprot_name = []
-    # for index, line in enumerate(uniprot):
-    #   line = line.split('\t')
-    #   uniprot_name.append ( line[0] )
-    # uniprot.close()
 
     # Entry Entry name  Status  Length  Gene ontology IDs
     # Region 5
@@ -141,6 +136,7 @@ for data_type in ['test','train','dev']:
 
       prot_name.remove(line[0]) ## found it so remove it 
 
+      ## COMMENT we will not retain same ordering as the input. this doesn't matter very much. but becareful. 
       prot_annot = []
       row_found_in_data = fin.loc[fin['Entry'] == line[0]]
 
