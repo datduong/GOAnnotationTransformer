@@ -109,7 +109,7 @@ for data_type in ['test','train','dev']:
     uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-reviewed_yes.tab','r')
 
     # Entry Entry name  Status  Length  Gene ontology IDs
-    # Region 5
+    # Region 5 [6,8,10,11,12,13]
     # Zinc finger 6
     # Sequence similarities -- not use
     # Repeat 8
