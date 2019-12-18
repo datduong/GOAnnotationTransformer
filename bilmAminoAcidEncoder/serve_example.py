@@ -4,12 +4,13 @@ from bilm import TokenBatcher, BidirectionalLanguageModel, weight_layers, \
     dump_token_embeddings
 import numpy as np
 
+os.chdir('/local/datdb/MuhaoChelseaBiLmEncoder/model')
+vocab_file='vocab.txt'
+options_file='behm_32skip_2l.ckpt/options.json'
+weight_file='behm_32skip_2l.hdf5'
+token_embedding_file='vocab_embedding_32skip_2l.hdf5'
 
-vocab_file='../corpus/vocab.txt'
-options_file='./model/behm_32_2l.ckpt/options.json'
-weight_file='./model/behm_32_2l.hdf5'
-token_embedding_file='./model/vocab_embedding_32_2l.hdf5'
-
+## COMMENT need to load own sequences
 sequences = [['A', 'K','J','T','C','N'], ['C','A','D','A','A']]
 
 ## Serving contextualized embeddings of amino acids ================================
@@ -41,16 +42,13 @@ elmo_context_output = weight_layers(
 with tf.Session() as sess:
     # It is necessary to initialize variables once before running inference.
     sess.run(tf.global_variables_initializer())
-
     # Create batches of data.
     context_ids = batcher.batch_sentences(sequences)
-
     # Input token representations.
     elmo_context_top_ = sess.run(
         [elmo_context_top['weighted_op']],
         feed_dict={context_token_ids: context_ids}
     )
-
     # Output token representations.
     elmo_context_output_ = sess.run(
         [elmo_context_output['weighted_op']],
@@ -58,3 +56,4 @@ with tf.Session() as sess:
     )
 
 print(elmo_context_output_) #contextualized embedding vector sequences (all layers)
+
