@@ -385,7 +385,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
         if config.ppi_front:
           ppi_vec = batch[4].unsqueeze(1).to(args.device)
         else:
-          ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
+          ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,config.protein_dim).to(args.device) ## make 3D batchsize x 1 x dim
       else:
         ppi_vec = None
 
@@ -558,7 +558,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
       if config.ppi_front:
         ppi_vec = batch[4].unsqueeze(1).to(args.device)
       else:
-        ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
+        ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,config.protein_dim).to(args.device) ## make 3D batchsize x 1 x dim
     else:
       ppi_vec = None
 
