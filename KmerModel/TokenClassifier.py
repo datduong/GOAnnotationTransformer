@@ -239,11 +239,14 @@ class BertEmbeddingsLabel(nn.Module):
     # if token_type_ids is None:
     #   token_type_ids = torch.zeros_like(input_ids)
 
-    embeddings = self.word_embeddings(input_ids)
+    # embeddings = self.word_embeddings(input_ids)
     # position_embeddings = self.position_embeddings(position_ids)
     # token_type_embeddings = self.token_type_embeddings(token_type_ids)
-
     # embeddings = words_embeddings # + position_embeddings + token_type_embeddings
+
+    ## COMMENT we use labels, so should just use @self.word_embedding.weight ?? ... should we fix this let's try it... ??
+    embeddings = self.word_embeddings.weight.unsqueeze(0).expand(input_ids.shape[0],-1,-1) ## batch x num_label x dim
+
     if self.config.scale_label_vec:
       embeddings = self.LayerNorm(embeddings)
 

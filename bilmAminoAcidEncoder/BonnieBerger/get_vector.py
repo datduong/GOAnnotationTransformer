@@ -31,20 +31,23 @@ import src.models.comparison
 
 model = torch.load("/local/datdb/ProteinEmbMethodGithub/protein-sequence-embedding-iclr2019/pretrained_models/me_L1_100d_lstm3x512_lm_i512_mb64_tau0.5_p0.05_epoch100.sav")
 
-model.eval() 
-model.cuda() 
+model.eval()
+model.cuda()
 
 alphabet = Uniprot21() ## convert string to indexing.
 
 def submitJobs (onto) :
 
-  os.chdir("/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData")
+  # os.chdir("/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData")
+  os.chdir("/local/datdb/deepgo/data/train/fold_1/")
   ## create an array in the exact order as file
   for data_type in ['test','train','dev']:
     for onto in [onto] : # ['cc','bp','mf']:
       fin = open(data_type+"-"+onto+"-input.tsv","r")
       fout = open(data_type+"-"+onto+"-input-bonnie.tsv","w")
-      for line in tqdm (fin):
+      for index, line in tqdm (enumerate(fin)):
+        if index == 0:
+          fout.write(line) ## header
         line = line.strip().split("\t")
         seq = str.encode (re.sub(" ","",line[1]))
         in_index = Variable(torch.LongTensor([alphabet.encode(seq)])).cuda()
