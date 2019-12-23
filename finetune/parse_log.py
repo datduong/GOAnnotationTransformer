@@ -6,7 +6,7 @@ import os, sys, re, pickle
 import numpy as np
 
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
-MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpi100NoTypeScaleFreezeBert12Ep10e10Drop0.1'
+MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1'
 
 for onto in ['mf','cc','bp']: 
   #
@@ -15,7 +15,7 @@ for onto in ['mf','cc','bp']:
   try:
     this_path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'+onto+'/fold_1/'+MainSetting
     os.chdir(this_path)
-    fin = open('train_point.txt',"r")
+    fin = open('train_point2.txt',"r")
   except:
     continue
   for line in fin :

@@ -134,9 +134,9 @@ for data_type in ['test','train','dev']:
       if line[0] not in prot_name : ## uniprot doesn't have this this prot we want to test
         continue
 
-      prot_name.remove(line[0]) ## found it so remove it 
+      prot_name.remove(line[0]) ## found it so remove it
 
-      ## COMMENT we will not retain same ordering as the input. this doesn't matter very much. but becareful. 
+      ## COMMENT we will not retain same ordering as the input. this doesn't matter very much. but becareful.
       prot_annot = []
       row_found_in_data = fin.loc[fin['Entry'] == line[0]]
 
@@ -156,7 +156,7 @@ for data_type in ['test','train','dev']:
       #   fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
       #   continue
 
-      for where_ in [6,8,10,11,12,13]: # 
+      for where_ in [6,8,10,11,12,13]: #
         if len (line[where_]) > 0 :
           out, type_out = get_location (line[where_], where_change=where_change_index)
           prot_annot = prot_annot + out
@@ -167,19 +167,16 @@ for data_type in ['test','train','dev']:
               prot_label_type[t] = 1 + prot_label_type[t]
             else:
               prot_label_type[t] = 1
-      # if line[0]=='Q2V3L3': # Q99653
-      #   break
-      # if index > 40000:
-      #   break
+
       # Entry Gene ontology IDs Sequence  Prot Emb
       fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
 
 
-    if len(prot_name)>0: ## we have not remove all proteins used in deepgo. 
+    if len(prot_name)>0: ## we have not remove all proteins used in deepgo.
       print ('\n*** not found in uniprot but in original deepgo {}'.format(prot_name))
       fin2 = fin.loc[fin['Entry'].isin(prot_name)]
       colnames = fin2.columns
-      for index,row in fin2.iterrows(): 
+      for index,row in fin2.iterrows():
         fout.write ( '\t'.join(row[k] for k in colnames ) + '\tnan\n' )
 
     fout.close()
