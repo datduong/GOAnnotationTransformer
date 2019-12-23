@@ -38,7 +38,7 @@ alphabet = Uniprot21() ## convert string to indexing.
 
 def submitJobs (onto) :
 
-  os.chdir("/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData")
+  os.chdir("/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData")
   ## create an array in the exact order as file
   for data_type in ['test','train','dev']:
     for onto in [onto] : # ['cc','bp','mf']:
@@ -65,7 +65,6 @@ if len(sys.argv)<1: ## run script
 	sys.exit(1)
 else:
 	submitJobs ( sys.argv[1] )
-
 
 
 
