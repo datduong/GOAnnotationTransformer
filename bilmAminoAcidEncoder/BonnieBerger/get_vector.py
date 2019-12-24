@@ -34,7 +34,7 @@ model = torch.load("/local/datdb/ProteinEmbMethodGithub/protein-sequence-embeddi
 model.eval()
 model.cuda()
 
-alphabet = Uniprot21() ## convert string to indexing.
+alphabet = Uniprot21() ##!! convert string to indexing.
 
 def submitJobs (onto) :
 
