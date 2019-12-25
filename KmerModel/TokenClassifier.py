@@ -402,9 +402,9 @@ class BertModel2Emb(BertPreTrainedModel):
                                    head_mask=head_mask)
 
     sequence_output = encoder_outputs[0]
-    pooled_output = self.pooler(sequence_output)
+    # pooled_output = self.pooler(sequence_output) ##!! not need pool, we don't use it anyway
 
-    outputs = (sequence_output, pooled_output,) + encoder_outputs[1:]  # add hidden_states and attentions if they are here
+    outputs = (sequence_output, ) + encoder_outputs[1:]  # add hidden_states and attentions if they are here ... pooled_output,
     return outputs  # sequence_output, pooled_output, (hidden_states), (attentions)
 
 

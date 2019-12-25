@@ -10,7 +10,7 @@ import evaluation_metric
 import PosthocCorrect
 
 
-def eval (in_dict,sub_array=None):
+def eval (prediction_dict,sub_array=None):
   prediction = prediction_dict['prediction']
   true_label = prediction_dict['true_label']
   if sub_array is not None:
