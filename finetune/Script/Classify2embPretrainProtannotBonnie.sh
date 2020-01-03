@@ -63,7 +63,8 @@ for ontology in 'cc' ; do # 'cc' 'bp'
     eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input-bonnie.tsv' 
     ## 
     CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point2.txt'
-  done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
+  done  
+  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero $output_dir/'eval_'$test_data'_expand.txt'
 
 done
 

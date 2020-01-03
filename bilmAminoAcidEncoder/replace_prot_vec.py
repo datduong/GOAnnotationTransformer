@@ -13,7 +13,7 @@ for data_type in ['test','train','dev']:
   for onto in ['cc','bp','mf']:
     ## read in a file which we already computed vector
     map_vec ={}
-    know_file = open("/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/"+data_type+"-"+onto+"-input-bonnie.tsv","r")
+    know_file = open("/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/"+data_type+"-"+onto+"-input-bonnie.tsv","r")
     for line in know_file: ## no header
       line = line.split('\t')
       map_vec[line[0]] = re.sub(" ",";",line[-2]) ## 2nd to last
