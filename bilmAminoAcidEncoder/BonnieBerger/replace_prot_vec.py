@@ -27,7 +27,7 @@ for data_type in ['test','train','dev']:
         fout.write(line)
       else:
         line = line.split("\t")
-        line = line[0:(len(line)-1)] ## remove vec
+        line = line[0:(len(line)-1)] ## remove vec ## use -1 to replace last position 
         try:
           new_line = "\t".join(l for l in line) + "\t" + map_vec[line[0]] + "\n"
           fout.write(new_line)
