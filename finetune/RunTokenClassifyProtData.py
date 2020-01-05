@@ -184,14 +184,12 @@ class TextDataset(Dataset):
 
         ## we test all the labels in 1 single call, so we have to always get all the labels.
         ## notice we shift 1+ so that we can have padding at 0.
-        # self.input_ids_label.append ( list((1+np.arange(num_label+1))) )  ## add a SEP to end of label side ??? Okay, add SEP
         self.input_ids_label.append ( np.arange(num_label).tolist() )  ## add a SEP to end of label side ??? Okay, add SEP
 
         ## split at \t ?? [seq \t label]
         text = text.split("\t") ## position 0 is kmer sequence, position 1 is list of labels
 
-        ### !!!!
-        ### !!!! now we append the protein-network vector
+        ##!!##!!##!!##!! now we append the protein-network vector
         self.ppi_vec.append ([float(s) for s in text[3].split()]) ## 3rd tab
 
         ## create a gold-standard label 1-hot vector.
@@ -202,8 +200,8 @@ class TextDataset(Dataset):
         label1hot [ index_as1 ] = 1
         self.label1hot.append( label1hot )
 
-        # kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
-        ## GET THE AA INDEXING '[CLS] ' + text[0] + ' [SEP]'
+        ## kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
+        ## COMMENT GET THE AA INDEXING '[CLS] ' + text[0] + ' [SEP]'
         this_aa = tokenizer.convert_tokens_to_ids ( tokenizer.tokenize ('[CLS] ' + text[1] + ' [SEP]') )
         len_withClsSep = len(this_aa)
 
@@ -758,10 +756,9 @@ def main():
   logger.warning("Process rank: %s, device: %s, n_gpu: %s, distributed training: %s, 16-bits training: %s",
           args.local_rank, device, args.n_gpu, bool(args.local_rank != -1), args.fp16)
 
-  # Set seed
-  set_seed(args)
+  set_seed(args) ####
 
-  # read in labels to be testing
+  ##!!##!! read in labels to be testing
   label_2test_array = pd.read_csv(args.label_2test,header=None)
   label_2test_array = sorted(list( label_2test_array[0] ))
   label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
@@ -797,26 +794,27 @@ def main():
     print ('len of aa_type_file without special token {}'.format(len(annot_data)))
     config.type_vocab_size = len(annot_data) + 2 # notice add 2 because PAD and UNK
 
-  # Prepare model
+  #### Prepare model
   print ('\nsee config before init model')
   print (config)
 
   if args.config_override and (args.new_num_labels is None) :
     model = model_class(config)
   else:
+    print ('\nload model from a checkpoint ... model_name_or_path must not be None')
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
 
   # print ('\ninit weight (scale/shift)')
   # model.init_weights() ## init weight (scale/shift)
 
-  ## fix emb into 0
+  ## COMMENT fix emb into 0 can help optim... experiment without fix emb did not show better results
   if args.reset_emb_zero:
     print ('\nreset token-type emb at position 0 into 0\n')
-    model.bert.embeddings.token_type_embeddings.weight.data[0] = 0 ## only set 1st one to zero, which is padding
+    model.bert.embeddings.token_type_embeddings.weight.data[0] = 0 ## COMMENT only set 1st one to zero, which is padding
 
-  ## load pretrain label vectors ?
+  ##!!##!! load pretrain label vectors ?
   if args.pretrained_label_path is not None:
-    if args.new_num_labels is not None: # run on more labels
+    if args.new_num_labels is not None: ##!!##!! run on more labels for zeroshot learning
       model.bert.resize_label_embeddings(args.new_num_labels)
       num_labels = args.new_num_labels
       print ('\nresize label emb to have more labels than trained model')
@@ -889,7 +887,7 @@ def main():
       logging.getLogger("pytorch_transformers.modeling_utils").setLevel(logging.WARN)  # Reduce logging
     logger.info("Evaluate the following checkpoints: %s", checkpoints)
 
-    if args.checkpoint is not None: ## we don't have to do all checkpoints ??
+    if args.checkpoint is not None: ##!!##!! we don't have to do all checkpoints ??
       checkpoints = [c for c in checkpoints if re.findall(args.checkpoint,c)]
       print ('\nwill only do this one checkpoint {}'.format(checkpoints))
 
