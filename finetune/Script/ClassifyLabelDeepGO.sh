@@ -5,11 +5,11 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear256.Layer12/label_vector.pickle'
 
-choice='2embPpiAnnotE256H1L12I512Set0/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1' 
-model_type='noppi' #### switch to noppi and ppi for 2 models
-cache_name='YesPpiYesType' ##!!##!! okay to use the same pre-processed data
-checkpoint=30240 ##!!##!!##!!
+choice='2embPpiAnnotE256H1L12I512Set0/YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1'
+model_type='ppi' ####
+cache_name='YesPpiYesType' ## !! okay to use the same pre-processed data
 
+checkpoint=65520 ## COMMENT define MF first
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000
 
@@ -23,7 +23,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
     seed=2020 #### we switch seed so that we can train at batch=4 ... doesn't matter really
     batch_size=2
     block_size=1792
-    checkpoint=49763 ##!!##!!##!!
+    checkpoint=85308
   fi
 
   if [[ $ontology == 'bp' ]]
@@ -31,7 +31,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
     seed=2019
     batch_size=2
     block_size=2048
-    checkpoint=43650 ##!!##!!##!!
+    checkpoint=65475
   fi
 
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
@@ -86,7 +86,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
 
     model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!! load in checkpoint, then replace emb for correct size
 
-    CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
+    CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'eval_'$test_data'_expand.txt'
   done
 
 done
