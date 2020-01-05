@@ -8,7 +8,7 @@ import numpy as np
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
 MainSetting='2embPpiAnnotE256H1L12I512Set0/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1'
 # ProtAnnotTypeLarge
-for onto in ['mf','cc','bp']: 
+for onto in ['mf','cc','bp']:
   #
   best = np.inf
   best_point = 'none'
@@ -32,7 +32,7 @@ for onto in ['mf','cc','bp']:
 
 
 
-#### view eval file 
+#### view eval file
 
 import os, sys, re, pickle
 import numpy as np
@@ -40,7 +40,7 @@ import numpy as np
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
 MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpi100NoTypeScaleFreezeBert12Ep10e10Drop0.1'
 
-for onto in ['mf','cc','bp']: 
+for onto in ['mf','cc','bp']:
   print ('\ntype {}'.format(onto))
   #
   try:
@@ -50,16 +50,16 @@ for onto in ['mf','cc','bp']:
   except:
     continue
   for line in fin :
-    line = line.strip() 
-    if 'auc_macro' in line: 
+    line = line.strip()
+    if 'auc_macro' in line:
       print (line)
-    if 'auc_micro' in line: 
+    if 'auc_micro' in line:
       print (line)
     if 'eval_loss' in line:
       print (line)
     if 'fmax score' in line:
       print (line)
   fin.close()
- 
+
 #
 

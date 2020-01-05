@@ -22,7 +22,7 @@ for ontology in 'mf' ; do # 'cc' 'bp'
   then
     seed=2020 #### we switch seed so that we can train at batch=4 ... doesn't matter really
     batch_size=2
-    block_size=2816
+    block_size=1792
     checkpoint=71090
   fi
 
