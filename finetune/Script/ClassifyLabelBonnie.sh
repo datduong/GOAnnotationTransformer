@@ -16,7 +16,7 @@ save_every=7000
 batch_size=2
 seed=2019  ####
 
-for ontology in 'cc' 'bp' 'mf' ; do # 'cc' 'bp'
+for ontology in 'mf' ; do # 'cc' 'bp'
 
   if [[ $ontology == 'cc' ]]
   then
