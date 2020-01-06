@@ -444,11 +444,14 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
     sequence_output = outputs[0] ## last layer.
     sequence_output = self.dropout(sequence_output)
 
-    logits = self.classifier(sequence_output)
+    logits = self.classifier(sequence_output) ##!! batch x num_label x 2 (for yes/no of this label)
 
     outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
     if labels is not None:
-      loss_fct = CrossEntropyLoss(weight=entropy_loss_weight)
+      if entropy_loss_weight is None:
+        loss_fct = CrossEntropyLoss()
+      else:
+        loss_fct = CrossEntropyLoss(reduction='none') ## batch x num_label x 2 will later be converted into 2D (batch x num_label) x 2
 
       ## must extract only the label side (i.e. 2nd sentence)
       ## last layer outputs is batch_num x len_sent x dim
@@ -458,12 +461,18 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
 
       # Only keep active parts of the loss
       if attention_mask_label is not None: ## change @attention_mask --> @attention_mask_label
-        active_loss = attention_mask_label.view(-1) == 1
+        active_loss = attention_mask_label.view(-1) == 1 ##!! flatten, then get position=1
         active_logits = logits.view(-1, self.num_labels)[active_loss]
         active_labels = labels.view(-1) # [active_loss] ## do not need to extract labels ?? we can pass in the exact true label
+
         loss = loss_fct(active_logits, active_labels)
+        if entropy_loss_weight is not None: ## seem so stupid.
+          entropy_loss_weight = entropy_loss_weight.expand(logits.shape[0],-1,-1).squeeze(1).contiguous().view(-1) ##!! expand to match batch*num_label
+          loss =torch.sum(loss * entropy_loss_weight) # https://discuss.pytorch.org/t/per-class-and-per-sample-weighting/25530/16
+
       else:
         loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+
       outputs = (loss,active_logits,) + outputs
 
     return outputs  # (loss), scores, (hidden_states), (attentions)
@@ -506,7 +515,10 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
 
     outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
     if labels is not None:
-      loss_fct = CrossEntropyLoss(weight=entropy_loss_weight)
+      if entropy_loss_weight is None:
+        loss_fct = CrossEntropyLoss()
+      else:
+        loss_fct = CrossEntropyLoss(reduction='none') ## batch x num_label x 2 will later be converted into 2D (batch x num_label) x 2
 
       ## must extract only the label side (i.e. 2nd sentence)
       ## last layer outputs is batch_num x len_sent x dim
@@ -519,7 +531,13 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
         active_loss = attention_mask_label.view(-1) == 1
         active_logits = logits.view(-1, self.num_labels)[active_loss]
         active_labels = labels.view(-1) # [active_loss] ## do not need to extract labels ?? we can pass in the exact true label
+
         loss = loss_fct(active_logits, active_labels)
+        if entropy_loss_weight is not None: ## seem so stupid.
+          print (entropy_loss_weight.shape)
+          entropy_loss_weight = entropy_loss_weight.expand(logits.shape[0],-1,-1).squeeze(1).contiguous().view(-1) ##!! expand to match batch*num_label
+          loss =torch.sum(loss * entropy_loss_weight) # https://discuss.pytorch.org/t/per-class-and-per-sample-weighting/25530/16
+
       else:
         loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
       outputs = (loss,active_logits,) + outputs

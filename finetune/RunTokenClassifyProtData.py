@@ -622,6 +622,7 @@ def main():
   parser = argparse.ArgumentParser()
 
   parser.add_argument("--save_prediction", type=str, default=None)
+  parser.add_argument("--entropy_loss_weight", action="store_true", default=False)
   parser.add_argument("--new_num_labels", type=int, default=None)
   parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)
@@ -765,8 +766,11 @@ def main():
 
   entropy_loss_weight = None ## COMMENT downweight common terms
   if args.entropy_loss_weight: 
+    print ('\n\nuse weighted loss\n\n')
     # https://pytorch.org/docs/stable/nn.html#torch.nn.CrossEntropyLoss
-    entropy_loss_weight = torch.FloatTensor( list(label_2test_array[1]) ) ## 1D tensor
+    entropy_loss_weight = np.array ( list(label_2test_array[1]) ) 
+    entropy_loss_weight = entropy_loss_weight / entropy_loss_weight.sum() ## scale to 1 
+    entropy_loss_weight = torch.FloatTensor( entropy_loss_weight ).to(args.device) ## 1D tensor
 
   # label_2test_array = sorted(list( label_2test_array[0] )) ## don't need in new version
   label_2test_array = list( label_2test_array[0] )
