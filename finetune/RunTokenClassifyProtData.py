@@ -284,7 +284,7 @@ def set_seed(args):
     torch.cuda.manual_seed_all(args.seed)
 
 
-def train(args, train_dataset, model, tokenizer, label_2test_array, config=None):
+def train(args, train_dataset, model, tokenizer, label_2test_array, config=None, entropy_loss_weight=None):
   """ Train the model """
 
   if args.new_num_labels is None:
@@ -399,7 +399,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
 
-      outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
+      outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec,entropy_loss_weight=entropy_loss_weight )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
@@ -497,7 +497,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None)
   return global_step, tr_loss / global_step
 
 
-def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
+def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, entropy_loss_weight=None):
 
   if args.new_num_labels is None:
     num_labels = len(label_2test_array)
@@ -566,7 +566,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None):
       aa_type = None
 
     with torch.no_grad():
-      outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
+      outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec, entropy_loss_weight=entropy_loss_weight )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
@@ -758,9 +758,18 @@ def main():
 
   set_seed(args) ####
 
-  ##!!##!! read in labels to be testing
-  label_2test_array = pd.read_csv(args.label_2test,header=None)
-  label_2test_array = sorted(list( label_2test_array[0] ))
+  #### read in labels to be testing
+  label_2test_array = pd.read_csv(args.label_2test,header=None,sep="\t")
+  label_2test_array = label_2test_array.sort_values(by=[0], ascending=True) 
+  label_2test_array = label_2test_array.reset_index(drop=True) ## otherwise get weird indexing
+
+  entropy_loss_weight = None ## COMMENT downweight common terms
+  if args.entropy_loss_weight: 
+    # https://pytorch.org/docs/stable/nn.html#torch.nn.CrossEntropyLoss
+    entropy_loss_weight = torch.FloatTensor( list(label_2test_array[1]) ) ## 1D tensor
+
+  # label_2test_array = sorted(list( label_2test_array[0] )) ## don't need in new version
+  label_2test_array = list( label_2test_array[0] )
   label_2test_array = [re.sub(":","",lab) for lab in label_2test_array] ## splitting has problem with the ":"
   num_labels = len(label_2test_array)
 
@@ -849,7 +858,7 @@ def main():
     if args.local_rank == 0:
       torch.distributed.barrier()
 
-    global_step, tr_loss = train(args, train_dataset, model, tokenizer, label_2test_array, config=config)
+    global_step, tr_loss = train(args, train_dataset, model, tokenizer, label_2test_array, config=config, entropy_loss_weight=entropy_loss_weight)
     logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
 

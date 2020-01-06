@@ -69,7 +69,7 @@ class BertForTokenClassification1hot (BertPreTrainedModel):
     self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
   def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
-        position_ids=None, head_mask=None, attention_mask_label=None):
+        position_ids=None, head_mask=None, attention_mask_label=None, entropy_loss_weight=None):
 
     ## !! add @attention_mask_label
 
@@ -83,7 +83,7 @@ class BertForTokenClassification1hot (BertPreTrainedModel):
 
     outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
     if labels is not None:
-      loss_fct = CrossEntropyLoss()
+      loss_fct = CrossEntropyLoss(weight=entropy_loss_weight)
 
       ## must extract only the label side (i.e. 2nd sentence)
       ## last layer outputs is batch_num x len_sent x dim
@@ -116,7 +116,7 @@ class BertForTokenClassification1hotPpi (BertForTokenClassification1hot) :
     self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
   def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
-        position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None):
+        position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None, entropy_loss_weight=None):
 
     ## !! add @attention_mask_label
 
@@ -135,7 +135,7 @@ class BertForTokenClassification1hotPpi (BertForTokenClassification1hot) :
 
     outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
     if labels is not None:
-      loss_fct = CrossEntropyLoss()
+      loss_fct = CrossEntropyLoss(weight=entropy_loss_weight)
 
       ## must extract only the label side (i.e. 2nd sentence)
       ## last layer outputs is batch_num x len_sent x dim
@@ -431,7 +431,7 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
 
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
-        position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None):
+        position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None, entropy_loss_weight=None):
 
     ## !! put @prot_vec=None anyway to not get error, but we will not use @prot_vec at all in this function
 
@@ -448,7 +448,7 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
 
     outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
     if labels is not None:
-      loss_fct = CrossEntropyLoss()
+      loss_fct = CrossEntropyLoss(weight=entropy_loss_weight)
 
       ## must extract only the label side (i.e. 2nd sentence)
       ## last layer outputs is batch_num x len_sent x dim
@@ -485,7 +485,7 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
       self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
-        position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None):
+        position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None, entropy_loss_weight=None):
 
     ## !! add @attention_mask_label
     ## !! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side.
@@ -506,7 +506,7 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
 
     outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
     if labels is not None:
-      loss_fct = CrossEntropyLoss()
+      loss_fct = CrossEntropyLoss(weight=entropy_loss_weight)
 
       ## must extract only the label side (i.e. 2nd sentence)
       ## last layer outputs is batch_num x len_sent x dim
