@@ -17,7 +17,7 @@ def eval (prediction_dict,sub_array=None):
     prediction = prediction [ : , sub_array ] ## obs x label
     true_label = true_label [ : , sub_array ]
   #
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25,30,35,40])
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,15,20,25,30,35,40], threshold_fmax=np.arange(0.00001,1,.00025))
   return result
 
 #### check accuracy of labels not seen in training.
@@ -26,7 +26,7 @@ def eval (prediction_dict,sub_array=None):
 def submitJobs (where,method):
 
   os.chdir(where)
-  
+
   for onto in ['cc','mf','bp']:
 
     print ('\n\ntype {}'.format(onto))
@@ -47,19 +47,24 @@ def submitJobs (where,method):
     #### want to compute accuracy on original set of labels, then on unseen labels
     #### possible original set prediction will change because we do joint prediction. so attention weight will affect outcome
 
-    # prediction_dict = pickle.load(open("/u/scratch/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method+"/save_prediction_expand.pickle","rb")) # /fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1/
+    ##!! prediction_train_all_on_test.pickle save_prediction_expand
+    try:
+      prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method+"/save_prediction_expand.pickle","rb"))
+    except:
+      print ('\npass {}'.format(onto))
+      continue
 
-    prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10/test-"+onto+"-prediction.pickle","rb"))
+    # prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10/test-"+onto+"-prediction.pickle","rb"))
 
     print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
-    print ('\nwhole')
+    print ('\nwhole {}'.format(onto))
     evaluation_metric.print_metrics( eval(prediction_dict) )
 
-    print('\noriginal')
+    print('\noriginal {}'.format(onto))
     evaluation_metric.print_metrics( eval(prediction_dict, label_seen_pos) )
 
-    print ('\nunseen')
+    print ('\nunseen {}'.format(onto))
     evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos) )
 
 

@@ -5,7 +5,7 @@ import sys, re, random, string, json, operator, time # pyLDAvis
 import numpy as np
 
 
-## using f-max which is a variation of the f-measure (not f1-score)
+#### using f-max which is a variation of the f-measure (not exactly the standard f1-score)
 
 def pr_rc_it (truth, prob, t):
 
@@ -38,7 +38,8 @@ def pr_rc_t (pr_t, rc_t): # $pr_t is array over prot.
   return f
 
 
-def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
+def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) : # np.arange(0.000001,1,.00025) np.arange(0.005,1,.01)
+
   # @true_set, @prob are np.2d-array
   # @threshold is np.vector
   f_value = np.zeros( len(threshold) )

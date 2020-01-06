@@ -5,10 +5,10 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear256.Layer12/label_vector.pickle'
 
-choice='2embPpiAnnotE256H1L12I512Set0/YesPpi100NoTypeScaleFreezeBert12Ep10e10Drop0.1' # Lr5e-5 Dr0.2
-model_type='ppi'
-cache_name='YesPpiYesType' ## !! okay to use the same pre-processed data
-checkpoint=36960
+choice='2embPpiAnnotE256H1L12I512Set0/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1' 
+model_type='noppi' #### switch to noppi and ppi for 2 models
+cache_name='YesPpiYesType' ##!!##!! okay to use the same pre-processed data
+checkpoint=30240 ##!!##!!##!!
 
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000
@@ -23,7 +23,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
     seed=2020 #### we switch seed so that we can train at batch=4 ... doesn't matter really
     batch_size=2
     block_size=1792
-    checkpoint=85308
+    checkpoint=49763 ##!!##!!##!!
   fi
 
   if [[ $ontology == 'bp' ]]
@@ -31,7 +31,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
     seed=2019
     batch_size=2
     block_size=2048
-    checkpoint=65475
+    checkpoint=43650 ##!!##!!##!!
   fi
 
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
@@ -43,8 +43,8 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
 
   aa_type_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/train_'$ontology'_prot_annot_type_count.pickle'
 
-  train_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/train-'$ontology'-input-bonnie.tsv' ## okay to call it as long as it has ppi
-  eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/dev-'$ontology'-input-bonnie.tsv'
+  train_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/train-'$ontology'-input.tsv' ## okay to call it as long as it has ppi
+  eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/dev-'$ontology'-input.tsv'
   label_2test='/local/datdb/deepgo/data/train/deepgo.'$ontology'.csv'
 
   cd $server/BertGOAnnotation/finetune/
@@ -59,12 +59,12 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
 
     #### normal testing on same set of labels
     # save_prediction='prediction_train_all_on_'$test_data
-    # eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input-bonnie.tsv'
-    # CUDA_VISIBLE_DEVICES=1 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file > $output_dir/'eval_'$test_data'_check_point.txt'
+    # eval_masklm_data='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
+    # CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
 
     #### do zeroshot on larger set
     save_prediction='save_prediction_expand'
-    eval_masklm_data='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input-bonnie.tsv'
+    eval_masklm_data='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
     label_2test='/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
 
     ##!!##!!
@@ -86,7 +86,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
 
     model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!! load in checkpoint, then replace emb for correct size
 
-    CUDA_VISIBLE_DEVICES=1 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'eval_'$test_data'_expand.txt'
+    CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_masklm_data --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
   done
 
 done

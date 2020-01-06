@@ -3,12 +3,30 @@
 export PATH="/usr/local/cuda-10.1/bin:$PATH"
 
 
+#### load back test file, eval on different groups of GOs
 main_dir='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'
-method='/fold_1/2embPpiAnnotE256H1L12I512Set0/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1/'
-code_dir='/local/datdb/BertGOAnnotation/AnalyzeGoVec'
-cd $code_dir
-python3 AnalyzeGoTypeAccuracy.py $main_dir $method > $main_dir/zeroshotNoProtNoType.txt
+for run_type in YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+  method='/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/'$run_type'/'
+  code_dir='/local/datdb/BertGOAnnotation/AnalyzeGoVec'
+  out_dir='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+  mkdir $out_dir
+  cd $code_dir
+  python3 AnalyzeGoTypeAccuracy.py $main_dir $method > $out_dir/$run_type'Large'.txt
+done
+cd $out_dir
 
+
+
+
+#### load back test file, eval on different groups of GOs Run on a much more finer split on fmax
+main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
+method='/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/'
+code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+mkdir $out_dir
+cd $code_dir
+python3 AnalyzeGoTypeAccuracy.py $main_dir $method > $out_dir/ZeroshotYesPpiYesTypeDeepGOOriginData.txt
+cd $out_dir
 
 
 #### use blast to eval added term... not pure zeroshot
@@ -20,4 +38,5 @@ code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
 cd $code_dir
 python3 AnalyzeGoTypeAccuracy.py $main_dir $method > $out_dir/ZeroshotBlastPsiblastResultEval100.txt
 cd $out_dir
+
 

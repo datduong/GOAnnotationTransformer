@@ -17,7 +17,7 @@ import pickle,gzip
 sys.path.append("/local/datdb/BertGOAnnotation/finetune")
 import fmax
 
-def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True):
+def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01)):
   """
     Inputs:
       yhat: binary predictions matrix
@@ -56,7 +56,7 @@ def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True):
     metrics.update(roc_auc)
 
   metrics['hamming loss'] = hamming_loss(y, yhat)
-  metrics['fmax score'] = fmax.f_max ( y, yhat_raw )
+  metrics['fmax score'] = fmax.f_max ( y, yhat_raw, threshold_fmax )
   # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html#the-average-precision-score-in-multi-label-settings
   # metrics['macro average prec'] = average_precision_score(y, yhat_raw, average='macro') ## true y, predicted y.
   # metrics['micro average prec'] = average_precision_score(y, yhat_raw, average='micro')
