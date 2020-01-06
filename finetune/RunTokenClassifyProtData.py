@@ -463,7 +463,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
     logger.info("Saving model checkpoint to %s", output_dir)
 
-    results = evaluate(args, model, tokenizer,label_2test_array, prefix=str(global_step), config=config)
+    results = evaluate(args, model, tokenizer,label_2test_array, prefix=str(global_step), config=config, entropy_loss_weight=entropy_loss_weight)
     # for key, value in results.items():
     #   tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
 
@@ -884,7 +884,7 @@ def main():
     model.to(args.device)
 
   if args.new_num_labels is not None:
-    result = evaluate(args, model, tokenizer, label_2test_array, prefix='zeroshot', config=config)
+    result = evaluate(args, model, tokenizer, label_2test_array, prefix='zeroshot', config=config, entropy_loss_weight=entropy_loss_weight)
     return result
 
   # Evaluation
@@ -905,7 +905,7 @@ def main():
       global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
       model = model_class.from_pretrained(checkpoint)
       model.to(args.device)
-      result = evaluate(args, model, tokenizer, label_2test_array, prefix=global_step, config=config)
+      result = evaluate(args, model, tokenizer, label_2test_array, prefix=global_step, config=config, entropy_loss_weight=entropy_loss_weight)
       result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
       results.update(result)
 

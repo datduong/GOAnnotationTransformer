@@ -34,5 +34,5 @@ for onto in ['bp','cc','mf']:
   GOfile.close()
 
 
-label_2test_array = pd.read_csv('deepgo.'+onto+'.weight.csv',header=None,sep="\t")
-label_2test_array = label_2test_array.sort_values(by=[0], ascending=True) 
+# label_2test_array = pd.read_csv('deepgo.'+onto+'.weight.csv',header=None,sep="\t")
+# label_2test_array = label_2test_array.sort_values(by=[0], ascending=True) 
