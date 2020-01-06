@@ -6,7 +6,7 @@ import os, sys, re, pickle
 import numpy as np
 
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
-MainSetting='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/YesPpiMuhaoNoTypeScaleFreezeBert12Ep10e10Drop0.1'
+MainSetting='2embPpiAnnotE256H1L12I512Set0/YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1wtl'
 # ProtAnnotTypeLarge
 for onto in ['mf','cc','bp']:
   #
