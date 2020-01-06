@@ -534,7 +534,6 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
 
         loss = loss_fct(active_logits, active_labels)
         if entropy_loss_weight is not None: ## seem so stupid.
-          print (entropy_loss_weight.shape)
           entropy_loss_weight = entropy_loss_weight.expand(logits.shape[0],-1,-1).squeeze(1).contiguous().view(-1) ##!! expand to match batch*num_label
           loss =torch.sum(loss * entropy_loss_weight) # https://discuss.pytorch.org/t/per-class-and-per-sample-weighting/25530/16
 
