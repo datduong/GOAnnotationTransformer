@@ -408,7 +408,7 @@ def main():
   # GO2GO_attention = {}
   # GO2AA_attention = {} ##  { name: {head:[range]} }
   # GO2AA_attention_quantile = {}
-  # GO2all_attention = {}
+  # attention_value = {}
 
   row_counter = 0 # so we can check the row id.
 
@@ -489,7 +489,7 @@ def main():
     layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention.
     print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
 
-    GO2all_attention = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
+    attention_value = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
 
     for layer in range (config.num_hidden_layers):
 
@@ -510,22 +510,22 @@ def main():
 
           where_not_mask = attention_mask[obs]==1
 
-          if this_prot_name not in GO2all_attention:
-            GO2all_attention[this_prot_name] = {}
+          if this_prot_name not in attention_value:
+            attention_value[this_prot_name] = {}
 
           # do not need to do this again
-          GO2all_attention[ this_prot_name ][layer] = {}
+          attention_value[ this_prot_name ][layer] = {}
 
           for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
             save = this_layer_att[obs][head]
             ## must use masking to get back correct values
-            GO2all_attention[ this_prot_name ][layer][head] = save [ :, where_not_mask ] [ where_not_mask, : ]
-            print (GO2all_attention[ this_prot_name ][layer][head].shape[0] - 2 - num_labels) # quality check
+            attention_value[ this_prot_name ][layer][head] = save [ :, where_not_mask ] [ where_not_mask, : ]
+            print (attention_value[ this_prot_name ][layer][head].shape[0] - 2 - num_labels) # quality check
 
 
-    for k in GO2all_attention:
+    for k in attention_value:
       out = {}
-      out[k] = GO2all_attention[k]
+      out[k] = attention_value[k]
       if len(out[k])!=12:
         print ('fail {}'.format(k))
       else:

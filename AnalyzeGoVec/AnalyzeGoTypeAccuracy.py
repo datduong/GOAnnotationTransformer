@@ -17,7 +17,8 @@ def eval (prediction_dict,sub_array=None):
     prediction = prediction [ : , sub_array ] ## obs x label
     true_label = true_label [ : , sub_array ]
   #
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,15,20,25,30,35,40], threshold_fmax=np.arange(0.00001,1,.00025))
+  # threshold_fmax=np.arange(0.00001,.25,.00001) np.arange(0.00001,.2,.00005)
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,15,20,25,30,35,40], threshold_fmax=np.arange(0.00001,.15,.0002))
   return result
 
 #### check accuracy of labels not seen in training.

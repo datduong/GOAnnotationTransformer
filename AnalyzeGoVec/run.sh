@@ -2,16 +2,18 @@
 /usr/local/cuda-10.1/bin
 export PATH="/usr/local/cuda-10.1/bin:$PATH"
 
+. /u/local/Modules/default/init/modules.sh
+module load python/3.7.2
 
 #### load back test file, eval on different groups of GOs
-main_dir='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/'
-for run_type in YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
-  method='/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/'$run_type'/'
-  code_dir='/local/datdb/BertGOAnnotation/AnalyzeGoVec'
-  out_dir='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
+for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100NoTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+  method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
+  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+  out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
   mkdir $out_dir
   cd $code_dir
-  python3 AnalyzeGoTypeAccuracy.py $main_dir $method > $out_dir/$run_type'Large'.txt
+  python3 AnalyzeGoTypeAccuracy.py $main_dir $method > $out_dir/$run_type.txt
 done
 cd $out_dir
 

@@ -28,16 +28,16 @@ for ontology in 'bp' ; do # 'mf' 'cc'
   aa_type_file='/u/scratch/d/datduong/deepgo/data/train/fold_1/train_'$ontology'_prot_annot_count.pickle'
 
   train_masklm_data='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-prot-annot.tsv' ## okay to call it as long as it has ppi
-  eval_masklm_data='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/dev-'$ontology'-prot-annot.tsv'
+  eval_data_file='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/dev-'$ontology'-prot-annot.tsv'
   label_2test='/u/scratch/d/datduong/deepgo/data/train/deepgo.'$ontology'.csv'
 
   cd $server/BertGOAnnotation/finetune/
 
-  python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_masklm_data --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
+  python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_data_file --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
 
-  # eval_masklm_data='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/test-'$ontology'-prot-annot.tsv'
+  # eval_data_file='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/test-'$ontology'-prot-annot.tsv'
 
-  # python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_masklm_data --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
+  # python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_data_file --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
 
 done
 
