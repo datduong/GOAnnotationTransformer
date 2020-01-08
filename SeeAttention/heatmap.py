@@ -1,43 +1,44 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm 
+from matplotlib import cm
 import pickle,re,sys,os
+import pandas as pd
 
 # path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiGeluE768H1L12I768PretrainLabelDrop0.1/ManualValidate/'
 
-path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE768H4L12I768PreLab/ManualValidate/'
+path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE256H1L12I512Set0/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/SeeAttention'
 
-list_prot_to_get = ['Q6FJA3', 'O54992', 'P0A812', 'Q6X632', 'Q5VV41', 'O35730', 'Q9S9K9', 'Q96B01', 'Q9HWK6']
+list_prot_to_get = pd.read_csv('/local/datdb/BertGOAnnotation/SeeAttention/name_get_attention_test.tsv',header=None)
+list_prot_to_get = sorted(list(list_prot_to_get[0]))
 
 os.chdir(path)
 to_load = os.listdir(path)
-for name in to_load: 
-  if 'pickle' not in name: 
+for name in to_load:
+  if 'pickle' not in name:
     continue
-  protn = re.sub('train_attention_','',name)
-  protn = re.sub(r'\.pickle','',protn)
+  protn = re.sub(r'_attention_value\.pickle','',name)
   if protn not in list_prot_to_get:
     continue
   #
-  attention = pickle.load (open(name,"rb")) # P23109
+  attention = pickle.load (open(name,"rb"))
   #
-  prot = list ( attention.keys() ) ## just 1 thing by itself 
+  prot = list ( attention.keys() ) ## just 1 thing by itself
   if not os.path.exists(prot[0]):
     os.mkdir(prot[0])
   print (prot)
-  for p in prot: 
-    for layer in range(12): 
-      for head in range (4): 
+  for p in prot:
+    for layer in range(12):
+      for head in range (1):
         matrix = attention[p] [layer] [head]
-        np.savetxt (  p + '/' + p + 'layer' + str(layer) + 'head' + str(head)+'.csv', matrix, delimiter=',')
+        np.savetxt (  p + '/' + p + '_layer_' + str(layer) + '_head_' + str(head)+'.csv', matrix, delimiter=',')
 
 
 
 
-# for p in prot: 
-#   for layer in range(10): 
-#     for head in range (4): 
+# for p in prot:
+#   for layer in range(10):
+#     for head in range (4):
 #       matrix = attention[p] [layer] [head]
 #       plt.clf()
 #       plt.imshow(matrix,interpolation='nearest', cmap=cm.inferno)
@@ -59,7 +60,7 @@ s = re.sub(r"\n","",s)
 
 # GO:0019239;GO:0016814;GO:0016810;GO:0016787;GO:0003824
 
-## !! no template found 
+## !! no template found
 >sp|Q96B01|R51A1_HUMAN RAD51-associated protein 1 OS=Homo sapiens OX=9606 GN=RAD51AP1 PE=1 SV=1
 MVRPVRHKKPVNYSQFDHSDSDDDFVSATVPLNKKSRTAPKELKQDKPKPNLNNLRKEEI
 PVQEKTPKKRLPEGTFSIPASAVPCTKMALDDKLYQRDLEVALALSVKELPTVTTNVQNS
@@ -77,7 +78,7 @@ LEFYQVPDLQYIVSRSARFMGLEMSDDGALEVARRARGTPRIANRLLRRVRDFAEVKHDG
 TISADIAAQALDMLNVDAEGFDYMDRKLLLAVIDKFFGGPVGLDNLAAAIGEERETIEDV
 LEPYLIQQGFLQRTPRGRMATTRAWNHFGITPPEMP
 
-# Q6X632 # begin part is important 
+# Q6X632 # begin part is important
 >sp|Q6X632|GPR75_MOUSE Probable G-protein coupled receptor 75 OS=Mus musculus OX=10090 GN=Gpr75 PE=1 SV=1
 MNTSAPLQNVPNATLLNMPPLHGGNSTSLQEGLRDFIHTATLVTCTFLLAIIFCLGSYGN
 FIVFLSFFDPSFRKFRTNFDFMILNLSFCDLFICGVTAPMFTFVLFFSSASSIPDSFCFT
@@ -89,7 +90,7 @@ GFTLIFFKSGLNPFIYSRNSAGLRRKVLWCLRYTGLGFLCCKQKTRLRAMGKGNLEINRN
 KSSHHETNSAYMLSPKPQRKFVDQACGPSHSKESAASPKVSAGHQPCGQSSSTPINTRIE
 PYYSIYNSSPSQQESGPANLPPVNSFGFASSYIAMHYYTTNDLMQEYDSTSAKQIPIPSV
 
-Q6FJA3 ## uniform match 
+Q6FJA3 ## uniform match
 >sp|Q6FJA3|PDC1_CANGA Pyruvate decarboxylase OS=Candida glabrata (strain ATCC 2001 / CBS 138 / JCM 3761 / NBRC 0622 / NRRL Y-65) OX=284593 GN=PDC1 PE=3 SV=1
 MSEITLGRYLFERLNQVDVKTIFGLPGDFNLSLLDKIYEVEGMRWAGNANELNAAYAADG
 YARIKGMSCIITTFGVGELSALNGIAGSYAEHVGVLHVVGVPSISSQAKQLLLHHTLGNG
@@ -102,7 +103,7 @@ ACLGAAFAAEEIDPKKRVILFIGDGSLQLTVQEISTMIRWGLKPYLFVLNNDGYTIERLI
 HGEKAGYNDIQNWDHLALLPTFGAKDYENHRVATTGEWDKLTQDKEFNKNSKIRMIEVML
 PVMDAPTSLIEQAKLTASINAKQE
 
-## back segment important 
+## back segment important
 >sp|Q9HWK6|LYSC_PSEAE Lysyl endopeptidase OS=Pseudomonas aeruginosa (strain ATCC 15692 / DSM 22644 / CIP 104116 / JCM 14847 / LMG 12228 / 1C / PRS 101 / PAO1) OX=208964 GN=prpL PE=1 SV=1
 MHKRTYLNACLVLALAAGASQALAAPGASEMAGDVAVLQASPASTGHARFANPNAAISAA
 GIHFAAPPARRVARAAPLAPKPGTPLQVGVGLKTATPEIDLTTLEWIDTPDGRHTARFPI

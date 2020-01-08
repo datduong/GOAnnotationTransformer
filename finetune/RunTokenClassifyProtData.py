@@ -769,7 +769,7 @@ def main():
     print ('\n\nuse weighted loss\n\n')
     # https://pytorch.org/docs/stable/nn.html#torch.nn.CrossEntropyLoss
     entropy_loss_weight = np.array ( [list(label_2test_array[1])] ) ## notice, 2D vector
-    entropy_loss_weight = entropy_loss_weight / entropy_loss_weight.sum() ## scale to 1 
+    # entropy_loss_weight = entropy_loss_weight / entropy_loss_weight.sum() ## scale to 1 
     entropy_loss_weight = torch.FloatTensor( entropy_loss_weight ).to(args.device) ## 1D tensor
 
   # label_2test_array = sorted(list( label_2test_array[0] )) ## don't need in new version

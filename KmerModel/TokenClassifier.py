@@ -401,11 +401,6 @@ class BertModel2Emb(BertPreTrainedModel):
                                    extended_attention_mask, ## must mask using the entire set of sequence + label input
                                    head_mask=head_mask)
 
-    print ('encoder_outputs')
-    print (len(encoder_outputs))
-
-    print ('see last')
-    print (len(encoder_outputs[-1]))
     sequence_output = encoder_outputs[0]
     # pooled_output = self.pooler(sequence_output) ##!! not need pool, we don't use it anyway
 
@@ -518,7 +513,7 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
 
     logits = self.classifier(sequence_output)
 
-    outputs = (logits,) + outputs[1:]  # add hidden states and attention if they are here
+    outputs = (logits,) + outputs[1:]  # add hidden states and attention if they are here ##!! change to 1: because we remove pooled_output to save some space
     if labels is not None:
       if entropy_loss_weight is None:
         loss_fct = CrossEntropyLoss()

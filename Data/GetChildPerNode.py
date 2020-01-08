@@ -14,6 +14,13 @@ def weighted_by_num_child(graph, node): ##!! only take is_a
       num_child = num_child + 1
   return 1.0/num_child
 
+
+def weighted_by_descent(graph, node): ##!! only take is_a
+  num_child = 1.0 ## avoid division by 0
+  num_child = num_child + len (networkx.ancestors(graph, node)) ## note... @ancestor gets subterms for @node
+  return 1.0/num_child
+
+
 work_dir = '/local/datdb/deepgo/data'
 os.chdir (work_dir)
 # Read the taxrank ontology
@@ -24,10 +31,10 @@ os.chdir('/local/datdb/deepgo/data/train')
 
 for onto in ['bp','cc','mf']: 
   GOfile = open('deepgo.'+onto+'.csv',"r")
-  fout = open('deepgo.'+onto+'.weight.csv',"w")
+  fout = open('deepgo.'+onto+'.weight.des.csv',"w")
   for line in GOfile:
     line = line.strip()
-    weight = weighted_by_num_child(graph,line)
+    weight = weighted_by_descent(graph,line)
     fout.write(line+"\t"+str(weight)+'\n')
   ##
   fout.close()

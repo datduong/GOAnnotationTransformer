@@ -515,7 +515,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
   list_prot_to_get = pd.read_csv(args.name_get_attention,header=None) ##!! doesn't need to be in order
   list_prot_to_get = sorted ( list(list_prot_to_get[0]) )
 
-  if not os.path.exists( os.path.join(args.output_dir,"SeeAttention/") ): 
+  if not os.path.exists( os.path.join(args.output_dir,"SeeAttention/") ):
     os.mkdir( os.path.join(args.output_dir,"SeeAttention/") )
 
   for batch_counter, batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"): ####
@@ -569,25 +569,23 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
 
     #### compute attention weights
 
-    print ('output len')
-    print (len(outputs))
-
     layer_att = outputs[-1] ##!! @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention.
     print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
-    print (layer_att)
+
     attention_value = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
+    attention_mask = attention_mask.detach().cpu().numpy() ##!!##!! used to get back only important positions, must be sent back to CPU
 
     for layer in range (config.num_hidden_layers):
 
       this_layer_att = layer_att[layer].detach().cpu().numpy() ## @layer_att is a tuple
 
-      # num_batch x num_head x word x word
-      # we get each obs in the batch, and get the #head
-      for obs in range(batch_size): # will be #obs x #head x #word x #word
+      # @this_layer_att is num_batch x num_head x word x word
+      # we get each obs in the batch, and get the #head... will be #obs x #head x #word x #word
+      for obs in range(batch_size): 
         this_prot_name = protein_name[row_counter+obs]
 
         if this_prot_name in list_prot_to_get:
-          where_not_mask = attention_mask[obs]==1
+          where_not_mask = attention_mask[obs]==1 ## need @attention_mask in CPU
 
           if layer == 0: ## sanity check
             print ("\n this_prot_name {} max_len_in_batch {}".format(this_prot_name,max_len_in_batch))
@@ -598,8 +596,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
           attention_value[ this_prot_name ][layer] = {}
           for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
             save = this_layer_att[obs][head]
-            ## must use masking to get back correct values
-            attention_value[ this_prot_name ][layer][head] = save [ :, where_not_mask ] [ where_not_mask, : ]
+            attention_value[ this_prot_name ][layer][head] = save [ :, where_not_mask ] [ where_not_mask, : ] ## must use masking to get back correct values
             print (attention_value[ this_prot_name ][layer][head].shape[0] - 2 - num_labels) # quality check, COMMENT -2 because of CLS and SEP
 
     for k in attention_value:
@@ -612,23 +609,22 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
 
     row_counter = end #### update next counter, so we move to batch#2 in the raw text
 
-
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
+  # result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
   # evaluation_metric.print_metrics( result )
-  result['eval_loss'] = eval_loss / nb_eval_steps
+  # result['eval_loss'] = eval_loss / nb_eval_steps
 
-  output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
-  with open(output_eval_file, "a+") as writer:
-    logger.info("***** Eval results {} *****".format(prefix))
-    print("\n***** Eval results {} *****".format(prefix))
-    writer.write("\n***** Eval results {} *****".format(prefix))
-    for key in sorted(result.keys()):
-      print( "  {} = {}".format( key, str(result[key]) ) )
-      # writer.write("%s = %s\n" % (key, str(result[key])))
+  # output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
+  # with open(output_eval_file, "a+") as writer:
+  #   logger.info("***** Eval results {} *****".format(prefix))
+  #   print("\n***** Eval results {} *****".format(prefix))
+  #   writer.write("\n***** Eval results {} *****".format(prefix))
+  #   for key in sorted(result.keys()):
+  #     print( "  {} = {}".format( key, str(result[key]) ) )
+  #     # writer.write("%s = %s\n" % (key, str(result[key])))
 
-  if args.save_prediction is not None:
-    print ('\nsave prediction and gold standard, size num_ob x num_label\n') ## useful if we want to analyze each group of labels
-    pickle.dump( {'prediction':prediction, 'true_label':true_label} , open( os.path.join(eval_output_dir, args.save_prediction+'.pickle') , 'wb' ) )
+  # if args.save_prediction is not None:
+  #   print ('\nsave prediction and gold standard, size num_ob x num_label\n') ## useful if we want to analyze each group of labels
+  #   pickle.dump( {'prediction':prediction, 'true_label':true_label} , open( os.path.join(eval_output_dir, args.save_prediction+'.pickle') , 'wb' ) )
 
   return result
 
