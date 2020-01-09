@@ -182,7 +182,7 @@ class BertSelfAttention(nn.Module):
         self.output_attentions = config.output_attentions
 
         self.num_attention_heads = config.num_attention_heads
-        self.attention_head_size = int(config.hidden_size / config.num_attention_heads)
+        self.attention_head_size = int(config.hidden_size / config.num_attention_heads) #### all heads fit as one single linear
         self.all_head_size = self.num_attention_heads * self.attention_head_size
 
         self.query = nn.Linear(config.hidden_size, self.all_head_size)
@@ -223,7 +223,7 @@ class BertSelfAttention(nn.Module):
         if head_mask is not None:
             attention_probs = attention_probs * head_mask
 
-        context_layer = torch.matmul(attention_probs, value_layer)
+        context_layer = torch.matmul(attention_probs, value_layer) ## attention x V(w)
 
         context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
         new_context_layer_shape = context_layer.size()[:-2] + (self.all_head_size,)
@@ -243,7 +243,7 @@ class BertSelfOutput(nn.Module):
     def forward(self, hidden_states, input_tensor):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
-        hidden_states = self.LayerNorm(hidden_states + input_tensor)
+        hidden_states = self.LayerNorm(hidden_states + input_tensor) ## add input with hidden state, not concat
         return hidden_states
 
 
@@ -316,15 +316,15 @@ class BertOutput(nn.Module):
 class BertLayer(nn.Module):
     def __init__(self, config):
         super(BertLayer, self).__init__()
-        self.attention = BertAttention(config)
-        self.intermediate = BertIntermediate(config)
+        self.attention = BertAttention(config) ##!! self attention K Q V
+        self.intermediate = BertIntermediate(config) ##!! 
         self.output = BertOutput(config)
 
     def forward(self, hidden_states, attention_mask=None, head_mask=None):
         attention_outputs = self.attention(hidden_states, attention_mask, head_mask)
         attention_output = attention_outputs[0]
-        intermediate_output = self.intermediate(attention_output)
-        layer_output = self.output(intermediate_output, attention_output)
+        intermediate_output = self.intermediate(attention_output) ## gelu(Linear(attention_output))
+        layer_output = self.output(intermediate_output, attention_output) ## layernorm( linear(intermediate_output) + attention_output )
         outputs = (layer_output,) + attention_outputs[1:]  # add attentions if we output them
         return outputs
 

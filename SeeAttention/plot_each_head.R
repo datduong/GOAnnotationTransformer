@@ -9,42 +9,48 @@ library('RColorBrewer')
 # graphics.off()
 coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25)
 
-setwd('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE256H1L12I512Set0/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/SeeAttention')
+for (model in c('NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1','NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1')){
 
-num_label = 589
-prot = 'Q9UHD2 P18431 P34283' # 'O54992 P23109 P9WNC3'# 'P23109' # B3PC73 O54992 P23109
-prot = strsplit(prot,"\\s+")[[1]]
+  setwd(paste0('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE256H1L12I512Set0/',model,'/SeeAttention'))
 
-for (p in prot) {
-  print (p)
-  for (head in c(0)){
-    plot_list = list()
-    for (layer in 0:11){
-      fin = read.csv( paste0(p, '/', p , '_layer_' , layer, '_head_',head,'.csv'), header=F )
-      fin = as.matrix(fin)
-      total_len = nrow(fin)
-      colnames(fin) = 1:nrow(fin)
-      fin = t(fin) ## easier ... so that we know row add to 1.
-      fin = log( fin * 1000 )
-      ## remove CLS and SEP ??
-      ## heatmap(fin,scale="none",col = coul,Colv=NA,main=paste('Layer',layer,'Head',head))
-      fin = melt(fin)
-      total_median = quantile ( fin[,3], 0.5 )
-      print (total_median)
-      total_max = max(fin[,3])
-      p1 = ggplot(data = fin, aes(x=Var1, y=Var2, fill=value)) + geom_tile() +
-      geom_vline(xintercept=total_len-num_label) +
-      geom_hline(yintercept=total_len-num_label) +
-      ggtitle(paste0(p , 'layer' , layer, 'head',head)) +
-      scale_fill_gradient2(low = "blue", high = "red") + # midpoint = total_median, limit = c(0,total_max)
-      theme(legend.title = element_blank()) #,axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank())
-      png (file = paste0(p, '/', p, '_head_',head,'_layer_',layer,'.png'),width=7, height=7, units='in', res = 500)
-      print (p1)
-      dev.off()
-      plot_list[[layer+1]] = p1
+  num_label = 589
+  prot = 'O54992 Q9UHD2 P18431 P34283' # 'O54992 P23109 P9WNC3'# 'P23109' # B3PC73 O54992 P23109
+  prot = strsplit(prot,"\\s+")[[1]]
+
+  for (p in prot) {
+    print (p)
+    for (head in c(0)){
+      plot_list = list()
+      for (layer in 0:11){
+        fin = read.csv( paste0(p, '/', p , '_layer_' , layer, '_head_',head,'.csv'), header=F )
+        fin = as.matrix(fin)
+        total_len = nrow(fin)
+        colnames(fin) = 1:nrow(fin)
+        fin = t(fin) ##!!##!! so that we know row add to 1.
+        # fin = log( fin * 1000 )
+        ## remove CLS and SEP ??
+        ## heatmap(fin,scale="none",col = coul,Colv=NA,main=paste('Layer',layer,'Head',head))
+        fin = melt(fin)
+        total_median = quantile ( fin[,3], 0.5 )
+        print (total_median)
+        total_max = max(fin[,3])
+        #### should cap the high numbers
+        cap_off = quantile ( fin[,3], 0.85 )
+        p1 = ggplot(data = fin, aes(x=Var1, y=Var2, fill=value)) + geom_tile() +
+        geom_vline(xintercept=total_len-num_label) +
+        geom_hline(yintercept=total_len-num_label) +
+        ggtitle(paste0(p , ' Layer ' , layer+1, ' Head ',head+1)) +
+        xlab("Attention toward x") + ylab("Attention from x") +
+        scale_fill_gradient2(low = "blue", high = "red", midpoint = total_median, limit = c(0,cap_off)) + # midpoint = total_median, limit = c(0,total_max) theme(legend.title = element_blank()) + 
+        theme_bw() + guides(fill = FALSE) + theme(legend.position = "none")  #,axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank())
+        png (file = paste0(p, '/', p, '_head_',head,'_layer_',layer,'_raw.png'),width=4, height=4, units='in', res = 400)
+        print (p1)
+        dev.off()
+        plot_list[[layer+1]] = p1
+      }
+      # grid.arrange(grobs = plot_list, ncol = 3) ## display plot
+      ggsave( file = paste0(p, '/', p, '_head_',head,'_raw.png'), arrangeGrob(grobs = plot_list, ncol = 4), width = 12, height = 8, units = c("in") )  ## save plot
     }
-    # grid.arrange(grobs = plot_list, ncol = 3) ## display plot
-    ggsave( file = paste0(p, '/', p, '_head_',head,'.png'), arrangeGrob(grobs = plot_list, ncol = 4), width = 15, height = 10, units = c("in") )  ## save plot
   }
 }
 

@@ -8,7 +8,7 @@ pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear25
 choice='2embPpiAnnotE256H1L12I512Set0/YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1wtldes'
 model_type='ppi'
 cache_name='YesPpiYesType' ## !! okay to use the same pre-processed data
-checkpoint=45360
+checkpoint=40320
 
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000
@@ -51,42 +51,42 @@ for ontology in 'mf' ; do # 'cc' 'bp'
 
   #### train the model
   # continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero --entropy_loss_weight > $output_dir/train_point.txt
+  # CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero --entropy_loss_weight > $output_dir/train_point.txt
   ## --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
   ## COMMENT testing phase
-  # for test_data in 'test'  ; do # 'dev'
+  for test_data in 'test'  ; do # 'dev'
 
-  #   #### normal testing on same set of labels
-  #   # save_prediction='prediction_train_all_on_'$test_data
-  #   # eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input-bonnie.tsv'
-  #   # CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero --entropy_loss_weight > $output_dir/'eval_'$test_data'_check_point.txt'
+    #### normal testing on same set of labels
+    # save_prediction='prediction_train_all_on_'$test_data
+    # eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input-bonnie.tsv'
+    # CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero --entropy_loss_weight > $output_dir/'eval_'$test_data'_check_point.txt'
 
-  #   #### do zeroshot on larger set
-  #   save_prediction='save_prediction_expand'
-  #   eval_data_file='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input-bonnie.tsv'
-  #   label_2test='/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
+    #### do zeroshot on larger set
+    save_prediction='save_prediction_expand'
+    eval_data_file='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input-bonnie.tsv'
+    label_2test='/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
 
-  #   #!!##!!
+    #!!##!!
 
-  #   new_num_labels=1697 ##!! COMMENT more labels
-  #   block_size=2816 ##!! COMMENT zeroshot need larger block size because more labels
+    new_num_labels=1697 ##!! COMMENT more labels
+    block_size=2816 ##!! COMMENT zeroshot need larger block size because more labels
 
-  #   if [[ $ontology == 'cc' ]]
-  #   then
-  #     new_num_labels=989
-  #     block_size=2816
-  #   fi
+    if [[ $ontology == 'cc' ]]
+    then
+      new_num_labels=989
+      block_size=2816
+    fi
 
-  #   if [[ $ontology == 'bp' ]]
-  #   then
-  #     new_num_labels=2980
-  #     block_size=4048
-  #   fi
+    if [[ $ontology == 'bp' ]]
+    then
+      new_num_labels=2980
+      block_size=4048
+    fi
 
-  #   model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!! load in checkpoint, then replace emb for correct size
+    model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!! load in checkpoint, then replace emb for correct size
 
-  #   CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
+    CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
   done
 
 done

@@ -488,7 +488,7 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
 
     if config.init_classifer_layer == 'xavier':
       nn.init.xavier_uniform_(self.classifier[0].weight)
-      nn.init.xavier_uniform_(self.classifier[2].weight)
+      # nn.init.xavier_uniform_(self.classifier[2].weight)
 
     if config.init_classifer_layer == 'default':
       self.init_weights() # https://github.com/lonePatient/Bert-Multi-Label-Text-Classification/issues/19
