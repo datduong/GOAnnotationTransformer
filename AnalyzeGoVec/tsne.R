@@ -4,13 +4,13 @@ library('ggplot2', help, pos = 2, lib.loc = NULL)
 
 set.seed(1)
 
-setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/')
+setwd('C:/Users/dat/Documents/BertNotFtAARawSeqGO/bp/fold_1/2embPpiAnnotE256H1L12I512Set0/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1/checkpoint-60480')
 
 # c/Users/dat/Documents/BertNotFtAARawSeqGO/mf/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
 
 # GOvecFromModel
-# fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
-# this_title = 'Bert12'
+fin = read.csv("GOvecFromBert12.tsv",sep="\t",header=F,stringsAsFactors=F)
+this_title = 'Bert12'
 
 # fin = read.csv("GOvecFromModel.tsv",sep="\t",header=F,stringsAsFactors=F)
 # this_title = 'GOvecFromModel'
