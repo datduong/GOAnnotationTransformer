@@ -885,7 +885,7 @@ def main():
     for checkpoint in checkpoints:
       print( "\n\nEvaluate the following checkpoints: {} \n".format(checkpoint) )
       global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
-      model = model_class.from_pretrained(checkpoint)
+      model = model_class.from_pretrained(checkpoint,config=config) #####
       model.to(args.device)
       result = evaluate(args, model, tokenizer, label_2test_array, prefix=global_step, config=config, entropy_loss_weight=entropy_loss_weight)
       result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())

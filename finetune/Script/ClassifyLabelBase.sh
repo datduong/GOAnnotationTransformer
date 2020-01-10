@@ -23,7 +23,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
     seed=2020 #### we switch seed so that we can train at batch=4 ... doesn't matter really
     batch_size=2
     block_size=1792
-    checkpoint=49763 ##!!##!!##!!
+    checkpoint=92417 ##!!##!!##!!
   fi
 
   if [[ $ontology == 'bp' ]]
@@ -31,7 +31,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
     seed=2019
     batch_size=2
     block_size=2048
-    checkpoint=43650 ##!!##!!##!!
+    checkpoint=65475 ##!!##!!##!!
   fi
 
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
