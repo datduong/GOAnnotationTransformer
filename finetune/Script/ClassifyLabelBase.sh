@@ -103,7 +103,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
   model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!!
   for test_data in 'train' 'test' ; do 
     eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-    govec_hidden_name=$output_dir/$test_data'_govec_hidden_layer.tsv'
+    govec_hidden_name=$test_data'_govec_hidden_layer'
     CUDA_VISIBLE_DEVICES=1 python3 -u GOVecHiddenLayerMean.py --model_name_or_path $model_name_or_path --govec_hidden_name $govec_hidden_name --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'govec_hidden_check_point.txt'
   done
 
