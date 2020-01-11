@@ -14,7 +14,8 @@ for (model in c('NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1','NoPpiYesTypeScaleF
   setwd(paste0('/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE256H1L12I512Set0/',model,'/SeeAttention'))
 
   num_label = 589
-  prot = 'O54992 Q9UHD2 P18431 P34283' # 'O54992 P23109 P9WNC3'# 'P23109' # B3PC73 O54992 P23109
+  #### plot these proteins
+  prot = 'Q9UHD2 P76245 P18431 P34283 P62380 O54992 Q5VV41 P39935 P20933'
   prot = strsplit(prot,"\\s+")[[1]]
 
   for (p in prot) {
@@ -43,13 +44,13 @@ for (model in c('NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1','NoPpiYesTypeScaleF
         xlab("Attention toward x") + ylab("Attention from x") +
         scale_fill_gradient2(low = "blue", high = "red", midpoint = total_median, limit = c(0,cap_off)) + # midpoint = total_median, limit = c(0,total_max) theme(legend.title = element_blank()) + 
         theme_bw() + guides(fill = FALSE) + theme(legend.position = "none")  #,axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x = element_blank(),axis.text.y = element_blank())
-        png (file = paste0(p, '/', p, '_head_',head,'_layer_',layer,'_raw.png'),width=4, height=4, units='in', res = 400)
-        print (p1)
-        dev.off()
+        # png (file = paste0(p, '/', p, '_head_',head,'_layer_',layer,'_raw.png'),width=4, height=4, units='in', res = 400)
+        # print (p1)
+        # dev.off()
         plot_list[[layer+1]] = p1
       }
       # grid.arrange(grobs = plot_list, ncol = 3) ## display plot
-      ggsave( file = paste0(p, '/', p, '_head_',head,'_raw.png'), arrangeGrob(grobs = plot_list, ncol = 4), width = 12, height = 8, units = c("in") )  ## save plot
+      ggsave( file = paste0(p, '/', p, '_head_',head,'_raw.png'), arrangeGrob(grobs = plot_list, ncol = 4), width = 11, height = 8, units = c("in") )  ## save plot
     }
   }
 }
