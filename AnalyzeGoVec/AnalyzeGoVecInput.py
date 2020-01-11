@@ -20,7 +20,7 @@ id_to_name = {id_: data.get('name') for id_, data in graph.nodes(data=True) if '
 # do TSNE or PCA
 
 #### terms to be plotted
-this_list = {'mf': ['GO:0030291', 'GO:0000980', 'GO:1905030', 'GO:0004653'],
+this_list = {'mf': ['GO:0030291', 'GO:0000980', 'GO:1905030', 'GO:0008376', 'GO:0005484'],
              'bp': ['GO:0051052', 'GO:0018193', 'GO:0097352', 'GO:0045666'],
              'cc': ['GO:0005743', 'GO:0098791']}
 
