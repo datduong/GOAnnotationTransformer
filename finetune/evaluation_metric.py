@@ -9,6 +9,10 @@ import re
 
 from sklearn.metrics import roc_curve, auc, hamming_loss
 from sklearn.metrics import average_precision_score
+from sklearn.metrics import precision_recall_curve
+
+import matplotlib
+import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
@@ -17,7 +21,7 @@ import pickle,gzip
 sys.path.append("/local/datdb/BertGOAnnotation/finetune")
 import fmax
 
-def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01)):
+def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01),path=""):
   """
     Inputs:
       yhat: binary predictions matrix
@@ -57,9 +61,12 @@ def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.ar
 
   metrics['hamming loss'] = hamming_loss(y, yhat)
   metrics['fmax score'] = fmax.f_max ( y, yhat_raw, threshold_fmax )
+
   # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html#the-average-precision-score-in-multi-label-settings
   # metrics['macro average prec'] = average_precision_score(y, yhat_raw, average='macro') ## true y, predicted y.
   # metrics['micro average prec'] = average_precision_score(y, yhat_raw, average='micro')
+
+  plot_precision_recall_curve(y,yhat,path)
 
   return metrics
 
@@ -205,6 +212,24 @@ def auc_metrics(yhat_raw, y, ymic):
   roc_auc["auc_micro"] = auc(fpr["micro"], tpr["micro"])
 
   return roc_auc
+
+def plot_precision_recall_curve (Y_test,y_score,path=""): ## true, predicted y.
+  precision = dict()
+  recall = dict()
+  average_precision = dict()
+  #! A "micro-average": quantifying score on all classes jointly
+  precision["micro"], recall["micro"], _ = precision_recall_curve(Y_test.ravel(),y_score.ravel())
+  average_precision["micro"] = average_precision_score(Y_test, y_score,average="micro")
+  fig = plt.figure()
+  plt.step(recall['micro'], precision['micro'], where='post')
+  plt.xlabel('Recall')
+  plt.ylabel('Precision')
+  plt.ylim([0.0, 1.05])
+  plt.xlim([0.0, 1.0])
+  plt.title(
+      'Average precision, micro-averaged all classes: AP={0:0.2f}'
+      .format(average_precision["micro"]))
+  fig.savefig(os.path.join(path,'micro_precision_recall_curve.pdf'))
 
 ########################
 # METRICS BY CODE TYPE

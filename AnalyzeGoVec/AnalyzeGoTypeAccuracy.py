@@ -10,7 +10,7 @@ import evaluation_metric
 import PosthocCorrect
 
 
-def eval (prediction_dict,sub_array=None):
+def eval (prediction_dict,sub_array=None,path=""):
   prediction = prediction_dict['prediction']
   true_label = prediction_dict['true_label']
   if sub_array is not None:
@@ -18,7 +18,7 @@ def eval (prediction_dict,sub_array=None):
     true_label = true_label [ : , sub_array ]
   #
   # threshold_fmax=np.arange(0.00001,.25,.00001) np.arange(0.00001,.2,.00005)
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,15,20,25,30,35,40], threshold_fmax=np.arange(0.00001,.15,.0002))
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,20,30,40], threshold_fmax=np.arange(0.0001,1,.005),path=path)
   return result
 
 #### check accuracy of labels not seen in training.
@@ -57,16 +57,18 @@ def submitJobs (where,method):
 
     # prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10/test-"+onto+"-prediction.pickle","rb"))
 
+    path="/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method
+    
     print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
-    print ('\nwhole {}'.format(onto))
-    evaluation_metric.print_metrics( eval(prediction_dict) )
+    # print ('\nwhole {}'.format(onto))
+    # evaluation_metric.print_metrics( eval(prediction_dict, path=path))
 
-    print('\noriginal {}'.format(onto))
-    evaluation_metric.print_metrics( eval(prediction_dict, label_seen_pos) )
+    # print('\noriginal {}'.format(onto))
+    # evaluation_metric.print_metrics( eval(prediction_dict, label_seen_pos, path=path) )
 
     print ('\nunseen {}'.format(onto))
-    evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos) )
+    evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos, path=path) )
 
 
 
