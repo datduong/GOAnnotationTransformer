@@ -48,17 +48,12 @@ def submitJobs (where,method):
     #### want to compute accuracy on original set of labels, then on unseen labels
     #### possible original set prediction will change because we do joint prediction. so attention weight will affect outcome
 
-    ##!! prediction_train_all_on_test.pickle save_prediction_expand
-    try:
-      prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method+"/save_prediction_expand.pickle","rb"))
-    except:
-      print ('\npass {}'.format(onto))
-      continue
+    prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/"+method+"/test-"+onto+"-prediction.pickle","rb"))
 
-    # prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10/test-"+onto+"-prediction.pickle","rb"))
+    path="/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/"+method+"/"+onto
+    if not os.path.exists(path):
+      os.mkdir(path)
 
-    path="/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method
-    
     print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
     # print ('\nwhole {}'.format(onto))

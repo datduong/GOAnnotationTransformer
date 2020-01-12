@@ -9,7 +9,7 @@ import re
 
 from sklearn.metrics import roc_curve, auc, hamming_loss
 from sklearn.metrics import average_precision_score
-from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import precision_recall_curve, recall_score
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -21,7 +21,7 @@ import pickle,gzip
 sys.path.append("/local/datdb/BertGOAnnotation/finetune")
 import fmax
 
-def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01),path=""):
+def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01),path="",add_name=""):
   """
     Inputs:
       yhat: binary predictions matrix
@@ -59,12 +59,12 @@ def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.ar
     roc_auc = auc_metrics(yhat_raw, y, ymic)
     metrics.update(roc_auc)
 
-  metrics['hamming loss'] = hamming_loss(y, yhat)
-  metrics['fmax score'] = fmax.f_max ( y, yhat_raw, threshold_fmax )
+  metrics['hamming_loss'] = hamming_loss(y, yhat)
+  metrics['fmax_score'] = fmax.f_max ( y, yhat_raw, threshold_fmax )
 
   # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html#the-average-precision-score-in-multi-label-settings
-  # metrics['macro average prec'] = average_precision_score(y, yhat_raw, average='macro') ## true y, predicted y.
-  # metrics['micro average prec'] = average_precision_score(y, yhat_raw, average='micro')
+  metrics['micro_average_prec'] = average_precision_score(y, yhat_raw, average='micro') ## true y, predicted y.
+  metrics['micro_average_rec'] = recall_score(y, yhat_raw, average='micro') ## true y, predicted y.
 
   plot_precision_recall_curve(y,yhat,path)
 
@@ -81,11 +81,11 @@ def all_micro(yhatmic, ymic):
 #########################################################################
 
 def macro_accuracy(yhat, y):
-  num = intersect_size(yhat, y, 0) / (union_size(yhat, y, 0) + 1e-10)
+  num = intersect_size(yhat, y, 0) / (union_size(yhat, y, 0) + 1e-8)
   return np.mean(num)
 
 def macro_precision(yhat, y):
-  num = intersect_size(yhat, y, 0) / (yhat.sum(axis=0) + 1e-10)
+  num = intersect_size(yhat, y, 0) / (yhat.sum(axis=0) + 1e-8)
   return np.mean(num)
 
 def macro_recall(yhat, y):
@@ -213,7 +213,7 @@ def auc_metrics(yhat_raw, y, ymic):
 
   return roc_auc
 
-def plot_precision_recall_curve (Y_test,y_score,path=""): ## true, predicted y.
+def plot_precision_recall_curve (Y_test,y_score,path="",add_name=""): ## true, predicted y.
   precision = dict()
   recall = dict()
   average_precision = dict()
@@ -227,9 +227,9 @@ def plot_precision_recall_curve (Y_test,y_score,path=""): ## true, predicted y.
   plt.ylim([0.0, 1.05])
   plt.xlim([0.0, 1.0])
   plt.title(
-      'Average precision, micro-averaged all classes: AP={0:0.2f}'
+      'Micro-averaged precision AP={0:0.8f}'
       .format(average_precision["micro"]))
-  fig.savefig(os.path.join(path,'micro_precision_recall_curve.pdf'))
+  fig.savefig(os.path.join(path,add_name+'micro_precision_recall_curve.pdf'))
 
 ########################
 # METRICS BY CODE TYPE
@@ -287,36 +287,38 @@ def print_metrics(metrics):
   print()
   if "auc_macro" in metrics.keys():
     print("[MACRO] accuracy, precision, recall, f-measure, AUC")
-    print("%.4f, %.4f, %.4f, %.4f, %.4f" % (metrics["acc_macro"], metrics["prec_macro"], metrics["rec_macro"], metrics["f1_macro"], metrics["auc_macro"]))
+    print("%.8f, %.8f, %.8f, %.8f, %.8f" % (metrics["acc_macro"], metrics["prec_macro"], metrics["rec_macro"], metrics["f1_macro"], metrics["auc_macro"]))
   else:
     print("[MACRO] accuracy, precision, recall, f-measure")
-    print("%.4f, %.4f, %.4f, %.4f" % (metrics["acc_macro"], metrics["prec_macro"], metrics["rec_macro"], metrics["f1_macro"]))
+    print("%.8f, %.8f, %.8f, %.8f" % (metrics["acc_macro"], metrics["prec_macro"], metrics["rec_macro"], metrics["f1_macro"]))
 
   if "auc_micro" in metrics.keys():
     print("[MICRO] accuracy, precision, recall, f-measure, AUC")
-    print("%.4f, %.4f, %.4f, %.4f, %.4f" % (metrics["acc_micro"], metrics["prec_micro"], metrics["rec_micro"], metrics["f1_micro"], metrics["auc_micro"]))
+    print("%.8f, %.8f, %.8f, %.8f, %.8f" % (metrics["acc_micro"], metrics["prec_micro"], metrics["rec_micro"], metrics["f1_micro"], metrics["auc_micro"]))
   else:
     print("[MICRO] accuracy, precision, recall, f-measure")
-    print("%.4f, %.4f, %.4f, %.4f" % (metrics["acc_micro"], metrics["prec_micro"], metrics["rec_micro"], metrics["f1_micro"]))
+    print("%.8f, %.8f, %.8f, %.8f" % (metrics["acc_micro"], metrics["prec_micro"], metrics["rec_micro"], metrics["f1_micro"]))
 
-  for metric, val in metrics.items():
-    if metric.find("rec_at") != -1:
-      print("%s: %.4f" % (metric, val))
+  # for metric, val in metrics.items():
+  #   if metric.find("rec_at") != -1:
+  #     print("%s: %.8f" % (metric, val))
 
   out_string = ""
+  print ('recall at k')
   k = sorted( [ k for k in metrics.keys() if re.match('^rec_at_', k)] )
   for k_i in k:
     out_string = out_string + "\t" + str(metrics[k_i])
   print (out_string)
 
   out_string = ""
+  print ('precision at k')
   k = sorted( [ k for k in metrics.keys() if re.match('^prec_at_', k)] )
   for k_i in k:
     out_string = out_string + "\t" + str(metrics[k_i])
   print (out_string)
 
-  print ('hamming loss {0:.4f}'.format(metrics['hamming loss']))
-  print ('fmax score {0:.4f}'.format(metrics['fmax score']))
-  # print ('macro average prec {0:.4f}'.format(metrics['macro average prec']))
-  # print ('micro average prec {0:.4f}'.format(metrics['micro average prec']))
-  # print()
+  print ('hamming {0:.8f}'.format(metrics['hamming_loss']))
+  print ('fmax {0:.8f}'.format(metrics['fmax_score']))
+  print ('micro_average_rec {0:.8f}'.format(metrics['micro_average_rec']))
+  print ('micro_average_prec {0:.8f}'.format(metrics['micro_average_prec']))
+

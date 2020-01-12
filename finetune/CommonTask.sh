@@ -26,9 +26,9 @@ done
 #### scp between servers
 where='/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
 cd $where
-for onto in cc bp mf ; do
+for onto in mf ; do
   cd /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/
-  scp -r Yes*Yes* $hoffman2:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/
+  scp -r No*Yes* $hoffman:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/
   # scp -r No*Yes* $hoffman2:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
   # scp -r No*No* $hoffman2:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
   # scp -r Yes*100*No* $nlp9:$localdir/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/
@@ -36,16 +36,21 @@ done
 
 #### scp between local computer
 
-mkdir /cygdrive/c/Users/dat/Documents/BertNotFtAARawSeqGO
+mkdir /cygdrive/e/BertNotFtAARawSeqGO
 for onto in mf cc bp ; do
-  mkdir /cygdrive/c/Users/dat/Documents/BertNotFtAARawSeqGO/$onto
-  mkdir /cygdrive/c/Users/dat/Documents/BertNotFtAARawSeqGO/$onto/fold_1
-  mkdir /cygdrive/c/Users/dat/Documents/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
+  mkdir /cygdrive/e/BertNotFtAARawSeqGO/$onto
+  mkdir /cygdrive/e/BertNotFtAARawSeqGO/$onto/fold_1
+  mkdir /cygdrive/e/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
 done 
 
 for onto in mf cc bp ; do
-  cd /cygdrive/c/Users/dat/Documents/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
-  scp -r $hoffman2:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/No*No*Scale*Freeze* /cygdrive/c/Users/dat/Documents/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
+  cd /cygdrive/e/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
+  scp -r $hoffman:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 /cygdrive/e/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
 done
+
+
+mkdir /cygdrive/e/BertNotFtAARawSeqGO/
+cd /cygdrive/e/BertNotFtAARawSeqGO/
+scp -r $hoffman:$scratch/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10* .
 
 
