@@ -63,10 +63,7 @@ def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.ar
   metrics['fmax_score'] = fmax.f_max ( y, yhat_raw, threshold_fmax )
 
   # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html#the-average-precision-score-in-multi-label-settings
-  metrics['micro_average_prec'] = average_precision_score(y, yhat_raw, average='micro') ## true y, predicted y.
-  metrics['micro_average_rec'] = recall_score(y, yhat_raw, average='micro') ## true y, predicted y.
-
-  plot_precision_recall_curve(y,yhat,path)
+  metrics['micro_average_prec'], metrics['micro_average_rec'] = plot_precision_recall_curve(y,yhat,path) # precision["micro"], recall["micro"]
 
   return metrics
 
@@ -220,6 +217,7 @@ def plot_precision_recall_curve (Y_test,y_score,path="",add_name=""): ## true, p
   #! A "micro-average": quantifying score on all classes jointly
   precision["micro"], recall["micro"], _ = precision_recall_curve(Y_test.ravel(),y_score.ravel())
   average_precision["micro"] = average_precision_score(Y_test, y_score,average="micro")
+
   fig = plt.figure()
   plt.step(recall['micro'], precision['micro'], where='post')
   plt.xlabel('Recall')
@@ -229,7 +227,10 @@ def plot_precision_recall_curve (Y_test,y_score,path="",add_name=""): ## true, p
   plt.title(
       'Micro-averaged precision AP={0:0.8f}'
       .format(average_precision["micro"]))
+
   fig.savefig(os.path.join(path,add_name+'micro_precision_recall_curve.pdf'))
+  return precision["micro"], recall["micro"]
+
 
 ########################
 # METRICS BY CODE TYPE
@@ -319,6 +320,6 @@ def print_metrics(metrics):
 
   print ('hamming {0:.8f}'.format(metrics['hamming_loss']))
   print ('fmax {0:.8f}'.format(metrics['fmax_score']))
-  print ('micro_average_rec {0:.8f}'.format(metrics['micro_average_rec']))
-  print ('micro_average_prec {0:.8f}'.format(metrics['micro_average_prec']))
+  print ('micro_average_rec {}'.format(metrics['micro_average_rec']))
+  print ('micro_average_prec {}'.format(metrics['micro_average_prec']))
 

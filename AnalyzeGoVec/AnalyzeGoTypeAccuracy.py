@@ -58,7 +58,7 @@ def submitJobs (where,method):
     # prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10/test-"+onto+"-prediction.pickle","rb"))
 
     path="/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method
-    
+
     print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
     # print ('\nwhole {}'.format(onto))
