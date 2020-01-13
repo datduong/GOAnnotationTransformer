@@ -17,14 +17,14 @@ def eval (prediction_dict,sub_array=None,path="",add_name=""):
     prediction = prediction [ : , sub_array ] ## obs x label
     true_label = true_label [ : , sub_array ]
   #
-  # threshold_fmax=np.arange(0.00001,.25,.00001) np.arange(0.00001,.2,.00005)
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,20,30,40], threshold_fmax=np.arange(0.0001,1,.005),path=path,add_name=add_name)
-  return result
+  # threshold_fmax=np.arange(0.0001,1,.005)
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,20,30,40,50],path=path,add_name=add_name)
+  return result 
 
 #### check accuracy of labels not seen in training.
 #### pure zeroshot approach.
 
-def submitJobs (where,method):
+def submitJobs (where,method,save_file_type):
 
   os.chdir(where)
 
@@ -39,7 +39,8 @@ def submitJobs (where,method):
     label_large = set(list(label_large[0]))
 
     label_unseen = sorted ( list ( label_large - label_original ) )
-    label_large = sorted(label_large) ## by default we sort label for the model
+    label_large = sorted(list(label_large)) ## by default we sort label for the model
+    label_original = sorted(list(label_original))
 
     label_lookup = {value:counter for counter,value in enumerate(label_large)}
     label_unseen_pos = np.array ( [label_lookup[v] for v in label_lookup if v in label_unseen ] )
@@ -50,25 +51,26 @@ def submitJobs (where,method):
 
     ##!! prediction_train_all_on_test.pickle save_prediction_expand
     try:
-      prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method+"/save_prediction_expand.pickle","rb"))
+      prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method+"/"+save_file_type+".pickle","rb"))
     except:
       print ('\npass {}'.format(onto))
       continue
-
-    # prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10/test-"+onto+"-prediction.pickle","rb"))
 
     path="/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method
 
     print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
-    # print ('\nwhole {}'.format(onto))
-    # evaluation_metric.print_metrics( eval(prediction_dict, path=path))
+    if save_file_type == 'prediction_train_all_on_test':
+      print ('\nwhole {}'.format(onto))
+      evaluation_metric.print_metrics( eval(prediction_dict, path=path, add_name='whole'))
 
-    print('\noriginal {}'.format(onto))
-    evaluation_metric.print_metrics( eval(prediction_dict, label_seen_pos, path=path, add_name='original') )
+    if save_file_type == 'save_prediction_expand':
 
-    print ('\nunseen {}'.format(onto))
-    evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos, path=path, add_name='unseen') )
+      print('\noriginal {}'.format(onto))
+      evaluation_metric.print_metrics( eval(prediction_dict, label_seen_pos, path=path, add_name='original') )
+
+      print ('\nunseen {}'.format(onto))
+      evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos, path=path, add_name='unseen') )
 
 
 
@@ -76,7 +78,7 @@ if len(sys.argv)<1: #### run script
 	print("Usage: \n")
 	sys.exit(1)
 else:
-	submitJobs ( sys.argv[1] , sys.argv[2] )
+	submitJobs ( sys.argv[1] , sys.argv[2] , sys.argv[3] )
 
 
 

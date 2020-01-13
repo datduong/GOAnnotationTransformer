@@ -7,42 +7,87 @@ module load python/3.7.2
 
 #### load back test file, eval on different groups of GOs
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
-# YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
-for run_type in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+##!! can eval on original dataset or on unseen labels
+load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
   mkdir $out_dir
+  out_dir=$out_dir/$load_file_name
+  mkdir $out_dir
   cd $code_dir
-  python3 AnalyzeGoTypeAccuracy.py $main_dir $method > $out_dir/$run_type.txt
+  python3 AnalyzeGoTypeAccuracy.py $main_dir $method $load_file_name > $out_dir/$run_type.txt
 done
 cd $out_dir
 
 
 
-
-#### load back test file, eval on different groups of GOs Run on a much more finer split on fmax
+#### load back test file, eval based on num of frequency
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
-method='/fold_1/2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/'
-code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
+##!!
+load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+  method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
+  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+  out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+  mkdir $out_dir
+  out_dir=$out_dir/$load_file_name
+  mkdir $out_dir
+  cd $code_dir
+  python3 AnalyzeGoCountAccuracy.py $main_dir $count_file $method $load_file_name > $out_dir/$run_type'_count.txt'
+done
+cd $out_dir
+
+#### load back test file for original deepgo model, eval based on num of frequency
+
+main_dir='/local/datdb/deepgo/data/train/fold_1' ## also where the count file is 
+load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+code_dir='/local/datdb/BertGOAnnotation/AnalyzeGoVec'
+out_dir='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
 mkdir $out_dir
-cd $code_dir
-python3 AnalyzeGoTypeAccuracy.py $main_dir $method > $out_dir/ZeroshotYesPpiYesTypeDeepGOOriginData.txt
+out_dir=$out_dir/DeepGOFlatSeqOnlyBase
+mkdir $out_dir
+for onto in mf bp cc ; do
+  method=$main_dir/DeepGOFlatSeqOnlyBase/AsIs/$onto'b32lr0.001RMSprop/prediction_testset.pickle'
+  path_out=$out_dir/$onto
+  mkdir $path_out
+  cd $code_dir
+  # onto,count_file,method,path
+  python3 AnalyzeGoCountAccuracyAny.py $onto $main_dir $method $path_out > $out_dir/$onto'_count.txt'
+done
 cd $out_dir
 
 
 #### use blast to eval added term... not pure zeroshot
 
-
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
-for method in blastPsiblastResultEval100 ; do # blastPsiblastResultEval100
-  out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/'$method
+data_type='data' # dataExpandGoSet
+load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do 
+  out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
   main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   cd $code_dir
-  python3 AnalyzeGoTypeAccuracyBlast.py $main_dir $method > $out_dir/$method.txt
+  python3 AnalyzeGoTypeAccuracyBlast.py $main_dir $method $load_file_name > $out_dir/$method.txt
+  cd $out_dir
+done
+
+
+#### load back test file, eval based on num of frequency ... BLAST
+. /u/local/Modules/default/init/modules.sh
+module load python/3.7.2
+main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
+count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
+data_type='data' # dataExpandGoSet
+load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do 
+  out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
+  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+  cd $code_dir
+  python3 AnalyzeGoCountAccuracyBlast.py $main_dir $count_file $method $load_file_name > $out_dir/$method'_count.txt'
   cd $out_dir
 done
 
