@@ -49,8 +49,13 @@ for onto in mf cc bp ; do
 done
 
 
+#### scp blast results to local 
+mkdir /cygdrive/e/BertNotFtAARawSeqGO/dataExpandGoSet
+cd /cygdrive/e/BertNotFtAARawSeqGO/dataExpandGoSet
+scp -r $hoffman:$scratch/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10* .
+
 mkdir /cygdrive/e/BertNotFtAARawSeqGO/
 cd /cygdrive/e/BertNotFtAARawSeqGO/
-scp -r $hoffman:$scratch/deepgo/dataExpandGoSet/train/fold_1/blastPsiblastResultEval10* .
+scp -r $hoffman:$scratch/deepgo/data/train/fold_1/blastPsiblastResultEval10* .
 
 

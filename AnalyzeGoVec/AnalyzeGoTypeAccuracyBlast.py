@@ -12,6 +12,7 @@ import PosthocCorrect
 
 def eval (prediction_dict,sub_array=None,path="",add_name=""):
   prediction = prediction_dict['prediction']
+  #### why only 3 threshold ???
   true_label = prediction_dict['true_label']
   if sub_array is not None:
     prediction = prediction [ : , sub_array ] ## obs x label

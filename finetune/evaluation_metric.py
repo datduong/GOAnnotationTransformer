@@ -21,10 +21,10 @@ import pickle,gzip
 sys.path.append("/local/datdb/BertGOAnnotation/finetune")
 import fmax
 
-def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01),path="",add_name=""):
+def all_metrics(yhat_binary, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01),path="",add_name=""):
   """
     Inputs:
-      yhat: binary predictions matrix
+      yhat_binary: binary predictions matrix
       y: binary ground truth matrix
       k: for @k metrics
       yhat_raw: prediction scores matrix (floats)
@@ -34,11 +34,11 @@ def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.ar
   names = ["acc", "prec", "rec", "f1"]
 
   #macro
-  macro = all_macro(yhat, y)
+  macro = all_macro(yhat_binary, y)
 
   #micro
   ymic = y.ravel()
-  yhatmic = yhat.ravel()
+  yhatmic = yhat_binary.ravel()
   micro = all_micro(yhatmic, ymic)
 
   metrics = {names[i] + "_macro": macro[i] for i in range(len(macro))} ## dictionary
@@ -59,16 +59,16 @@ def all_metrics(yhat, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.ar
     roc_auc = auc_metrics(yhat_raw, y, ymic)
     metrics.update(roc_auc)
 
-  metrics['hamming_loss'] = hamming_loss(y, yhat)
+  metrics['hamming_loss'] = hamming_loss(y, yhat_binary)
   metrics['fmax_score'] = fmax.f_max ( y, yhat_raw, threshold_fmax )
 
   # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html#the-average-precision-score-in-multi-label-settings
-  metrics['micro_average_prec'], metrics['micro_average_rec'] = plot_precision_recall_curve(y,yhat,path) # precision["micro"], recall["micro"]
+  metrics['micro_average_prec'], metrics['micro_average_rec'] = plot_precision_recall_curve(y,yhat_raw,path) # precision["micro"], recall["micro"]
 
   return metrics
 
-def all_macro(yhat, y):
-  return macro_accuracy(yhat, y), macro_precision(yhat, y), macro_recall(yhat, y), macro_f1(yhat, y)
+def all_macro(yhat_binary, y):
+  return macro_accuracy(yhat_binary, y), macro_precision(yhat_binary, y), macro_recall(yhat_binary, y), macro_f1(yhat_binary, y)
 
 def all_micro(yhatmic, ymic):
   return micro_accuracy(yhatmic, ymic), micro_precision(yhatmic, ymic), micro_recall(yhatmic, ymic), micro_f1(yhatmic, ymic)
@@ -77,21 +77,21 @@ def all_micro(yhatmic, ymic):
 #MACRO METRICS: calculate metric for each label and average across labels
 #########################################################################
 
-def macro_accuracy(yhat, y):
-  num = intersect_size(yhat, y, 0) / (union_size(yhat, y, 0) + 1e-8)
+def macro_accuracy(yhat_binary, y):
+  num = intersect_size(yhat_binary, y, 0) / (union_size(yhat_binary, y, 0) + 1e-8)
   return np.mean(num)
 
-def macro_precision(yhat, y):
-  num = intersect_size(yhat, y, 0) / (yhat.sum(axis=0) + 1e-8)
+def macro_precision(yhat_binary, y):
+  num = intersect_size(yhat_binary, y, 0) / (yhat_binary.sum(axis=0) + 1e-8)
   return np.mean(num)
 
-def macro_recall(yhat, y):
-  num = intersect_size(yhat, y, 0) / (y.sum(axis=0) + 1e-10)
+def macro_recall(yhat_binary, y):
+  num = intersect_size(yhat_binary, y, 0) / (y.sum(axis=0) + 1e-10)
   return np.mean(num)
 
-def macro_f1(yhat, y):
-  prec = macro_precision(yhat, y)
-  rec = macro_recall(yhat, y)
+def macro_f1(yhat_binary, y):
+  prec = macro_precision(yhat_binary, y)
+  rec = macro_recall(yhat_binary, y)
   if prec + rec == 0:
     f1 = 0.
   else:
@@ -102,21 +102,21 @@ def macro_f1(yhat, y):
 # INSTANCE-AVERAGED
 ###################
 
-def inst_precision(yhat, y):
-  num = intersect_size(yhat, y, 1) / yhat.sum(axis=1)
+def inst_precision(yhat_binary, y):
+  num = intersect_size(yhat_binary, y, 1) / yhat_binary.sum(axis=1)
   #correct for divide-by-zeros
   num[np.isnan(num)] = 0.
   return np.mean(num)
 
-def inst_recall(yhat, y):
-  num = intersect_size(yhat, y, 1) / y.sum(axis=1)
+def inst_recall(yhat_binary, y):
+  num = intersect_size(yhat_binary, y, 1) / y.sum(axis=1)
   #correct for divide-by-zeros
   num[np.isnan(num)] = 0.
   return np.mean(num)
 
-def inst_f1(yhat, y):
-  prec = inst_precision(yhat, y)
-  rec = inst_recall(yhat, y)
+def inst_f1(yhat_binary, y):
+  prec = inst_precision(yhat_binary, y)
+  rec = inst_recall(yhat_binary, y)
   f1 = 2*(prec*rec)/(prec+rec)
   return f1
 
@@ -229,7 +229,7 @@ def plot_precision_recall_curve (Y_test,y_score,path="",add_name=""): ## true, p
       .format(average_precision["micro"]))
 
   fig.savefig(os.path.join(path,add_name+'micro_precision_recall_curve.pdf'))
-  return precision["micro"], recall["micro"]
+  return np.max(precision["micro"]), np.max(recall["micro"])
 
 
 ########################
@@ -264,25 +264,25 @@ def metrics_from_dicts(preds, golds, mdir, ind2c):
 
   hadm_ids = sorted(set(golds.keys()).intersection(set(preds.keys())))
   num_labels = len(ind2c)
-  yhat = np.zeros((len(hadm_ids), num_labels))
+  yhat_binary = np.zeros((len(hadm_ids), num_labels))
   yhat_raw = np.zeros((len(hadm_ids), num_labels))
   y = np.zeros((len(hadm_ids), num_labels))
   for i,hadm_id in tqdm(enumerate(hadm_ids)):
     yhat_inds = [1 if ind2c[j] in preds[hadm_id] else 0 for j in range(num_labels)]
     yhat_raw_inds = [scors[hadm_id][ind2c[j]] if ind2c[j] in scors[hadm_id] else 0 for j in range(num_labels)]
     gold_inds = [1 if ind2c[j] in golds[hadm_id] else 0 for j in range(num_labels)]
-    yhat[i] = yhat_inds
+    yhat_binary[i] = yhat_inds
     yhat_raw[i] = yhat_raw_inds
     y[i] = gold_inds
-  return yhat, yhat_raw, y, all_metrics(yhat, y, yhat_raw=yhat_raw, calc_auc=False)
+  return yhat_binary, yhat_raw, y, all_metrics(yhat_binary, y, yhat_raw=yhat_raw, calc_auc=False)
 
-def union_size(yhat, y, axis):
+def union_size(yhat_binary, y, axis):
   #axis=0 for label-level union (macro). axis=1 for instance-level
-  return np.logical_or(yhat, y).sum(axis=axis).astype(float)
+  return np.logical_or(yhat_binary, y).sum(axis=axis).astype(float)
 
-def intersect_size(yhat, y, axis):
+def intersect_size(yhat_binary, y, axis):
   #axis=0 for label-level union (macro). axis=1 for instance-level
-  return np.logical_and(yhat, y).sum(axis=axis).astype(float)
+  return np.logical_and(yhat_binary, y).sum(axis=axis).astype(float)
 
 def print_metrics(metrics):
   print()
@@ -320,6 +320,6 @@ def print_metrics(metrics):
 
   print ('hamming {0:.8f}'.format(metrics['hamming_loss']))
   print ('fmax {0:.8f}'.format(metrics['fmax_score']))
-  print ('micro_average_rec {}'.format(metrics['micro_average_rec']))
-  print ('micro_average_prec {}'.format(metrics['micro_average_prec']))
+  print ('max_micro_average_rec {}'.format(metrics['micro_average_rec']))
+  print ('max_micro_average_prec {}'.format(metrics['micro_average_prec']))
 
