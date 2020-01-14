@@ -51,6 +51,7 @@ def submitJobs (where,method,save_file_type):
 
     ##!! prediction_train_all_on_test.pickle save_prediction_expand
     try:
+      print ("/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method+"/"+save_file_type+".pickle")
       prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/"+onto+"/"+method+"/"+save_file_type+".pickle","rb"))
     except:
       print ('\npass {}'.format(onto))
@@ -60,17 +61,17 @@ def submitJobs (where,method,save_file_type):
 
     print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
-    if save_file_type == 'prediction_train_all_on_test':
-      print ('\nwhole {}'.format(onto))
-      evaluation_metric.print_metrics( eval(prediction_dict, path=path, add_name='whole'))
+    # if save_file_type == 'prediction_train_all_on_test':
+    #   print ('\nwhole {}'.format(onto))
+    #   evaluation_metric.print_metrics( eval(prediction_dict, path=path, add_name='whole'))
 
-    if save_file_type == 'save_prediction_expand':
+    # if save_file_type == 'save_prediction_expand':
 
-      print('\noriginal {}'.format(onto))
-      evaluation_metric.print_metrics( eval(prediction_dict, label_seen_pos, path=path, add_name='original') )
+    print('\noriginal {}'.format(onto))
+    evaluation_metric.print_metrics( eval(prediction_dict, label_seen_pos, path=path, add_name='original') )
 
-      print ('\nunseen {}'.format(onto))
-      evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos, path=path, add_name='unseen') )
+    print ('\nunseen {}'.format(onto))
+    evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos, path=path, add_name='unseen') )
 
 
 

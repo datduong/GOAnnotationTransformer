@@ -2,13 +2,16 @@ import sys,re,os,pickle
 import numpy as np
 import pandas as pd
 
-sys.path.append("/local/datdb/BertGOAnnotation/finetune")
-import evaluation_metric
 
+sys.path.append("/u/scratch/d/datduong/BertGOAnnotation/finetune")
+import evaluation_metric
 
 def eval (prediction_dict,sub_array=None,path="",add_name=""):
   prediction = prediction_dict['prediction']
-  true_label = prediction_dict['truth']
+  try: 
+    true_label = prediction_dict['truth']
+  except: 
+    true_label = prediction_dict['true_label']
   if sub_array is not None:
     print ('len label {}'.format(len(sub_array)))
     prediction = prediction [ : , sub_array ] ## obs x label
@@ -30,9 +33,10 @@ def get_label_by_count (count_file) :
   return low, middle, high
 
 
-def submitJobs (onto,count_file,method,path):
+def submitJobs (onto,label_original,count_file,method,path):
 
-  label_original = pd.read_csv('/local/datdb/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
+  # label_original = pd.read_csv('/u/scratch/d/datduong/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
+  label_original = pd.read_csv(label_original,sep="\t",header=None)
   label_original = sorted(list(label_original[0])) ## we sort labels in training
 
   #### compute accuracy by frequency
@@ -60,7 +64,7 @@ if len(sys.argv)<1: #### run script
 	print("Usage: \n")
 	sys.exit(1)
 else:
-	submitJobs ( sys.argv[1] , sys.argv[2] , sys.argv[3] , sys.argv[4] )
+	submitJobs ( sys.argv[1] , sys.argv[2] , sys.argv[3] , sys.argv[4] , sys.argv[5] )
 
 
 

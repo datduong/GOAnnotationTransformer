@@ -22,6 +22,26 @@ done
 cd $out_dir
 
 
+#### load back model trained on large data, eval on seen vs unseen
+main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
+##!! can eval on original dataset or on unseen labels
+load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+for run_type in ProtAnnotTypeLarge/YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+  method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
+  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+  out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+  mkdir $out_dir
+  out_dir=$out_dir/$load_file_name
+  mkdir $out_dir
+  cd $code_dir
+  ##!! use prediction_train_all_on_test
+  python3 AnalyzeGoTypeAccuracy.py $main_dir $method prediction_train_all_on_test > $out_dir/$run_type.txt
+done
+cd $out_dir
+
+
+
+
 
 #### load back test file, eval based on num of frequency
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
@@ -37,8 +57,10 @@ for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeSca
   mkdir $out_dir
   cd $code_dir
   python3 AnalyzeGoCountAccuracy.py $main_dir $count_file $method $load_file_name > $out_dir/$run_type'_count.txt'
+  python3 $code_dir/ParseOutput.py $out_dir/$run_type'_count.txt' > $out_dir/$run_type'_count_parse.txt'
 done
 cd $out_dir
+
 
 #### load back test file for original deepgo model, eval based on num of frequency
 
@@ -47,10 +69,12 @@ load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test sav
 code_dir='/local/datdb/BertGOAnnotation/AnalyzeGoVec'
 out_dir='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
 mkdir $out_dir
-out_dir=$out_dir/DeepGOFlatSeqOnlyBase
+model_name='DeepGOFlatSeqOnlyBase'
+model_train_name='AsIs'
+out_dir=$out_dir/$model_name
 mkdir $out_dir
 for onto in mf bp cc ; do
-  method=$main_dir/DeepGOFlatSeqOnlyBase/AsIs/$onto'b32lr0.001RMSprop/prediction_testset.pickle'
+  method=$main_dir/$model_name/$model_train_name/$onto'b32lr0.001RMSprop/prediction_testset.pickle'
   path_out=$out_dir/$onto
   mkdir $path_out
   cd $code_dir
@@ -58,6 +82,32 @@ for onto in mf bp cc ; do
   python3 AnalyzeGoCountAccuracyAny.py $onto $main_dir $method $path_out > $out_dir/$onto'_count.txt'
 done
 cd $out_dir
+cat cc_count.txt mf_count.txt bp_count.txt > output_count.txt
+python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
+
+
+
+## COMMENT test on some other deepgo model
+main_dir='/local/datdb/deepgo/data/train/fold_1' ## also where the count file is 
+load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+code_dir='/local/datdb/BertGOAnnotation/AnalyzeGoVec'
+out_dir='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+mkdir $out_dir
+model_name='DeepGOFlatSeqProtBase' # DeepGOFlatSeqProtBase/ExactAsIs
+model_train_name='ExactAsIs'
+out_dir=$out_dir/$model_name
+mkdir $out_dir
+for onto in mf bp cc ; do
+  method=$main_dir/$model_name/$model_train_name/$onto'b32lr0.001RMSprop/prediction_testset.pickle'
+  path_out=$out_dir/$onto
+  mkdir $path_out
+  cd $code_dir
+  # onto,count_file,method,path
+  python3 AnalyzeGoCountAccuracyAny.py $onto $main_dir $method $path_out > $out_dir/$onto'_count.txt'
+done
+cd $out_dir
+cat cc_count.txt mf_count.txt bp_count.txt > output_count.txt
+python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 
 
 #### use blast to eval added term... not pure zeroshot
@@ -89,5 +139,7 @@ for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do
   cd $code_dir
   python3 AnalyzeGoCountAccuracyBlast.py $main_dir $count_file $method $load_file_name > $out_dir/$method'_count.txt'
   cd $out_dir
+  python3 $code_dir/ParseOutput.py $out_dir/$method'_count.txt' > output_count_parse.txt
 done
+
 
