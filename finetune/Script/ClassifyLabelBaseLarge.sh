@@ -6,7 +6,7 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear256.Layer12/label_vector.pickle'
 
 #### add ProtAnnotTypeLarge
-choice='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1' 
+choice='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1' 
 
 model_type='noppi' #### switch to noppi and ppi for 2 models
 cache_name='YesPpiYesType' ##!!##!! okay to use the same pre-processed data
@@ -67,7 +67,7 @@ for ontology in bp ; do # 'cc' 'bp'
 
   #### train the model
   # continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=6,7 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt
+  CUDA_VISIBLE_DEVICES=0,5 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path > $output_dir/train_point.txt
 
   # --aa_type_file $aa_type_file --reset_emb_zero ####
 

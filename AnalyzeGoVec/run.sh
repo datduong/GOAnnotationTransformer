@@ -8,18 +8,24 @@ module load python/3.7.2
 #### load back test file, eval on different groups of GOs
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 ##!! can eval on original dataset or on unseen labels
-load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+## COMMENT ZEROSHOT eval here.
+load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
 for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
   mkdir $out_dir
-  out_dir=$out_dir/$load_file_name
+  out_dir=$out_dir/ZeroshotNotEnsemble ## COMMENT ZEROSHOT.
   mkdir $out_dir
   cd $code_dir
   python3 AnalyzeGoTypeAccuracy.py $main_dir $method $load_file_name > $out_dir/$run_type.txt
 done
 cd $out_dir
+##!! parse output
+for model in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1; do 
+  python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
+done 
+
 
 
 #### load back model trained on large data, eval on seen vs unseen
@@ -97,7 +103,7 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 
 
 
-## COMMENT test on some other deepgo model
+#### COMMENT test on some other deepgo model
 main_dir='/local/datdb/deepgo/data/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 code_dir='/local/datdb/BertGOAnnotation/AnalyzeGoVec'
@@ -121,7 +127,6 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 
 
 #### use blast to eval added term... not pure zeroshot
-
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 data_type='data' # dataExpandGoSet
@@ -141,9 +146,6 @@ for model in blastPsiblastResultEval10 blastPsiblastResultEval100 ; do
   cd /u/scratch/d/datduong/deepgo/$data_type/train/fold_1/$model
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
-
-
-
 
 #### load back test file, eval based on num of frequency ... BLAST
 . /u/local/Modules/default/init/modules.sh
