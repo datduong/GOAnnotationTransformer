@@ -7,7 +7,7 @@ import numpy as np
 
 
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
-MainSetting='2embPpiAnnotE256H1L12I512Set0/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1'
+MainSetting='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1'
 # ProtAnnotTypeLarge
 for onto in ['mf','cc','bp']:
   #

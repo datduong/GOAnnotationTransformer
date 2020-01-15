@@ -11,7 +11,10 @@ import evaluation_metric
 
 def eval (prediction_dict,sub_array=None,path="",add_name=""):
   prediction = prediction_dict['prediction']
-  true_label = prediction_dict['true_label']
+  try:
+    true_label = prediction_dict['true_label']
+  except: 
+    true_label = prediction_dict['truth']
   if sub_array is not None:
     prediction = prediction [ : , sub_array ] ## obs x label
     true_label = true_label [ : , sub_array ]

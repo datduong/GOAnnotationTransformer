@@ -28,6 +28,7 @@ for method1 in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
     mkdir $save_file
     save_file=$save_file/$onto'_prediction.pickle'
 
+    #### merge
     code_dir=$server/'BertGOAnnotation/Ensemble'
     cd $code_dir
     python3 Ensemble.py $test_file1 $prediction1 $test_file2 $prediction2 $header1 $header2 $save_file > output.txt
@@ -50,7 +51,7 @@ for method1 in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
   mkdir $final_dir
   cd $final_dir
   cat  $path_out_cc $path_out_mf $path_out_bp > $method1'_count.txt'
-  python3 $code_dir/ParseOutput.py output_count.txt > $method1'_count_parse.txt'
+  python3 $code_dir/ParseOutput.py $method1'_count.txt' > $method1'_count_parse.txt'
 
 done
 

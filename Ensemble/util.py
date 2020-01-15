@@ -21,6 +21,8 @@ def ReorderRow (test_file,prediction,need_header=None) :
 
   prediction = prediction['prediction']
 
+  print ('shape of prediction {}'.format(prediction.shape))
+
   if need_header is None:
     test_file = pd.read_csv(test_file,header=need_header,sep="\t")
     name_original = list ( test_file[0] )

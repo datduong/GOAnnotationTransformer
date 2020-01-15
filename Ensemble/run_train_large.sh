@@ -17,7 +17,7 @@ for method1 in ProtAnnotTypeLarge/YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.
     test_file1=$server/'deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$onto'-input-bonnie.tsv'
 
     ##!!##!! predict on zeroshot
-    prediction1=$main_dir/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/$method1/prediction_train_all_on_test.pickle ####
+    prediction1=$main_dir/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/$method1/prediction_train_all_on_test.pickle ##
     header1='none'
 
     test_file2=$server/deepgo/dataExpandGoSet/train/fold_1/$test_data'-'$onto'-same-origin'.tsv
@@ -50,7 +50,7 @@ for method1 in ProtAnnotTypeLarge/YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.
   mkdir $final_dir
   cd $final_dir
   cat  $path_out_cc $path_out_mf $path_out_bp > $method1'_count.txt'
-  python3 $code_dir/ParseOutput.py output_count.txt > $method1'_count_parse.txt'
+  python3 $code_dir/ParseOutput.py $method1'_count.txt' > $method1'_count_parse.txt'
 
 done
 

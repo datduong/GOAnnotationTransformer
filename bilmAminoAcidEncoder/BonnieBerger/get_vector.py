@@ -44,7 +44,7 @@ def submitJobs (onto) :
     for onto in [onto] : # ['cc','bp','mf']:
       fin = open(data_type+"-"+onto+"-input.tsv","r")
       fout = open(data_type+"-"+onto+"-input-bonnie.tsv","w")
-      for index, line in tqdm (enumerate(fin)):
+      for index, line in tqdm (enumerate(fin)): #### retain the same ordering as original input
         if index == 0:
           fout.write(line) ## header
         line = line.strip().split("\t")
