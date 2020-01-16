@@ -50,6 +50,9 @@ def submitJobs (onto,label_original,count_file,method,path):
 
   print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
+  print ('\nwhole {}'.format(onto))
+  evaluation_metric.print_metrics( eval(prediction_dict, path=path, add_name='whole'))
+
   print('\nlow {}'.format(onto))
   evaluation_metric.print_metrics( eval(prediction_dict, low_index, path=path, add_name='low') )
 
