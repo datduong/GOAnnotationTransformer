@@ -74,12 +74,13 @@ cd $out_dir
 
 #### load back test file for original deepgo model, eval based on num of frequency
 
+#dataExpandGoSet
 main_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
 out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet/EvalLabelByGroup'
 mkdir $out_dir
-model_name='DeepGOFlatSeqProtBase'
+model_name='DeepGOFlatSeqOnlyBase' # DeepGOFlatSeqProtBase
 model_train_name='ExactAsIs'
 out_dir=$out_dir/$model_name
 mkdir $out_dir
@@ -130,7 +131,7 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 data_type='dataExpandGoSet' # dataExpandGoSet
-load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
 for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do 
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
   main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
