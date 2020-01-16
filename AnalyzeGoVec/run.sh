@@ -129,7 +129,7 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 #### use blast to eval added term... not pure zeroshot
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
-data_type='data' # dataExpandGoSet
+data_type='dataExpandGoSet' # dataExpandGoSet
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do 
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
@@ -139,13 +139,13 @@ for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do
   python3 AnalyzeGoTypeAccuracyBlast.py $main_dir $method $load_file_name > $out_dir/$method.txt
   cd $out_dir
 done
-
 ##!! parse output
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
 for model in blastPsiblastResultEval10 blastPsiblastResultEval100 ; do 
   cd /u/scratch/d/datduong/deepgo/$data_type/train/fold_1/$model
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
+
 
 #### load back test file, eval based on num of frequency ... BLAST
 . /u/local/Modules/default/init/modules.sh
