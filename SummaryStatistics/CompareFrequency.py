@@ -13,13 +13,14 @@ for onto in ['mf','cc','bp']:
   LabelCount = {}
   NumLabelPerSample = []
   # dataExpandGoSet
-  file_name = "/u/scratch/d/datduong/deepgo/data/train/fold_1/ProtAnnotTypeData/train-"+onto+"-input-bonnie.tsv"
+  # file_name = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/train-"+onto+"-same-origin.tsv"
+  file_name = "/u/scratch/d/datduong/deepgo/dataCompleteGoSet/train/train-"+onto+".tsv"
   fin = open(file_name,"r")
   for index,line in enumerate(fin):
     # if index == 0:
     #   continue
     line = line.strip().split('\t')
-    label = line[2].split(" ")
+    label = line[1].split(";")
     NumLabelPerSample.append ( len(label) )
     for l in label:
       if l in LabelCount:
@@ -27,6 +28,41 @@ for onto in ['mf','cc','bp']:
       else:
         LabelCount[l] = 1
   fin.close()
+  ##
+  # dataExpandGoSet
+  LabelCountOriginal = {}
+  file_name = "/u/scratch/d/datduong/deepgo/data/train/train-"+onto+".tsv" 
+  fin = open(file_name,"r")
+  for index,line in enumerate(fin):
+    # if index == 0:
+    #   continue
+    line = line.strip().split('\t')
+    # line[1] = re.sub(":","",label[1])
+    label = line[1].split(";")
+    NumLabelPerSample.append ( len(label) )
+    for l in label:
+      if l in LabelCountOriginal:
+        LabelCountOriginal[l] = LabelCountOriginal[l] + 1
+      else:
+        LabelCountOriginal[l] = 1
+  fin.close()
+  ## compare: 
+  print ('onto {}'.format(onto))
+  # if onto == 'mf': 
+  #   print (LabelCountOriginal['GO0004930'])
+  #   print (LabelCount['GO0004930'])
+  print_see_more_counter = 0 
+  for k,v in LabelCountOriginal.items(): 
+    if LabelCount[k] > v: 
+      print_see_more_counter = print_see_more_counter + 1
+  #
+  print ('print_see_more_counter')
+  print (print_see_more_counter)
+
+
+
+
+
   print ('\nonto {}'.format(onto))
   print ('Total num label')
   print (len(LabelCount))
