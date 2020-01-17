@@ -30,7 +30,7 @@ for onto in ['mf','cc','bp']:
   # df.loc[~df['column_name'].isin(some_values)]
   print ('dim original test size {}'.format(df1original.shape))
   print ('dim larger test size {}'.format(df1.shape))
-  test_same_origin = expand.loc [ df1['Entry'].isin(list(df1original['Entry'])) ]
+  test_same_origin = df1.loc [ df1['Entry'].isin(list(df1original['Entry'])) ]
   # write out
   test_same_origin.to_csv("/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/fold_1/test-"+onto+"-same-origin.tsv",sep="\t",index=None)
 
