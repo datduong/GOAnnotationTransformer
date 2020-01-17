@@ -48,10 +48,6 @@ for onto in ['mf','cc','bp']:
   print ('Original, seen GO label counter')
   counter = [v for k,v in LabelCount.items() if k in label_original]
   print ( np.quantile(counter,q=[0.25,.5,.75,.95,1]) )
-  if onto=='cc': 
-    print ('see GO:0031983')
-    print (LabelCount['GO0031983'])
-
 
 
 

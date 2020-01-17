@@ -27,32 +27,7 @@ for model in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleF
 done 
 
 
-
-#### load back model trained on large data, eval on seen vs unseen
-main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
-##!! can eval on original dataset or on unseen labels
-load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
-for run_type in ProtAnnotTypeLarge/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ProtAnnotTypeLarge/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 ProtAnnotTypeLarge/YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
-  method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
-  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-  out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
-  mkdir $out_dir
-  out_dir=$out_dir/$load_file_name
-  mkdir $out_dir
-  cd $code_dir
-  ##!! use prediction_train_all_on_test
-  python3 AnalyzeGoTypeAccuracy.py $main_dir $method prediction_train_all_on_test > $out_dir/$run_type.txt
-done
-cd $out_dir
-##!! parse output
-cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test/ProtAnnotTypeLarge
-for model in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
-  python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
-done 
-
-
-
-#### load back Transformer model trained on small data, eval on seen vs unseen ... pure zeroshot
+#### load back Transformer model trained on small data, eval on rare labels
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 ##!! can eval on original dataset or on unseen labels
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
@@ -76,8 +51,7 @@ done
 
 
 
-
-#### load back test file, eval based on num of frequency
+#### load back model, eval based on num of frequency, simple evaluation on total known labels
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
 ##!!
@@ -94,6 +68,12 @@ for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeSca
   python3 $code_dir/ParseOutput.py $out_dir/$run_type'_count.txt' > $out_dir/$run_type'_count_parse.txt'
 done
 cd $out_dir
+##!! parse output
+cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test
+for model in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
+  python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
+done 
+
 
 
 #### load back test file for original deepgo model, eval based on num of frequency
