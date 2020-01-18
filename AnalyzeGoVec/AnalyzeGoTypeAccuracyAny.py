@@ -33,7 +33,7 @@ def submitJobs (onto,prediction_dict,save_file_type,path):
   label_original = pd.read_csv('/u/scratch/d/datduong/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
   label_original = set(list(label_original[0]))
 
-  label_large = pd.read_csv('/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/deepgo.'+onto+'.csv',sep="\t",header=None)
+  label_large = pd.read_csv('/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/deepgo.'+onto+'.csv',sep="\t",header=None)
   label_large = set(list(label_large[0]))
 
   label_unseen = sorted ( list ( label_large - label_original ) )
