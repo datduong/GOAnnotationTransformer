@@ -8,15 +8,25 @@ mv * ArchiveTrainWithMissingData/
 scp ArchiveTrainWithMissingData/vocab* ArchiveTrainWithMissingData/config.json .
 done
 
+#### create folders 
+mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO
+for onto in mf cc bp ; do
+  mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/
+  mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/
+  mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20
+  mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
+done
 
 #### create folders, make config for training
-for onto in mf cc bp ; do
+for onto in cc ; do
+  onto=mf
   mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20
-  mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
-  cd /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
-  scp /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/vocab* . ##!! okay to use @mf, we will reassign number of labels
-  scp /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/config.json .
+  mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
+  cd /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
+  scp /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/vocab* . ##!! okay to use @mf, we will reassign number of labels
+  scp /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1/config.json .
 done
+
 
 #### scp between servers
 for onto in mf cc bp ; do
@@ -27,9 +37,9 @@ done
 #### scp between servers
 where='/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
 cd $where
-for onto in mf bp cc ; do
+for onto in cc ; do
   cd /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge
-  scp -r NoPpiYes* $hoffman2:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge
+  scp -r YesPpiYes* $nlp10:$localdir/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge
   # scp -r No*Yes* $hoffman2:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
   # scp -r No*No* $hoffman2:$scratch/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0
   # scp -r Yes*100*No* $nlp9:$localdir/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/

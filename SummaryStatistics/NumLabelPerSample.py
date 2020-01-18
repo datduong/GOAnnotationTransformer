@@ -13,14 +13,17 @@ for onto in ['mf','cc','bp']:
   LabelCount = {}
   NumLabelPerSample = []
   # dataExpandGoSet
-  file_name = "/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/train-"+onto+"-16Jan20.tsv"
+  # file_name = "/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/train-"+onto+"-16Jan20.tsv"
+  # fin = open(file_name,"r")
+  #### calling our train partition
+  file_name = "/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/fold_1/ProtAnnotTypeData/train-"+onto+"-input-bonnie.tsv"
   fin = open(file_name,"r")
   for index,line in enumerate(fin):
     # if index == 0:
     #   continue
     line = line.strip().split('\t')
-    line[1] = re.sub(":","",line[1])
-    label = line[1].split(";")
+    line[2] = re.sub(":","",line[2])
+    label = line[2].split(" ")
     NumLabelPerSample.append ( len(label) )
     for l in label:
       if l in LabelCount:
@@ -37,7 +40,7 @@ for onto in ['mf','cc','bp']:
   counter = [v for k,v in LabelCount.items()]
   print ( np.quantile(counter,q=[0.25,.5,.75,.95,1]) )
   #### load in original label
-  label_original = pd.read_csv('/u/scratch/d/datduong/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
+  label_original = pd.read_csv('/local/datdb/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
   temp = list(label_original[0])
   label_original = [re.sub(":","",l) for l in temp]
   label_original = set(label_original)

@@ -55,39 +55,40 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
   ## --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
   # ## COMMENT testing phase
-  # for test_data in 'test'  ; do # 'dev'
+  for test_data in 'test'  ; do # 'dev'
 
-  #   #### normal testing on same set of labels
-  #   # save_prediction='prediction_train_all_on_'$test_data
-  #   # eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-  #   # CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
+    #### normal testing on same set of labels
+    # save_prediction='prediction_train_all_on_'$test_data
+    # eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
+    # CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
 
-  #   #### do zeroshot on larger set
-  #   save_prediction='save_prediction_expand'
-  #   eval_data_file='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-  #   label_2test='/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
+    #### do zeroshot on larger set
+    save_prediction='save_prediction_expand'
+    eval_data_file='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
+    label_2test='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
 
-  #   ##!!##!!
+    ##!!##!!
 
-  #   new_num_labels=1697 ##!! COMMENT more labels
-  #   block_size=2816 ##!! COMMENT zeroshot need larger block size because more labels
+    new_num_labels=1697 ##!! COMMENT more labels
+    block_size=2816 ##!! COMMENT zeroshot need larger block size because more labels
 
-  #   if [[ $ontology == 'cc' ]]
-  #   then
-  #     new_num_labels=989
-  #     block_size=2816
-  #   fi
+    if [[ $ontology == 'cc' ]]
+    then
+      new_num_labels=989
+      block_size=2816
+    fi
 
-  #   if [[ $ontology == 'bp' ]]
-  #   then
-  #     new_num_labels=2980
-  #     block_size=4048
-  #   fi
+    if [[ $ontology == 'bp' ]]
+    then
+      new_num_labels=2980
+      block_size=4048
+    fi
 
-  #   model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!! load in checkpoint, then replace emb for correct size
+    model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!! load in checkpoint, then replace emb for correct size
 
-  #   CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
-  # done
+    ## --aa_type_file $aa_type_file --reset_emb_zero
+    CUDA_VISIBLE_DEVICES=6 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'eval_'$test_data'_expand.txt'
+  done
 
   # #### see attention
   # cd $server/BertGOAnnotation/SeeAttention/
@@ -99,13 +100,13 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
   # done
 
   #### get hidden vec of GOs
-  cd $server/BertGOAnnotation/finetune/
-  model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!!
-  for test_data in 'train' 'test' ; do 
-    eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-    govec_hidden_name=$test_data'_govec_hidden_layer'
-    CUDA_VISIBLE_DEVICES=1 python3 -u GOVecHiddenLayerMean.py --model_name_or_path $model_name_or_path --govec_hidden_name $govec_hidden_name --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'govec_hidden_check_point.txt'
-  done
+  # cd $server/BertGOAnnotation/finetune/
+  # model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!!
+  # for test_data in 'train' 'test' ; do 
+  #   eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
+  #   govec_hidden_name=$test_data'_govec_hidden_layer'
+  #   CUDA_VISIBLE_DEVICES=1 python3 -u GOVecHiddenLayerMean.py --model_name_or_path $model_name_or_path --govec_hidden_name $govec_hidden_name --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'govec_hidden_check_point.txt'
+  # done
 
 done
 
