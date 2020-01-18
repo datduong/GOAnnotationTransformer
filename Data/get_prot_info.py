@@ -91,7 +91,7 @@ def format_write(tup): ## tuple
   return re.sub(r';$','',out)
 
 ## get some data like zinc fingers etc..
-path = '/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/'
+path = '/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/fold_1/'
 os.chdir(path)
 
 # data_type = "test"
@@ -156,6 +156,7 @@ for data_type in ['test','train','dev']:
       #   fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
       #   continue
 
+      ##### not use topology data.
       for where_ in [6,8,10,11,12,13]: #
         if len (line[where_]) > 0 :
           out, type_out = get_location (line[where_], where_change=where_change_index)

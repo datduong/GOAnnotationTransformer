@@ -7,11 +7,12 @@ import pandas as pd
 
 from tqdm import tqdm
 
-## get some data like zinc fingers etc..
-path = '/u/scratch/d/datduong/deepgo/data/train/fold_1/'
+#### get some data like zinc fingers etc..
+
+path = '/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/fold_1/ProtAnnotTypeData'
 os.chdir(path)
 
-annot_name_arr = ['_prot_annot_type', '_prot_annot_type_topo']
+annot_name_arr = ['_prot_annot_type'] # , '_prot_annot_type_topo'
 
 for annot_name in annot_name_arr: 
   for onto_type in ['mf','cc','bp']:

@@ -14,7 +14,7 @@ for onto in ['mf','cc','bp']:
   NumLabelPerSample = []
   # dataExpandGoSet
   # file_name = "/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1/train-"+onto+"-same-origin.tsv"
-  file_name = "/u/scratch/d/datduong/deepgo/dataCompleteGoSet/train/train-"+onto+".tsv"
+  file_name = "/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/train-"+onto+"-16Jan20.tsv"
   fin = open(file_name,"r")
   for index,line in enumerate(fin):
     # if index == 0:
@@ -29,7 +29,7 @@ for onto in ['mf','cc','bp']:
         LabelCount[l] = 1
   fin.close()
   ##
-  # dataExpandGoSet
+  #### original file
   LabelCountOriginal = {}
   file_name = "/u/scratch/d/datduong/deepgo/data/train/train-"+onto+".tsv" 
   fin = open(file_name,"r")
@@ -48,9 +48,9 @@ for onto in ['mf','cc','bp']:
   fin.close()
   ## compare: 
   print ('onto {}'.format(onto))
-  # if onto == 'mf': 
-  #   print (LabelCountOriginal['GO0004930'])
-  #   print (LabelCount['GO0004930'])
+  if onto == 'mf': 
+    print (LabelCountOriginal['GO0004930'])
+    print (LabelCount['GO0004930'])
   print_see_more_counter = 0 
   for k,v in LabelCountOriginal.items(): 
     if LabelCount[k] > v: 
