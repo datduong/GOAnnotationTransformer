@@ -27,14 +27,17 @@ for model in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleF
 done 
 
 
-#### load back Transformer model trained on small data, eval on rare labels
+#### load back Transformer model trained on data, eval on rare labels
+#### dataExpandGoSet16Jan2020
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 ##!! can eval on original dataset or on unseen labels
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
-for run_type in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
-  method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
+out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'/dataExpandGoSet16Jan2020
+mkdir $out_dir
+# NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
+for run_type in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+  method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'ProtAnnotTypeLarge16Jan20/$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-  out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
   mkdir $out_dir
   out_dir=$out_dir/$load_file_name
   mkdir $out_dir
@@ -78,11 +81,11 @@ done
 
 #### load back test file for original deepgo model, eval based on num of frequency
 
-#dataExpandGoSet
-main_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/fold_1' ## also where the count file is 
+#dataExpandGoSet16Jan2020
+main_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet/EvalLabelByGroup'
+out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/EvalLabelByGroup'
 mkdir $out_dir
 model_name='DeepGOFlatSeqOnlyBase' # DeepGOFlatSeqProtBase
 model_train_name='ExactAsIs'
@@ -134,7 +137,7 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 #### use blast to eval added term... not pure zeroshot
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
-data_type='dataExpandGoSet16Jan2020' # dataExpandGoSet
+data_type='dataExpandGoSet16Jan2020' # dataExpandGoSet16Jan2020
 load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
 for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do 
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
@@ -157,7 +160,7 @@ done
 module load python/3.7.2
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
-data_type='data' # dataExpandGoSet
+data_type='data' # dataExpandGoSet16Jan2020
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do 
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method

@@ -20,7 +20,7 @@ block_size=2816 ##!! COMMENT zeroshot need larger block size because more labels
 batch_size=4
 seed=2019  ####
 
-for ontology in mf cc ; do # 'cc' 'bp'
+for ontology in mf ; do # 'cc' 'bp'
 
   if [[ $ontology == 'cc' ]]
   then
