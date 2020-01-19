@@ -81,14 +81,14 @@ done
 
 #### load back test file for original deepgo model, eval based on num of frequency
 
-#dataExpandGoSet16Jan2020
+#dataExpandGoSet
 main_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
 out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/EvalLabelByGroup'
 mkdir $out_dir
-model_name='DeepGOFlatSeqOnlyBase' # DeepGOFlatSeqProtBase
-model_train_name='ExactAsIs'
+model_name='DeepGOFlatSeqProtBase' # DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase
+model_train_name='ExactAsIs16Jan20'
 out_dir=$out_dir/$model_name
 mkdir $out_dir
 label_to_test=$main_dir'/deepgo.'$onto'.csv'
