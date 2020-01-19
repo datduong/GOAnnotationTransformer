@@ -139,9 +139,9 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 #### use blast to eval added term... not pure zeroshot
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
-data_type='dataExpandGoSet16Jan2020' # dataExpandGoSet16Jan2020
+data_type='dataExpandGoSet16Jan2020' ##!!##!! dataExpandGoSet16Jan2020
 load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
-for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do 
+for method in blastPsiblastResultEval10 ; do 
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
   main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
@@ -151,7 +151,7 @@ for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do
 done
 ##!! parse output
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-for model in blastPsiblastResultEval10 blastPsiblastResultEval100 ; do 
+for model in blastPsiblastResultEval10 ; do 
   cd /u/scratch/d/datduong/deepgo/$data_type/train/fold_1/$model
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
