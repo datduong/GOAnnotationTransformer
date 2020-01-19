@@ -34,7 +34,7 @@ def submitJobs (where,method,save_file_type):
     label_original = pd.read_csv('/u/scratch/d/datduong/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
     label_original = set(list(label_original[0]))
 
-    label_large = pd.read_csv('/u/scratch/d/datduong/deepgo/dataExpandGoSet/train/deepgo.'+onto+'.csv',sep="\t",header=None)
+    label_large = pd.read_csv('/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/deepgo.'+onto+'.csv',sep="\t",header=None)
     label_large = set(list(label_large[0]))
 
     label_unseen = sorted ( list ( label_large - label_original ) )
@@ -51,7 +51,7 @@ def submitJobs (where,method,save_file_type):
     if save_file_type == 'prediction_train_all_on_test':
       data_type = 'data'
     else:
-      data_type = 'dataExpandGoSet'
+      data_type = 'dataExpandGoSet16Jan2020'
 
     prediction_dict = pickle.load(open("/u/scratch/d/datduong/deepgo/"+data_type+"/train/fold_1/"+method+"/test-"+onto+"-prediction.pickle","rb"))
 

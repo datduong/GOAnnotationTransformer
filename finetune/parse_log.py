@@ -7,8 +7,8 @@ import numpy as np
 
 
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO' 
-# ProtAnnotTypeLarge
-MainSetting='2embPpiAnnotE256H1L12I512Set0/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1'
+# ProtAnnotTypeLarge ProtAnnotTypeLarge16Jan20
+MainSetting='2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1'
 
 for onto in ['mf','cc','bp']:
   #

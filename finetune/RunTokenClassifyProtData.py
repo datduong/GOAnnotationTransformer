@@ -805,6 +805,7 @@ def main():
     print ('load in aa_type_file {}'.format(args.aa_type_file))
     annot_data = pickle.load ( open ( args.aa_type_file, 'rb' ) )
     print ('len of aa_type_file without special token {}'.format(len(annot_data)))
+    ## COMMENT fix value on-the-fly based on input file. 
     config.type_vocab_size = len(annot_data) + 2 # notice add 2 because PAD and UNK
 
   #### Prepare model

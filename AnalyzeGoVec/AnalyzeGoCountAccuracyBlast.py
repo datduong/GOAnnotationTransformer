@@ -45,7 +45,7 @@ def submitJobs (where,count_file,method,save_file_type):
     if save_file_type == 'prediction_train_all_on_test': ####
       data_type = 'data'
     else:
-      data_type = 'dataExpandGoSet'
+      data_type = 'dataExpandGoSet16Jan2020'
 
     label_original = pd.read_csv('/u/scratch/d/datduong/deepgo/'+data_type+'/train/deepgo.'+onto+'.csv',sep="\t",header=None)
     label_original = sorted(list(label_original[0])) ## we sort labels in training
