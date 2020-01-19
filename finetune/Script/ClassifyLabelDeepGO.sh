@@ -5,25 +5,26 @@ mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 
 pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear256.Layer12/label_vector.pickle'
 
-choice='2embPpiAnnotE256H1L12I512Set0/YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1'
+#### COMMENT YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0 COMMENT
+choice='2embPpiAnnotE256H1L12I512Set0/YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1'
 model_type='ppi' ####
 cache_name='YesPpiYesType' ## !! okay to use the same pre-processed data
 
-checkpoint=65520 ## COMMENT define MF first
+checkpoint=55440 ## COMMENT define MF first
 block_size=1792 # mf and cc 1792 but bp has more term  2048
 save_every=7000
 
 batch_size=2
 seed=2019  ####
 
-for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
+for ontology in cc ; do # 'cc' 'bp'
 
   if [[ $ontology == 'cc' ]]
   then
     seed=2020 #### we switch seed so that we can train at batch=4 ... doesn't matter really
     batch_size=2
     block_size=1792
-    checkpoint=85308
+    checkpoint=56872
   fi
 
   if [[ $ontology == 'bp' ]]
@@ -31,7 +32,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
     seed=2019
     batch_size=2
     block_size=2048
-    checkpoint=65475
+    checkpoint=160050
   fi
 
   last_save=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
@@ -64,8 +65,8 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
 
     #### do zeroshot on larger set
     save_prediction='save_prediction_expand'
-    eval_data_file='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-    label_2test='/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
+    eval_data_file='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
+    label_2test='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
 
     ##!!##!!
 
@@ -86,7 +87,7 @@ for ontology in 'mf' 'cc' 'bp' ; do # 'cc' 'bp'
 
     model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!! load in checkpoint, then replace emb for correct size
 
-    CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'eval_'$test_data'_expand.txt'
+    CUDA_VISIBLE_DEVICES=6 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
   done
 
 done

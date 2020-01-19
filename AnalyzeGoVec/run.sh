@@ -10,19 +10,19 @@ main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 ##!! can eval on original dataset or on unseen labels
 ## COMMENT ZEROSHOT eval here.
 load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
-for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+for run_type in YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
   mkdir $out_dir
-  out_dir=$out_dir/ZeroshotNotEnsemble ## COMMENT ZEROSHOT.
+  out_dir=$out_dir/ZeroshotNotEnsembleRedo ## COMMENT ZEROSHOT.
   mkdir $out_dir
   cd $code_dir
   python3 AnalyzeGoTypeAccuracy.py $main_dir $method $load_file_name > $out_dir/$run_type.txt
 done
 cd $out_dir
 ##!! parse output
-for model in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1; do 
+for model in YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
 
@@ -32,6 +32,7 @@ done
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 ##!! can eval on original dataset or on unseen labels
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+##!!##!!##!!##!!
 out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'/dataExpandGoSet16Jan2020
 mkdir $out_dir
 # NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
@@ -59,7 +60,8 @@ main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
 ##!!
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
-for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+# YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
+for run_type in YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
@@ -73,7 +75,7 @@ done
 cd $out_dir
 ##!! parse output
 cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test
-for model in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
+for model in YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1  ; do 
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
 
@@ -87,7 +89,7 @@ load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test sav
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
 out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/EvalLabelByGroup'
 mkdir $out_dir
-model_name='DeepGOFlatSeqProtBase' # DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase
+model_name='DeepGOFlatSeqOnlyBase' # DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase
 model_train_name='ExactAsIs16Jan20'
 out_dir=$out_dir/$model_name
 mkdir $out_dir
