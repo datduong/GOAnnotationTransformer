@@ -304,18 +304,21 @@ def print_metrics(metrics):
   #   if metric.find("rec_at") != -1:
   #     print("%s: %.8f" % (metric, val))
 
+
+  knumber = [ k for k in metrics.keys() if re.match('^rec_at_', k) ] ## get k values
+  k = sorted ( [ int( re.sub('^rec_at_','', k) ) for k in knumber ] ) ## sort by numeric
+  print('see k {}'.format(k))
+
   out_string = ""
   print ('recall at k')
-  k = sorted( [ k for k in metrics.keys() if re.match('^rec_at_', k)] )
   for k_i in k:
-    out_string = out_string + "\t" + str(metrics[k_i])
+    out_string = out_string + "\t" + str( np.round ( metrics['rec_at_'+str(k_i)], 6 ) )
   print (out_string)
 
   out_string = ""
   print ('precision at k')
-  k = sorted( [ k for k in metrics.keys() if re.match('^prec_at_', k)] )
   for k_i in k:
-    out_string = out_string + "\t" + str(metrics[k_i])
+    out_string = out_string + "\t" + str( np.round ( metrics['prec_at_'+str(k_i)], 6 ) )
   print (out_string)
 
   print ('hamming {0:.8f}'.format(metrics['hamming_loss']))

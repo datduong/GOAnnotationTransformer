@@ -41,16 +41,17 @@ load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test sav
 ##!!##!!##!!##!!
 out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'/dataExpandGoSet16Jan2020
 mkdir $out_dir
+out_dir=$out_dir/$load_file_name'_filter'
 mkdir $out_dir
-out_dir=$out_dir/$load_file_name
-mkdir $out_dir
+##!!
+filter_down='true'
 # NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
-for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
+for run_type in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'ProtAnnotTypeLarge16Jan20/$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   cd $code_dir
   ##!! use prediction_train_all_on_test
-  python3 AnalyzeGoTypeAccuracy.py $main_dir $method prediction_train_all_on_test > $out_dir/$run_type.txt
+  python3 AnalyzeGoTypeAccuracy.py $main_dir $method prediction_train_all_on_test $filter_down > $out_dir/$run_type.txt
 done
 cd $out_dir
 ##!! parse output
@@ -146,7 +147,7 @@ for model_name in DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase ; do
   done
   cd $out_dir
   cat cc_count.txt mf_count.txt bp_count.txt > output_count_filter.txt
-  python3 $code_dir/ParseOutput.py output_count.txt > output_count_filter_parse.txt
+  python3 $code_dir/ParseOutput.py output_count_filter.txt > output_count_filter_parse.txt
 done 
 
 
