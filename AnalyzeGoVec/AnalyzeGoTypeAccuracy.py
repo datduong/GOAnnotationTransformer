@@ -10,7 +10,7 @@ import evaluation_metric
 import PosthocCorrect
 
 
-def eval (prediction_dict,sub_array=None,path="",add_name=""):
+def eval (prediction_dict,sub_array=None,path="",add_name="", filter_down=False):
   prediction = prediction_dict['prediction']
   true_label = prediction_dict['true_label']
   if sub_array is not None:
@@ -18,15 +18,28 @@ def eval (prediction_dict,sub_array=None,path="",add_name=""):
     true_label = true_label [ : , sub_array ]
   #
   # threshold_fmax=np.arange(0.0001,1,.005)
+  if filter_down == True: ##!! when eval rare terms, what if only a few proteins have them??
+    print ('dim before remove {}'.format(prediction.shape))
+    where = np.where( np.sum(true_label,axis=1) > 0 )[0]
+    print ('retain these prot {}'.format(len(where)))
+    prediction = prediction[where]
+    print ('check dim {}'.format(prediction.shape))
+    true_label = true_label[where]
+  #
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,20,30,40,50,60,70,80,90,100],path=path,add_name=add_name)
   return result 
 
 #### check accuracy of labels not seen in training.
 #### pure zeroshot approach.
 
-def submitJobs (where,method,save_file_type):
+def submitJobs (where,method,save_file_type,filter_down):
 
   os.chdir(where)
+
+  if filter_down == 'none':
+    filter_down = False
+  else:
+    filter_down = True
 
   for onto in ['cc','mf','bp']:
 
@@ -71,7 +84,7 @@ def submitJobs (where,method,save_file_type):
     evaluation_metric.print_metrics( eval(prediction_dict, label_seen_pos, path=path, add_name='original') )
 
     print ('\nunseen {}'.format(onto))
-    evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos, path=path, add_name='unseen') )
+    evaluation_metric.print_metrics( eval(prediction_dict, label_unseen_pos, path=path, add_name='unseen', filter_down=filter_down) )
 
 
 
@@ -79,7 +92,7 @@ if len(sys.argv)<1: #### run script
 	print("Usage: \n")
 	sys.exit(1)
 else:
-	submitJobs ( sys.argv[1] , sys.argv[2] , sys.argv[3] )
+	submitJobs ( sys.argv[1] , sys.argv[2] , sys.argv[3], sys.argv[4] )
 
 
 

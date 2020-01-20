@@ -63,23 +63,24 @@ done
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
 ##!!
+filter_down='true'
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
+code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+mkdir $out_dir
+out_dir=$out_dir/$load_file_name'_filter'
+mkdir $out_dir
+cd $code_dir
 # YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
-for run_type in YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
+for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
-  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-  out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
-  mkdir $out_dir
-  out_dir=$out_dir/$load_file_name
-  mkdir $out_dir
-  cd $code_dir
-  python3 AnalyzeGoCountAccuracy.py $main_dir $count_file $method $load_file_name > $out_dir/$run_type'_count.txt'
+  python3 AnalyzeGoCountAccuracy.py $main_dir $count_file $method $load_file_name $filter_down > $out_dir/$run_type'_count.txt'
   python3 $code_dir/ParseOutput.py $out_dir/$run_type'_count.txt' > $out_dir/$run_type'_count_parse.txt'
 done
 cd $out_dir
 ##!! parse output
 cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test
-for model in YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1  ; do 
+for model in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1  ; do 
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
 
