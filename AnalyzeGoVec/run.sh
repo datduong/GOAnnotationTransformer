@@ -53,7 +53,7 @@ done
 cd $out_dir
 ##!! parse output
 # cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test
-for model in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1_parse.txt YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
+for model in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
 
