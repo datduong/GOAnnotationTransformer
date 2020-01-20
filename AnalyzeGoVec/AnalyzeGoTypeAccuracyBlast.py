@@ -18,13 +18,13 @@ def eval (prediction_dict,sub_array=None,path="",add_name="", filter_down=False)
     true_label = true_label [ : , sub_array ]
   if filter_down == True: ##!! when eval rare terms, what if only a few proteins have them??
     print ('dim before remove {}'.format(prediction.shape))
-    where = np.where( np.sum(true_label,axis=1) > 0 )[0]
+    where = np.where( np.sum(true_label,axis=1) > 0 )[0] #### sum row=0, then protein does not have labels
     print ('retain these prot {}'.format(len(where)))
     prediction = prediction[where]
     print ('check dim {}'.format(prediction.shape))
     true_label = true_label[where]
   #
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[10,20,30,40,50,60,70,80,90,100],path=path,add_name=add_name)
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,20,30,40,50,60,70,80,90,100],path=path,add_name=add_name)
   return result
 
 #### check accuracy of labels not seen in training.

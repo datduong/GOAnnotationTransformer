@@ -90,13 +90,14 @@ done
 
 
 
-#### load back test file for original deepgo model, eval based on num of frequency
-
+#### load back test file for original deepgo model, eval based on ##!! seen vs unseen
 #dataExpandGoSet
 main_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
 out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/EvalLabelByGroup'
+##!!
+filter_down='true'
 mkdir $out_dir
 model_name='DeepGOFlatSeqOnlyBase' # DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase
 model_train_name='ExactAsIs16Jan20'
@@ -112,37 +113,41 @@ for onto in mf bp cc ; do
   # python3 AnalyzeGoCountAccuracyAny.py $onto $label_to_test $main_dir $method $path_out > $out_dir/$onto'_count.txt'
   ##!! compute on seen vs unseen
   # onto,prediction_dict,save_file_type,path
-  python3 AnalyzeGoTypeAccuracyAny.py $onto $method save_prediction_expand $path_out > $out_dir/$onto'_count.txt'
+  python3 AnalyzeGoTypeAccuracyAny.py $onto $method save_prediction_expand $path_out $filter_down > $out_dir/$onto'_count.txt'
 done
 cd $out_dir
 cat cc_count.txt mf_count.txt bp_count.txt > output_count.txt
 python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 
 
+#### COMMENT test on some other deepgo model, based high/mid/low count
 
-
-
-#### COMMENT test on some other deepgo model
-main_dir='/local/datdb/deepgo/data/train/fold_1' ## also where the count file is 
+main_dir='/u/scratch/d/datduong/deepgo/data/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
-code_dir='/local/datdb/BertGOAnnotation/AnalyzeGoVec'
-out_dir='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
 mkdir $out_dir
-model_name='DeepGOFlatSeqProtBase' # DeepGOFlatSeqProtBase/ExactAsIs
-model_train_name='ExactAsIs'
-out_dir=$out_dir/$model_name
-mkdir $out_dir
-for onto in mf bp cc ; do
-  method=$main_dir/$model_name/$model_train_name/$onto'b32lr0.001RMSprop/prediction_testset.pickle'
-  path_out=$out_dir/$onto
-  mkdir $path_out
-  cd $code_dir
-  # onto,count_file,method,path
-  python3 AnalyzeGoCountAccuracyAny.py $onto $main_dir $method $path_out > $out_dir/$onto'_count.txt'
-done
-cd $out_dir
-cat cc_count.txt mf_count.txt bp_count.txt > output_count.txt
-python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
+##!!
+filter_down='true'
+# model_name='DeepGOFlatSeqProtBase' # DeepGOFlatSeqProtBase/ExactAsIs
+for model_name in DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase ; do
+  model_train_name='ExactAsIs'
+  out_dir=$out_dir/$model_name
+  mkdir $out_dir
+  for onto in mf bp cc ; do
+    label_to_test=$main_dir'/deepgo.'$onto'.csv'
+    method=$main_dir/$model_name/$model_train_name/$onto'b32lr0.001RMSprop/prediction_testset.pickle'
+    path_out=$out_dir/$onto
+    mkdir $path_out
+    cd $code_dir
+    # onto,count_file,method,path
+    # onto,label_original,count_file,method,path,filter_down
+    python3 AnalyzeGoCountAccuracyAny.py $onto $label_to_test $main_dir $method $path_out $filter_down > $out_dir/$onto'_count.txt'
+  done
+  cd $out_dir
+  cat cc_count.txt mf_count.txt bp_count.txt > output_count_filter.txt
+  python3 $code_dir/ParseOutput.py output_count.txt > output_count_filter_parse.txt
+done 
 
 
 #### use blast to eval added term... not pure zeroshot

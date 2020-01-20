@@ -48,6 +48,11 @@ for onto in bp mf cc ; do
   # scp -r Yes*100*No* $nlp9:$localdir/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/
 done
 
+#### scp between servers, for original deepgo method
+cd /local/datdb/deepgo/data/train/fold_1
+scp -r DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase $hoffman2:$scratch/deepgo/data/train/fold_1
+
+
 #### scp between local computer
 
 mkdir /cygdrive/e/BertNotFtAARawSeqGO
