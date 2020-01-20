@@ -10,16 +10,18 @@ module load python/3.7.2
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 ##!! can eval on original dataset or on unseen labels
 ## COMMENT ZEROSHOT eval here.
+##!!
+filter_down='true'
 out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
 mkdir $out_dir
-out_dir=$out_dir/ZeroshotNotEnsembleRedo ## COMMENT ZEROSHOT.
+out_dir=$out_dir/ZeroshotNotEnsembleRedoFilter ## COMMENT ZEROSHOT.
 mkdir $out_dir
 load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
 for run_type in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   cd $code_dir
-  python3 AnalyzeGoTypeAccuracy.py $main_dir $method $load_file_name > $out_dir/$run_type.txt
+  python3 AnalyzeGoTypeAccuracy.py $main_dir $method $load_file_name $filter_down > $out_dir/$run_type.txt
 done
 cd $out_dir
 ##!! parse output
@@ -60,6 +62,8 @@ done
 
 
 #### load back model, eval based on num of frequency, simple evaluation on total known labels
+. /u/local/Modules/default/init/modules.sh
+module load python/3.7.2
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
 ##!!
@@ -144,19 +148,21 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 #### use blast to eval added term... not pure zeroshot
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
+##!!
+filter_down='true'
 data_type='dataExpandGoSet16Jan2020' ##!!##!! dataExpandGoSet16Jan2020
 load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
-for method in blastPsiblastResultEval100 ; do 
+for method in blastPsiblastResultEval10 blastPsiblastResultEval100 ; do 
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
   main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   cd $code_dir
-  python3 AnalyzeGoTypeAccuracyBlast.py $main_dir $method $load_file_name > $out_dir/$method.txt
+  python3 AnalyzeGoTypeAccuracyBlast.py $main_dir $method $load_file_name $filter_down > $out_dir/$method.txt
   cd $out_dir
 done
 ##!! parse output
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-for model in blastPsiblastResultEval100 ; do 
+for model in blastPsiblastResultEval10 blastPsiblastResultEval100 ; do 
   cd /u/scratch/d/datduong/deepgo/$data_type/train/fold_1/$model
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
@@ -165,6 +171,8 @@ done
 #### load back test file, eval based on num of frequency ... BLAST
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
+##!!
+filter_down='true'
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
 data_type='data' # dataExpandGoSet16Jan2020
@@ -173,7 +181,7 @@ for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   cd $code_dir
-  python3 AnalyzeGoCountAccuracyBlast.py $main_dir $count_file $method $load_file_name > $out_dir/$method'_count.txt'
+  python3 AnalyzeGoCountAccuracyBlast.py $main_dir $count_file $method $load_file_name $filter_down > $out_dir/$method'_count.txt'
   cd $out_dir
   python3 $code_dir/ParseOutput.py $out_dir/$method'_count.txt' > output_count_parse.txt
 done
