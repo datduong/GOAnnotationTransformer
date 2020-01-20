@@ -2,6 +2,7 @@
 /usr/local/cuda-10.1/bin
 export PATH="/usr/local/cuda-10.1/bin:$PATH"
 
+#!/bin/bash
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 
@@ -9,47 +10,50 @@ module load python/3.7.2
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 ##!! can eval on original dataset or on unseen labels
 ## COMMENT ZEROSHOT eval here.
+out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
+mkdir $out_dir
+out_dir=$out_dir/ZeroshotNotEnsembleRedo ## COMMENT ZEROSHOT.
+mkdir $out_dir
 load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
-for run_type in YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+for run_type in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-  out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
-  mkdir $out_dir
-  out_dir=$out_dir/ZeroshotNotEnsembleRedo ## COMMENT ZEROSHOT.
-  mkdir $out_dir
   cd $code_dir
   python3 AnalyzeGoTypeAccuracy.py $main_dir $method $load_file_name > $out_dir/$run_type.txt
 done
 cd $out_dir
 ##!! parse output
-for model in YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
+for model in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
 
 
 #### load back Transformer model trained on data, eval on rare labels
 #### dataExpandGoSet16Jan2020
+#!/bin/bash
+. /u/local/Modules/default/init/modules.sh
+module load python/3.7.2
 main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
 ##!! can eval on original dataset or on unseen labels
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 ##!!##!!##!!##!!
 out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'/dataExpandGoSet16Jan2020
 mkdir $out_dir
+mkdir $out_dir
+out_dir=$out_dir/$load_file_name
+mkdir $out_dir
 # NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
-for run_type in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+for run_type in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'ProtAnnotTypeLarge16Jan20/$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
-  mkdir $out_dir
-  out_dir=$out_dir/$load_file_name
-  mkdir $out_dir
   cd $code_dir
   ##!! use prediction_train_all_on_test
   python3 AnalyzeGoTypeAccuracy.py $main_dir $method prediction_train_all_on_test > $out_dir/$run_type.txt
 done
 cd $out_dir
 ##!! parse output
-cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test
-for model in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
+# cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test
+for model in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1_parse.txt YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
 

@@ -9,18 +9,19 @@ def delete_worst_checkpoint (this_path, best_point):
   check_save = [ f for f in os.listdir(this_path) if 'checkpoint-' in f ] 
   for check in check_save: 
     num = float ( re.sub("checkpoint-","",check) ) 
-    if num != best_point:
+    if num < best_point:
       print ('del {}'.format(check)) 
       os.system ('rm -rf ' + check)
 
 
 #
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO' # ProtAnnotTypeLarge ProtAnnotTypeLarge16Jan20
-model_setting = ['YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1']
+model_setting = ['YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1']
+add_path = 'ProtAnnotTypeLarge16Jan20' ##!!
 for m in model_setting: 
-  MainSetting='2embPpiAnnotE256H1L12I512Set0/'+m
+  MainSetting='2embPpiAnnotE256H1L12I512Set0/'+add_path+'/'+m
   print ('\n\nsetting {}\n'.format(m))
-  for onto in ['cc']:
+  for onto in ['mf','cc','bp']:
     #
     best = np.inf
     best_point = 'none'

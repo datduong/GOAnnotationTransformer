@@ -20,7 +20,7 @@ block_size=2816 ##!! COMMENT zeroshot need larger block size because more labels
 batch_size=4
 seed=2019  ####
 
-for ontology in mf ; do # 'cc' 'bp'
+for ontology in bp ; do # 'cc' 'bp'
 
   if [[ $ontology == 'cc' ]]
   then
@@ -78,7 +78,7 @@ for ontology in mf ; do # 'cc' 'bp'
     #### normal testing on same set of labels
     save_prediction='prediction_train_all_on_'$test_data
     eval_data_file='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-    CUDA_VISIBLE_DEVICES=2 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'eval_'$test_data'_check_point.txt'
+    CUDA_VISIBLE_DEVICES=1 python3 -u RunTokenClassifyProtData.py --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path > $output_dir/'eval_'$test_data'_check_point.txt'
 
     #### do zeroshot on larger set
     # save_prediction='save_prediction_expand'
