@@ -30,7 +30,7 @@ for model in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeB
 done 
 
 
-#### load back Transformer model trained on data, eval on rare labels
+#### load back Transformer model trained on data, eval on rare labels COMMENT seen vs unseen
 #### dataExpandGoSet16Jan2020
 #!/bin/bash
 . /u/local/Modules/default/init/modules.sh
@@ -46,7 +46,7 @@ mkdir $out_dir
 ##!!
 filter_down='true'
 # NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
-for run_type in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
+for run_type in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'ProtAnnotTypeLarge16Jan20/$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   cd $code_dir
@@ -56,7 +56,7 @@ done
 cd $out_dir
 ##!! parse output
 # cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test
-for model in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
+for model in NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
 
@@ -100,7 +100,7 @@ out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/EvalLabelByGroup'
 ##!!
 filter_down='true'
 mkdir $out_dir
-model_name='DeepGOFlatSeqOnlyBase' # DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase
+model_name='DeepGOFlatSeqProtBase' # DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase
 model_train_name='ExactAsIs16Jan20'
 out_dir=$out_dir/$model_name
 mkdir $out_dir
@@ -126,6 +126,7 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 main_dir='/u/scratch/d/datduong/deepgo/data/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
 out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
 mkdir $out_dir
 ##!!
@@ -133,6 +134,7 @@ filter_down='true'
 # model_name='DeepGOFlatSeqProtBase' # DeepGOFlatSeqProtBase/ExactAsIs
 for model_name in DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase ; do
   model_train_name='ExactAsIs'
+  out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup' ## define again
   out_dir=$out_dir/$model_name
   mkdir $out_dir
   for onto in mf bp cc ; do
@@ -143,7 +145,7 @@ for model_name in DeepGOFlatSeqProtBase DeepGOFlatSeqOnlyBase ; do
     cd $code_dir
     # onto,count_file,method,path
     # onto,label_original,count_file,method,path,filter_down
-    python3 AnalyzeGoCountAccuracyAny.py $onto $label_to_test $main_dir $method $path_out $filter_down > $out_dir/$onto'_count.txt'
+    python3 AnalyzeGoCountAccuracyAny.py $onto $label_to_test $count_file $method $path_out $filter_down > $out_dir/$onto'_count.txt'
   done
   cd $out_dir
   cat cc_count.txt mf_count.txt bp_count.txt > output_count_filter.txt
