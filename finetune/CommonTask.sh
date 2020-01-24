@@ -14,12 +14,12 @@ for onto in mf cc bp ; do
   mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/
   mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/
   mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20
-  mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/YesPpiAnd3DYesTypeScaleFreezeBert12Ep10e10Drop0.1
+  mkdir /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1
 done
 
 
 #### create folders, make config for training
-run_option='YesPpiAnd3DYesTypeScaleFreezeBert12Ep10e10Drop0.1'
+run_option='YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1'
 base_option='YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1'
 base_config='cc'
 for onto in bp mf cc ; do
