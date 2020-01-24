@@ -38,7 +38,7 @@ done
 
 #### scp between servers
 where='/local/datdb/deepgo/data/BertNotFtAARawSeqGO'
-what='YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1'
+what='YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1'
 cd $where
 for onto in bp mf cc ; do
   cd /local/datdb/deepgo/data/BertNotFtAARawSeqGO/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20

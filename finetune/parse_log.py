@@ -16,7 +16,7 @@ def delete_worst_checkpoint (this_path, best_point):
 
 #
 MainPath = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO' # ProtAnnotTypeLarge ProtAnnotTypeLarge16Jan20
-model_setting = ['YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1']
+model_setting = ['YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1']
 add_path = 'ProtAnnotTypeLarge16Jan20' ##!!
 for m in model_setting: 
   MainSetting='2embPpiAnnotE256H1L12I512Set0/'+add_path+'/'+m
@@ -42,8 +42,8 @@ for m in model_setting:
     fin.close()
     print ('\ntype {}'.format(onto))
     print ('point {} value {} '.format(best_point,best))
-    if best_point != 'none':
-      delete_worst_checkpoint (this_path, float(best_point))
+    # if best_point != 'none':
+    #   delete_worst_checkpoint (this_path, float(best_point))
 
 
 
