@@ -46,7 +46,7 @@ mkdir $out_dir
 ##!!
 filter_down='true'
 # NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
-for run_type in YesPpiAnd3DYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
+for run_type in YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'ProtAnnotTypeLarge16Jan20/$run_type'/'
   code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
   cd $code_dir
@@ -56,7 +56,7 @@ done
 cd $out_dir
 ##!! parse output
 # cd /u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup/prediction_train_all_on_test
-for model in YesPpiAnd3DYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
+for model in YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 ; do 
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
 done 
 
