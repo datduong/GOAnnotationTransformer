@@ -5,7 +5,7 @@ import os,sys,re,pickle
 os.chdir("/u/scratch/d/datduong/BERTPretrainedModel/cased_L-12_H-768_A-12AAraw2016")
 
 letters = 'A, E, I, O, U, B, C, D, F, G, H, J, K, L, M, N, P, Q, R, S, T, V, X, Z, W, Y'.split(',')
-letters = sorted ( [let.strip() for let in letters] )
+letters = sorted ( [let.strip() for let in letters] ) ####
 
 
 fout = open("vocabAA.txt","w") # +GO

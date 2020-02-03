@@ -6,5 +6,5 @@
 module load python/3.7.2
 
 cd /u/scratch/d/datduong/BertGOAnnotation/Data/
-python3 get_prot_info.py > log.txt
+python3 GetProtDomain.py > log.txt
 
