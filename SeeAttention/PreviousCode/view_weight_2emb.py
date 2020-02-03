@@ -27,7 +27,7 @@ from pytorch_transformers import (WEIGHTS_NAME, AdamW, WarmupLinearSchedule,
 from pytorch_transformers.modeling_bert import BertForPreTraining
 
 sys.path.append("/local/datdb/BertGOAnnotation")
-import KmerModel.TokenClassifier as TokenClassifier
+import TransformerModel.TokenClassifier as TokenClassifier
 import finetune.evaluation_metric as evaluation_metric
 
 import view_util

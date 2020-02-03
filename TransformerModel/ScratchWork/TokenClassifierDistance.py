@@ -18,7 +18,7 @@ from pytorch_transformers import WEIGHTS_NAME, CONFIG_NAME, BertConfig
 from pytorch_transformers.modeling_bert import *
 from pytorch_transformers.tokenization_bert import BertTokenizer
 
-import KmerModel.TokenClassifier as TokenClassifier
+import TransformerModel.TokenClassifier as TokenClassifier
 
 class BertSelfAttentionDistance(nn.Module):
   def __init__(self, config):

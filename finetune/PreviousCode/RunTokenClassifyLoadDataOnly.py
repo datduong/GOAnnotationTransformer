@@ -30,7 +30,7 @@ from pytorch_transformers.modeling_bert import BertForPreTraining
 logger = logging.getLogger(__name__)
 
 sys.path.append("/u/scratch/d/datduong/BertGOAnnotation")
-import KmerModel.TokenClassifier as TokenClassifier
+import TransformerModel.TokenClassifier as TokenClassifier
 import evaluation_metric
 
 import PosthocCorrect 

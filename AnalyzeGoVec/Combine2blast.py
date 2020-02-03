@@ -7,7 +7,7 @@ from copy import deepcopy
 
 
 sys.path.append("/u/scratch/d/datduong/BertGOAnnotation")
-import KmerModel.TokenClassifier as TokenClassifier
+import TransformerModel.TokenClassifier as TokenClassifier
 
 sys.path.append("/u/scratch/d/datduong/BertGOAnnotation/finetune")
 import evaluation_metric

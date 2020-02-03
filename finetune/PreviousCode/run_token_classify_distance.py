@@ -50,8 +50,8 @@ from pytorch_transformers.modeling_bert import BertForPreTraining
 logger = logging.getLogger(__name__)
 
 sys.path.append("/local/datdb/BertGOAnnotation")
-import KmerModel.TokenClassifier as TokenClassifier
-import KmerModel.TokenClassifierDistance as TokenClassifierDistance
+import TransformerModel.TokenClassifier as TokenClassifier
+import TransformerModel.TokenClassifierDistance as TokenClassifierDistance
 import evaluation_metric
 
 
