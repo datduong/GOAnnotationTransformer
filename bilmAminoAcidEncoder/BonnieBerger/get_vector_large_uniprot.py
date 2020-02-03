@@ -41,18 +41,19 @@ def submitJobs (onto) :
   os.chdir("/local/datdb/UniprotJan2020")
   ## create an array in the exact order as file
   for onto in [onto] : # ['cc','bp','mf']:
-    fin = open("uniprot-"+onto+".tsv","r")
+    fin = open("uniprot-"+onto+".tsv","r") # Entry   Gene ontology IDs       Sequence
     fout = open("uniprot-"+onto+"-bonnie.tsv","w")
     for index, line in tqdm (enumerate(fin)): #### retain the same ordering as original input
       if index == 0:
-        fout.write(line) ## header
+        fout.write(line.strip()+"\tprot3dvec\n") ## header
+        continue ##!! skip header
       line = line.strip().split("\t")
-      seq = str.encode (re.sub(" ","",line[1]))
+      seq = str.encode (re.sub(" ","",line[2])) ## no spacing in string
       in_index = Variable(torch.LongTensor([alphabet.encode(seq)])).cuda()
       vec = model.embedding ( in_index )
       vec = torch.mean(vec,1).cpu().data.numpy()[0] ## just do per seq
-      line_len = len(line)-2 ## do not need vector . so we take 2 off
-      new_line = "\t".join( line[j] for j in range(line_len) ) + "\t" + " ".join(str(s) for s in vec) + "\t" + line[line_len+1] + "\n"
+      line_len = len(line) ## keep everything same as before.
+      new_line = "\t".join( line[j] for j in range(line_len) ) + "\t" + " ".join(str(s) for s in vec) + "\n" # "\t" + line[line_len+1]
       fout.write(new_line)
     #
     fin.close()

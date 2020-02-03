@@ -40,13 +40,14 @@ def submitJobs (onto) :
 
   os.chdir("/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData")
   ## create an array in the exact order as file
-  for data_type in ['test','train','dev']:
+  for data_type in ['test']: #,'train','dev'
     for onto in [onto] : # ['cc','bp','mf']:
       fin = open(data_type+"-"+onto+"-input.tsv","r")
-      fout = open(data_type+"-"+onto+"-input-bonnie.tsv","w")
+      fout = open(data_type+"-"+onto+"-input-bonnie-doublecheck.tsv","w")
       for index, line in tqdm (enumerate(fin)): #### retain the same ordering as original input
-        if index == 0:
-          fout.write(line) ## header
+        # if index == 0: ##!! DO NOT NEED HEADER IF USE -INPUT.TSV ##!!
+        #   fout.write(line) ## header
+        #   # continue ## skip header 
         line = line.strip().split("\t")
         seq = str.encode (re.sub(" ","",line[1]))
         in_index = Variable(torch.LongTensor([alphabet.encode(seq)])).cuda()
