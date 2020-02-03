@@ -43,7 +43,7 @@ for ontology in 'mf' 'cc' ; do
 
   ## view weights ?? 
 
-  # cd $server/BertGOAnnotation/SeeAttention/
+  # cd $server/GOAnnotationTransformer/SeeAttention/
 
   # eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/train-'$ontology'-aa.csv'
 

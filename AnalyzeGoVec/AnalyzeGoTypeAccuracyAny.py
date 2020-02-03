@@ -2,7 +2,7 @@ import sys,re,os,pickle
 import numpy as np
 import pandas as pd
 
-sys.path.append("/u/scratch/d/datduong/BertGOAnnotation")
+sys.path.append("/u/scratch/d/datduong/GOAnnotationTransformer")
 import TransformerModel.TokenClassifier as TokenClassifier
 
 sys.path.append("/u/scratch/d/datduong/BertGOAnnotationTrainModel")

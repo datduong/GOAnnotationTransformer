@@ -29,12 +29,12 @@ for method1 in YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
     save_file=$save_file/$onto'_prediction.pickle'
 
     #### merge
-    code_dir=$server/'BertGOAnnotation/Ensemble'
+    code_dir=$server/'GOAnnotationTransformer/Ensemble'
     cd $code_dir
     python3 Ensemble.py $test_file1 $prediction1 $test_file2 $prediction2 $header1 $header2 $save_file > output.txt
 
     #### tally accuracy scores for the merge prediction
-    code_dir=$server/'BertGOAnnotation/AnalyzeGoVec'
+    code_dir=$server/'GOAnnotationTransformer/AnalyzeGoVec'
     cd $code_dir
     path_out=$main_dir/$onto/fold_1/2embPpiAnnotE256H1L12I512Set0/$method1/ZeroshotEnsemble$blast
     # onto,prediction_dict,save_file_type,path

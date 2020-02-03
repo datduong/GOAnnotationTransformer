@@ -50,7 +50,7 @@ from pytorch_transformers.modeling_bert import BertForPreTraining
 
 logger = logging.getLogger(__name__)
 
-sys.path.append("/local/datdb/BertGOAnnotation")
+sys.path.append("/local/datdb/GOAnnotationTransformer")
 import TransformerModel.TokenClassifier as TokenClassifier
 import TrainModel.evaluation_metric as evaluation_metric
 # import PosthocCorrect

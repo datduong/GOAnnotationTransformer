@@ -6,7 +6,7 @@ from copy import deepcopy
 ## we can do some adhoc method here to combine to blast. Take max ?
 
 
-sys.path.append("/u/scratch/d/datduong/BertGOAnnotation")
+sys.path.append("/u/scratch/d/datduong/GOAnnotationTransformer")
 import TransformerModel.TokenClassifier as TokenClassifier
 
 sys.path.append("/u/scratch/d/datduong/BertGOAnnotationTrainModel")

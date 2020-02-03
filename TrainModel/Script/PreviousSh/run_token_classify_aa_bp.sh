@@ -36,7 +36,7 @@ for ontology in 'bp' ; do
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/dev-'$ontology'-aa.csv'
   CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify.py --block_size 2000 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 50 --per_gpu_eval_batch_size 24 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --fp16 > $output_dir/eval_dev_check_point.txt
 
-  # cd $server/BertGOAnnotation/SeeAttention/
+  # cd $server/GOAnnotationTransformer/SeeAttention/
   # eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/train-'$ontology'-aa.csv'
   # model_name_or_path='/local/datdb/deepgo/data/BertNotFtAARawSeqGO/fold_1bp/checkpoint-190000'
 

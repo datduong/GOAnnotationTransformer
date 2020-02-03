@@ -19,7 +19,7 @@ mkdir $out_dir
 load_file_name='save_prediction_expand' # prediction_train_all_on_test save_prediction_expand
 for run_type in NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1 NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'$run_type'/'
-  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+  code_dir='/u/scratch/d/datduong/GOAnnotationTransformer/AnalyzeGoVec'
   cd $code_dir
   python3 AnalyzeGoTypeAccuracy.py $main_dir $method $load_file_name $filter_down > $out_dir/$run_type.txt
 done
@@ -48,7 +48,7 @@ filter_down='true'
 # NoPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1 YesPpiYesTypeScaleFreezeBert12Ep10e10Drop0.1
 for run_type in YesPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1  ; do
   method='/fold_1/2embPpiAnnotE256H1L12I512Set0/'ProtAnnotTypeLarge16Jan20/$run_type'/'
-  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+  code_dir='/u/scratch/d/datduong/GOAnnotationTransformer/AnalyzeGoVec'
   cd $code_dir
   ##!! use prediction_train_all_on_test
   python3 AnalyzeGoTypeAccuracy.py $main_dir $method prediction_train_all_on_test $filter_down > $out_dir/$run_type.txt
@@ -70,7 +70,7 @@ count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
 ##!!
 filter_down='true'
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
-code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+code_dir='/u/scratch/d/datduong/GOAnnotationTransformer/AnalyzeGoVec'
 out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
 mkdir $out_dir
 out_dir=$out_dir/$load_file_name'_filter'
@@ -95,7 +95,7 @@ done
 #dataExpandGoSet
 main_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
-code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+code_dir='/u/scratch/d/datduong/GOAnnotationTransformer/AnalyzeGoVec'
 out_dir='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/EvalLabelByGroup'
 ##!!
 filter_down='true'
@@ -125,7 +125,7 @@ python3 $code_dir/ParseOutput.py output_count.txt > output_count_parse.txt
 
 main_dir='/u/scratch/d/datduong/deepgo/data/train/fold_1' ## also where the count file is 
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
-code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+code_dir='/u/scratch/d/datduong/GOAnnotationTransformer/AnalyzeGoVec'
 count_file='/u/scratch/d/datduong/deepgo/data/train/fold_1'
 out_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/EvalLabelByGroup'
 mkdir $out_dir
@@ -163,13 +163,13 @@ load_file_name='save_prediction_expand' # prediction_train_all_on_test save_pred
 for method in blastPsiblastResultEval10 blastPsiblastResultEval100 ; do 
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
   main_dir='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'
-  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+  code_dir='/u/scratch/d/datduong/GOAnnotationTransformer/AnalyzeGoVec'
   cd $code_dir
   python3 AnalyzeGoTypeAccuracyBlast.py $main_dir $method $load_file_name $filter_down > $out_dir/$method.txt
   cd $out_dir
 done
 ##!! parse output
-code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+code_dir='/u/scratch/d/datduong/GOAnnotationTransformer/AnalyzeGoVec'
 for model in blastPsiblastResultEval10 blastPsiblastResultEval100 ; do 
   cd /u/scratch/d/datduong/deepgo/$data_type/train/fold_1/$model
   python3 $code_dir/ParseOutput.py $model.txt > $model'_parse.txt'
@@ -187,7 +187,7 @@ data_type='data' # dataExpandGoSet16Jan2020
 load_file_name='prediction_train_all_on_test' # prediction_train_all_on_test save_prediction_expand
 for method in blastPsiblastResultEval100 blastPsiblastResultEval10 ; do 
   out_dir='/u/scratch/d/datduong/deepgo/'$data_type'/train/fold_1/'$method
-  code_dir='/u/scratch/d/datduong/BertGOAnnotation/AnalyzeGoVec'
+  code_dir='/u/scratch/d/datduong/GOAnnotationTransformer/AnalyzeGoVec'
   cd $code_dir
   python3 AnalyzeGoCountAccuracyBlast.py $main_dir $count_file $method $load_file_name $filter_down > $out_dir/$method'_count.txt'
   cd $out_dir

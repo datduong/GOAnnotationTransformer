@@ -44,7 +44,7 @@ for ontology in 'mf' ; do
 
   ## view weights ?? 
 
-  cd $server/BertGOAnnotation/SeeAttention/
+  cd $server/GOAnnotationTransformer/SeeAttention/
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-aa.csv'
 
   model_name_or_path=$output_dir'/checkpoint-40320'

@@ -53,7 +53,7 @@ for ontology in 'bp' ; do
   # done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
   ## view weights ??
-  # cd $server/BertGOAnnotation/SeeAttention/
+  # cd $server/GOAnnotationTransformer/SeeAttention/
   # data_type='train'
   # eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/'$data_type'-'$ontology'-prot-annot.tsv'
   # model_name_or_path=$output_dir'/checkpoint-35231'

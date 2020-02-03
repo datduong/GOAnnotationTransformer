@@ -9,7 +9,7 @@ import pandas as pd
 
 path = '/local/datdb/deepgo/data/BertNotFtAARawSeqGO/mf/fold_1/2embPpiAnnotE256H1L12I512Set0/NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1/SeeAttention'
 
-list_prot_to_get = pd.read_csv('/local/datdb/BertGOAnnotation/SeeAttention/name_get_attention_train.tsv',header=None)
+list_prot_to_get = pd.read_csv('/local/datdb/GOAnnotationTransformer/SeeAttention/name_get_attention_train.tsv',header=None)
 list_prot_to_get = sorted(list(list_prot_to_get[0]))
 
 os.chdir(path)
