@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-sys.path.append("/u/scratch/d/datduong/BertGOAnnotation/finetune")
+sys.path.append("/u/scratch/d/datduong/BertGOAnnotationTrainModel")
 import evaluation_metric
 
 def eval (prediction_dict,sub_array=None,path="",add_name="", filter_down=False):

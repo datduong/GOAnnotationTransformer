@@ -9,7 +9,7 @@ from copy import deepcopy
 sys.path.append("/u/scratch/d/datduong/BertGOAnnotation")
 import TransformerModel.TokenClassifier as TokenClassifier
 
-sys.path.append("/u/scratch/d/datduong/BertGOAnnotation/finetune")
+sys.path.append("/u/scratch/d/datduong/BertGOAnnotationTrainModel")
 import evaluation_metric
 import PosthocCorrect
 
