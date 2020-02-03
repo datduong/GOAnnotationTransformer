@@ -28,7 +28,7 @@ from pytorch_transformers.modeling_bert import BertForPreTraining
 
 sys.path.append("/local/datdb/BertGOAnnotation")
 import TransformerModel.TokenClassifier as TokenClassifier
-import finetune.evaluation_metric as evaluation_metric
+import TrainModel.evaluation_metric as evaluation_metric
 
 import view_util
 
@@ -242,6 +242,7 @@ def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
   return dataset
 
 
+
 def main():
   parser = argparse.ArgumentParser()
 
@@ -370,16 +371,6 @@ def main():
   number_sequences = len(eval_dataset)
   print ("\nnumber seqs {}\n".format(number_sequences))
 
-  ## create @label_names_in_index
-  ## to test GO-vs-AA, we need to narrow down the set of GO a little bit otherwise, we have too much data that we can't "aggregate"
-  ## redefine @label_2test_array
-  # label_2test_array = sorted ( ['GO0002039','GO0000287','GO0000049'] ) ## add more later
-  label_names_in_index = view_util.get_word_index_in_array(tokenizer,label_2test_array) ## these are the word_index we will need to extract
-
-  letters = 'A, E, I, O, U, B, C, D, F, G, H, J, K, L, M, N, P, Q, R, S, T, V, X, Z, W, Y'.split(',')
-  letters = sorted ( [let.strip() for let in letters] )
-  AA_names_in_index = view_util.get_word_index_in_array(tokenizer,letters) ## these are word_index we want. we don't need to extract CLS and SEP ... but they can probably be important ??
-
 
   if args.aa_type_emb: # model mutation
     # protein_name = pd.read_csv("/local/datdb/deepgo/data/train/fold_1/train-mf-mut.tsv", dtype=str, sep="\t",index_col=0)
@@ -404,48 +395,18 @@ def main():
   if not os.path.exists( os.path.join(args.output_dir,"ManualValidate") )  :
     os.mkdir ( os.path.join(args.output_dir,"ManualValidate") )
 
-  # get attention head for sequence
-  # GO2GO_attention = {}
-  # GO2AA_attention = {} ##  { name: {head:[range]} }
-  # GO2AA_attention_quantile = {}
-  # attention_value = {}
-
   row_counter = 0 # so we can check the row id.
 
-  # list_prot_to_get = ['O54992','P23109','P9WNC3']
-  # list_prot_to_get = np.random.choice(protein_name, size=100, replace=False, p=None).tolist()
-  # list_prot_to_get = list( set ( sorted (list_prot_to_get) + ['O54992'] ) ) ## seem kinda stupid
-  
-  list_prot_to_get = """O35730
-  O35730
-  O35730
-  O54992
-  O54992
-  O54992
-  P0A812
-  P0A812
-  P0A812
-  Q5VV41
-  Q5VV41
-  Q5VV41
-  Q6FJA3
-  Q6FJA3
-  Q6FJA3
-  Q6X632
-  Q6X632
-  Q6X632
-  Q96B01
-  Q96B01
-  Q96B01
-  Q9HWK6
-  Q9HWK6
-  Q9HWK6
-  Q9S9K9
-  Q9S9K9
-  Q9S9K9"""
-  list_prot_to_get = list ( set ( re.sub(r"\n"," ",list_prot_to_get).split() ) ) 
+  attention_summary = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
 
+  fout = open(os.path.join(args.output_dir,"HistogramValidate/attention_summary_"+args.data_type+".txt"),"w")
+  fout.write("prot\tlayer\thead\tKL\tskewness\tprob_mut\n")
 
+  np.random.seed(1)
+  list_prot_to_get = np.random.choice(protein_name, size=1998, replace=False, p=None).tolist() # 498
+  list_prot_to_get = list_prot_to_get + ['O54992', 'Q6X632', 'P0A812', 'Q9HWK6', 'O35730', 'Q9S9K9', 'Q5VV41', 'Q96B01', 'Q6FJA3']
+  list_prot_to_get = sorted ( list (set(list_prot_to_get)) )
+  # print (list_prot_to_get)
 
   for batch_counter,batch in tqdm(enumerate(eval_dataloader), desc="Evaluating"):
 
@@ -454,10 +415,10 @@ def main():
     if (batch_counter*batch_size) != row_counter:
       print ('check @row_counter for @batch_counter {} should see this message only at the last batch'.format(batch_counter))
 
-    end = row_counter + batch_size
-    if len( set(protein_name[row_counter:end]).intersection( set(list_prot_to_get) ) ) == 0 :
+    end_point_prot_name = row_counter + batch_size
+    if len( set(protein_name[row_counter:end_point_prot_name]).intersection( set(list_prot_to_get) ) ) == 0 :
       ## suppose we don't enter this @if, then we will update @row_counter at the end, before we call "@for batch_counter...."
-      row_counter = end ## skip all, start at new positions of next batch
+      row_counter = end_point_prot_name ## skip all, start at new positions of next batch
       continue
 
     max_len_in_batch = int( torch.max ( torch.sum(batch[3],1) ) ) ## only need max len of AA
@@ -473,6 +434,7 @@ def main():
     ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).cuda() ## make
 
     if args.aa_type_emb:
+      # aa_type = batch[5][:,0:max_len_in_batch].cuda()
       aa_type = batch[5][:,0:max_len_in_batch,:].cuda()
     else:
       aa_type = None
@@ -485,11 +447,11 @@ def main():
     nb_eval_steps += 1
 
     attention_mask = attention_mask.detach().cpu().numpy() ## used to get back only important positions
+    if args.aa_type_emb:
+      aa_type = aa_type.detach().cpu().numpy()
 
     layer_att = outputs[-1] ## @outputs is a tuple of loss, prediction score, attention ... we use [-1] to get @attention.
-    print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
-
-    attention_value = {} ## create one dictionary for each prot. (large data size, but we can trim/delete later)
+    # print ('len @layer_att {}'.format(len(layer_att))) ## each layer is one entry in this tuple
 
     for layer in range (config.num_hidden_layers):
 
@@ -503,37 +465,55 @@ def main():
 
         if this_prot_name in list_prot_to_get:
 
-          if layer == 0: ## sanity check
-            print ("\n")
-            print (this_prot_name)
-            print (max_len_in_batch)
+          # if layer == 0: ## sanity check
+          #   print ("\n")
+          #   print (this_prot_name)
 
-          where_not_mask = attention_mask[obs]==1
+          if this_prot_name not in attention_summary:
+            attention_summary[this_prot_name] = {}
 
-          if this_prot_name not in attention_value:
-            attention_value[this_prot_name] = {}
+          attention_summary[this_prot_name][layer] = {}
 
-          # do not need to do this again
-          attention_value[ this_prot_name ][layer] = {}
+          where_not_mask = attention_mask[obs]==1 ## in 1 row, find where it's 1, this is valid position
+
+          # if args.aa_type_emb:
+          #   mutation = aa_type[obs]
+          # else:
+          mutation = None
 
           for head in range(config.num_attention_heads) : # range(config.num_attention_heads):
-            save = this_layer_att[obs][head]
-            ## must use masking to get back correct values
-            attention_value[ this_prot_name ][layer][head] = save [ :, where_not_mask ] [ where_not_mask, : ]
-            print (attention_value[ this_prot_name ][layer][head].shape[0] - 2 - num_labels) # quality check
 
+            this_head = this_layer_att[obs][head] [ :, where_not_mask ] [ where_not_mask, : ] ## must use masking to get back correct values
+            where_AA_end = this_head.shape[0] - num_labels
 
-    for k in attention_value:
-      out = {}
-      out[k] = attention_value[k]
-      if len(out[k])!=12:
-        print ('fail {}'.format(k))
-      else:
-        pickle.dump(out, open(os.path.join(args.output_dir,"ManualValidate/"+args.data_type+"_attention_"+k+".pickle"), 'wb') )
+            this_head = this_head[1:where_AA_end] ## exclude cls, and sep, focus on only AA. notice... the column includes both AA + GO
+
+            # if args.aa_type_emb:
+            #   mutation = mutation[1:where_AA_end]
+
+            this_head = view_util.CountAttRow (this_head)
+            # print ('\n')
+            # print (this_head)
+            this_head = view_util.GetSkewnessKLDivergence(this_head, mutation=mutation)
+
+            attention_summary[ this_prot_name ][layer][head] = this_head
 
     ## update next counter, so we move to batch#2 in the raw text
-    row_counter = end
+    # row_counter = row_counter + batch_size
+    row_counter = end_point_prot_name
 
+    ## write before move on
+    if (batch_counter % 10 == 0) or (batch_counter == len(eval_dataloader)):
+      for this_prot_name in attention_summary:
+        for layer in range (config.num_hidden_layers):
+          for head in range(config.num_attention_heads) :
+            this_head = attention_summary[ this_prot_name ][layer][head]
+            fout.write( this_prot_name+'\t'+str(layer)+'\t'+str(head)+'\t'+'\t'.join(str(k) for k in this_head)+'\n' )
+      ## empty out
+      attention_summary = {}
+
+  ## end
+  fout.close()
 
 
 

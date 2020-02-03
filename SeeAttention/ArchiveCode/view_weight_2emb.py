@@ -28,7 +28,7 @@ from pytorch_transformers.modeling_bert import BertForPreTraining
 
 sys.path.append("/local/datdb/BertGOAnnotation")
 import TransformerModel.TokenClassifier as TokenClassifier
-import finetune.evaluation_metric as evaluation_metric
+import TrainModel.evaluation_metric as evaluation_metric
 
 import view_util
 

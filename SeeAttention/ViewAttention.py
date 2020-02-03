@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 sys.path.append("/local/datdb/BertGOAnnotation")
 import TransformerModel.TokenClassifier as TokenClassifier
-import finetune.evaluation_metric as evaluation_metric
+import TrainModel.evaluation_metric as evaluation_metric
 # import PosthocCorrect
 
 
