@@ -15,4 +15,4 @@ You can also train your own model, see example shell script here. Your input mus
 4. Any combination of the above. 
 
 
-
+## Interesting properties of GOAT
