@@ -31,6 +31,9 @@ for onto in ['cc','bp','mf']:
     line = line.strip().split("\t")
     name = line[0]
     annot = line[1] ##!! name label seq vector
+    annot = re.sub(":","",annot)
+    annot = re.sub(";"," ",annot).strip()
+    #
     if (len(line[2])<20) or (len(line[2])>500): #### skip long length? and super short one?
       continue
     seq = " ".join(s for s in line[2]) ## split seq by space
@@ -42,7 +45,8 @@ for onto in ['cc','bp','mf']:
     else:
       print ('in {} skip {}'.format(onto,name))
     #
-    new_line = name + "\t" + seq +"\t" + vec + "\t" + annot + "\n"
+    # want output: name, seq, label, vec, motif
+    new_line = name + "\t" + seq +"\t" + label + "\t" + vec + "\t" + annot + "\n"
     fout.write(new_line)
   fout.close()
   fin.close()
