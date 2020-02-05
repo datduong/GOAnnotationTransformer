@@ -31,7 +31,7 @@ for ontology in 'bp' ; do # 'mf' 'cc'
   eval_data_file='/u/scratch/d/datduong/deepgo/data/train/fold_1/TokenClassify/TwoEmb/dev-'$ontology'-prot-annot.tsv'
   label_2test='/u/scratch/d/datduong/deepgo/data/train/deepgo.'$ontology'.csv'
 
-  cd $server/BertGOAnnotationTrainModel/
+  cd $server/GOAnnotationTransformer/TrainModel/
 
   python3 -u RunTokenClassifyLoadDataOnly.py --block_size $block_size --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --eval_data_file $eval_data_file --label_2test $label_2test --aa_type_emb --aa_type_file $aa_type_file > $output_dir/load_data_log.txt
 

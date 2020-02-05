@@ -12,7 +12,7 @@ data_dir=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO2017' # +vocab
 output_dir=$data_dir/'BertFineTuneGOEmb'
 mkdir $output_dir
 
-cd $server/BertGOAnnotationTrainModel/lm_finetuning
+cd $server/GOAnnotationTransformer/TrainModel/lm_finetuning
 
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO2017' # +vocab
 
@@ -29,7 +29,7 @@ data_dir=$server/'goAndGeneAnnotationMar2017'
 output_dir=$data_dir/'BertFineTuneGOEmb768'
 mkdir $output_dir
 
-cd $server/BertGOAnnotationTrainModel/lm_finetuning
+cd $server/GOAnnotationTransformer/TrainModel/lm_finetuning
 
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO2017'
 # bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO+vocab2017'
@@ -52,7 +52,7 @@ server='/u/scratch/d/datduong'
 data_dir=$server/'deepgo/data'
 output_dir=$data_dir/'BertFineTuneGOEmb768'
 mkdir $output_dir
-cd $server/BertGOAnnotationTrainModel/lm_finetuning
+cd $server/GOAnnotationTransformer/TrainModel/lm_finetuning
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO2016'
 python3 pregenerate_training_data.py --bert_vocab $bert_vocab --train_corpus $data_dir/GO_branch_split_half.txt --bert_model bert-base-cased --output_dir $output_dir --epochs_to_generate 100 --max_seq_len 128 
 
@@ -67,7 +67,7 @@ bert_model=$data_dir/'BertFineTuneGOEmb768Result'
 output_dir=$data_dir/'BertFineTuneGOEmb768ResultContinue'
 mkdir $output_dir
 
-cd $server/BertGOAnnotationTrainModel/lm_finetuning
+cd $server/GOAnnotationTransformer/TrainModel/lm_finetuning
 
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO2016'
 config_name=$bert_vocab/'config.json'

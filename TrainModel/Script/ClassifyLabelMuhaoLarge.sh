@@ -47,7 +47,7 @@ for ontology in 'cc' ; do # 'cc' 'bp'
   eval_data_file='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/dev-'$ontology'-input-muhao.tsv'
   label_2test='/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'$ontology'.csv'
 
-  cd $server/BertGOAnnotationTrainModel/
+  cd $server/GOAnnotationTransformer/TrainModel/
 
   #### train the model
   # continue training use @model_name_or_path and turn off @config_override

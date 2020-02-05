@@ -47,7 +47,7 @@ for ontology in bp ; do # 'cc' 'bp'
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/dev-'$ontology'-input.tsv'
   label_2test='/local/datdb/deepgo/data/train/deepgo.'$ontology'.csv'
 
-  cd $server/BertGOAnnotationTrainModel/
+  cd $server/GOAnnotationTransformer/TrainModel/
 
   #### train the model
   # continue training use @model_name_or_path and turn off @config_override
@@ -100,7 +100,7 @@ for ontology in bp ; do # 'cc' 'bp'
   # done
 
   #### get hidden vec of GOs
-  # cd $server/BertGOAnnotationTrainModel/
+  # cd $server/GOAnnotationTransformer/TrainModel/
   # model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!!##!!
   # for test_data in 'train' 'test' ; do 
   #   eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'

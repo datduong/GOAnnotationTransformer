@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 import pickle,gzip
 
-sys.path.append("/local/datdb/BertGOAnnotationTrainModel")
+sys.path.append("/local/datdb/GOAnnotationTransformer/TrainModel")
 import fmax
 
 def all_metrics(yhat_binary, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01),path="",add_name=""):

@@ -12,7 +12,7 @@ data_dir=$server/'goAndGeneAnnotationMar2017'
 output_dir=$data_dir/'BertFineTuneGOEmb'
 mkdir $output_dir
 
-cd $server/BertGOAnnotationTrainModel/lm_finetuning
+cd $server/GOAnnotationTransformer/TrainModel/lm_finetuning
 
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12GO2017'
 

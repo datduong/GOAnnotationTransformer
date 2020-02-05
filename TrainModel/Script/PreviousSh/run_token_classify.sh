@@ -22,7 +22,7 @@ for ontology in 'mf' ; do
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/dev-'$ontology'.csv'
   label_2test='/local/datdb/deepgo/data/train/deepgo.'$ontology'.csv'
 
-  cd $server/BertGOAnnotationTrainModel/
+  cd $server/GOAnnotationTransformer/TrainModel/
 
   # 5040 batches train
   ## continue training 

@@ -55,7 +55,7 @@ for ontology in 'mf' 'bp' 'cc' ; do
   # label_2test='/local/datdb/deepgo/data/train/deepgo.'$ontology'.csv'
   label_2test='/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'$ontology'.csv'
 
-  cd $server/BertGOAnnotationTrainModel/
+  cd $server/GOAnnotationTransformer/TrainModel/
 
   ## testing phase --pretrained_label_path $pretrained_label_path
   model_name_or_path=$output_dir'/checkpoint-'$checkpoint

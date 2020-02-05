@@ -23,7 +23,7 @@ for ontology in 'bp' ; do
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/dev-'$ontology'-aa.csv'
   label_2test='/local/datdb/deepgo/data/train/deepgo.'$ontology'.csv'
 
-  cd $server/BertGOAnnotationTrainModel/
+  cd $server/GOAnnotationTransformer/TrainModel/
 
   # 5040 batches train
   ## continue training use @model_name_or_path and turn off @config_override

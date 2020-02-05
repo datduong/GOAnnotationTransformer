@@ -39,7 +39,7 @@ for ontology in 'bp' ; do
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeTopoData/dev-'$ontology'-input.tsv'
   label_2test='/local/datdb/deepgo/data/train/deepgo.'$ontology'.csv'
 
-  cd $server/BertGOAnnotationTrainModel/
+  cd $server/GOAnnotationTransformer/TrainModel/
 
   # continue training use @model_name_or_path and turn off @config_override
   CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 6 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed 2019 --fp16 --config_override > $output_dir/train_point.txt # --no_cuda

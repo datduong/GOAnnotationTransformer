@@ -15,7 +15,7 @@ data_dir=$server/'deepgo/data'
 output_dir=$data_dir/'BertFineTuneAAseq'
 mkdir $output_dir
 
-cd $server/BertGOAnnotationTrainModel/lm_finetuning
+cd $server/GOAnnotationTransformer/TrainModel/lm_finetuning
 
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12Kmer'
 
@@ -32,7 +32,7 @@ mkdir $output_dir
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12Kmer'
 bert_model='/local/datdb/BERTPretrainedModel/cased_L-12_H-768_A-12/'
 
-cd $server/BertGOAnnotationTrainModel/lm_finetuning
+cd $server/GOAnnotationTransformer/TrainModel/lm_finetuning
 CUDA_VISIBLE_DEVICES=1 /local/datdb/anaconda3/envs/tensorflow_gpuenv/bin/python -u finetune_on_pregenerated.py --bert_vocab $bert_vocab --pregenerated_data $output_dir --bert_model $bert_model --output_dir $output_dir --epochs 10 --train_batch_size 12 --fp16
 
 

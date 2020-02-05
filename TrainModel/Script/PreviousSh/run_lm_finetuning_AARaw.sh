@@ -17,7 +17,7 @@ config_name=$output_dir/'config.json'
 train_masklm_data='/local/datdb/deepgo/data/BertFtAARaw/seq_finetune_aa_train.txt'
 eval_data_file='/local/datdb/deepgo/data/BertFtAARaw/seq_finetune_aa_test.txt'
 
-cd $server/BertGOAnnotationTrainModel/
+cd $server/GOAnnotationTransformer/TrainModel/
 
 ## only run Mask Language ?? 
 # CUDA_VISIBLE_DEVICES=1 python3 -u run_lm_finetuning.py --block_size 524 --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 20 --per_gpu_train_batch_size 8 --config_name $config_name --config_override --do_train --model_type bert --overwrite_output_dir --save_steps 20000

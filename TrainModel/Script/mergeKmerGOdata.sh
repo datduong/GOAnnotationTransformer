@@ -31,7 +31,7 @@ server='/u/scratch/d/datduong'
 data_dir=$server/'deepgo/data'
 output_dir=$data_dir/'DataToFinetuneBertTokenPredict/FinetunePhaseData'
 mkdir $output_dir
-cd $server/BertGOAnnotationTrainModel/lm_finetuning
+cd $server/GOAnnotationTransformer/TrainModel/lm_finetuning
 bert_vocab=$server/'BERTPretrainedModel/cased_L-12_H-768_A-12Kmer2016/vocab+3kmer+GO.txt'
 train_corpus=$data_dir/'DataToFinetuneBertTokenPredict/AAseq+GObranch.txt'
 python3 pregenerate_training_data.py --bert_vocab $bert_vocab --train_corpus $train_corpus --bert_model bert-base-cased --output_dir $output_dir --epochs_to_generate 10 --max_seq_len 4096

@@ -63,7 +63,7 @@ for ontology in mf cc bp ; do # 'cc' 'bp'
   eval_data_file='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/fold_1/ProtAnnotTypeData/dev-'$ontology'-input-bonnie.tsv'
   label_2test='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/deepgo.'$ontology'.csv'
 
-  cd $server/BertGOAnnotationTrainModel/
+  cd $server/GOAnnotationTransformer/TrainModel/
 
   #### train the model
   # continue training use @model_name_or_path and turn off @config_override
