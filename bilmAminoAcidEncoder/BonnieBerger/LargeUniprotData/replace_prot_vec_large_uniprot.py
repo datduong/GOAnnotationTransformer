@@ -5,7 +5,7 @@ import pandas as pd
 
 ## take prot already have vec and override
 
-os.chdir("/local/datdb/UniprotJan2020")
+os.chdir("/u/scratch/d/datduong/UniprotJan2020")
 
 
 ## create an array in the exact order as file
@@ -15,7 +15,7 @@ for onto in ['cc','bp','mf']:
   #### load a known protein-vector pickle, and then simply replace into the new file
   ## read in a file which we already computed vector
   map_vec ={}
-  know_file = open("/local/datdb/UniprotJan2020/uniprot-"+onto+"-bonnie.tsv","r") ##!!##!! name label seq vector
+  know_file = open("/u/scratch/d/datduong/UniprotJan2020/uniprot-"+onto+"-bonnie.tsv","r") ##!!##!! name label seq vector
   for line in know_file: ## no header
     line = line.split('\t')
     map_vec[line[0]] = re.sub(" ",";",line[-1]) ## take only vec, and it's at the end
@@ -41,12 +41,12 @@ for onto in ['cc','bp','mf']:
     vec = vec.strip()
     ##!!##!!
     if name in map_vec:
-      vec = " ".join(s for s in map_vec[name].split(';'))
+      vec = " ".join(s for s in map_vec[name].split(';')).strip()
     else:
       print ('in {} skip {}'.format(onto,name))
     #
     # want output: name, seq, label, vec, motif
-    new_line = name + "\t" + seq +"\t" + label + "\t" + vec + "\t" + annot + "\n"
+    new_line = name + "\t" + seq +"\t" + annot + "\t" + vec + "\n"
     fout.write(new_line)
   fout.close()
   fin.close()
