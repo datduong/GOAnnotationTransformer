@@ -21,6 +21,7 @@ def get_child_of_root(root_node,onto):
 os.chdir('/u/scratch/d/datduong/UniprotJan2020')
 
 label_fraction = {}
+
 fin = open("label-fraction-count.tsv","r")
 for line in fin: 
   line = line.split('\t')
@@ -40,7 +41,9 @@ to_remove = to_remove + get_child_of_root(root_node,'cc') ##!! should only remov
 
 to_remove = [ t for t in to_remove if (t in label_fraction) and (label_fraction[t]>0.1) ] 
 to_remove2 = [ key for key,value in label_fraction.items() if value>0.1 ]
+to_remove = to_remove + ['GO0008150' , 'GO0005575' , 'GO0003674']
 to_remove = list ( set ( to_remove + to_remove2 ) ) 
+
 
 
 for onto in ['cc','mf','bp']:
@@ -57,13 +60,14 @@ for onto in ['cc','mf','bp']:
         labelset[l] = 1
   #
   fin.close()
-  fout = open (onto+'-label-rm10p.tsv','w')
+  fout = open (onto+'-label.tsv','w')
+  # fout = open (onto+'-label-rm10p.tsv','w')
   label = sorted( list( labelset.keys() ) )
   for l in sorted(label):
     #### the first run get all fraction count, then we reuse the same code to remove labels
-    # fout.write(l+'\t'+str( labelset[l]*1.0/num_line[onto] )+'\n')
-    if l not in to_remove: ##!! remove labels
-      fout.write(l+'\t'+str( labelset[l] )+'\n')
+    fout.write(l+'\t'+str( labelset[l]*1.0/num_line[onto] )+'\n')
+    # if l not in to_remove: ##!! remove labels
+    #   fout.write(l+'\t'+str( labelset[l] )+'\n')
   fout.close()
 
 
