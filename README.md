@@ -16,7 +16,7 @@ We adapt the Transformer neural network model to predict GO labels for protein s
 
 You can **[train your own model](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel)**. Your **[input must match the input here.](https://drive.google.com/drive/folders/1xwLnypz6JRUoQkbfdscG-NyusECVzQ7t?usp=sharing)**
 
-**GOAT supports 4 training options:**
+**We support 4 training options:**
 1. Base Transformer
 2. Domain data (like motifs, compositional bias, etc.)
 3. External protein data (like 3D structure, protein-protein interaction network)
