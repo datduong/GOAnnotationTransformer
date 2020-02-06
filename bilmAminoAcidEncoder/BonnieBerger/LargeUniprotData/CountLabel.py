@@ -20,15 +20,27 @@ def get_child_of_root(root_node,onto):
 #
 os.chdir('/u/scratch/d/datduong/UniprotJan2020')
 
+label_fraction = {}
+fin = open("label-fraction-count.tsv","r")
+for line in fin: 
+  line = line.split('\t')
+  label_fraction[line[0]] = float(line[1])
+
+#
+fin.close() 
+
 num_line = {'bp':353893,'cc':323810,'mf':376207}
 
 graph = obonet.read_obo('go.obo') # https://github.com/dhimmel/obonet
 root_node = {'bp':'GO:0008150' ,'cc':'GO:0005575' , 'mf':'GO:0003674' }
 
-# to_remove = get_child_of_root(root_node,'mf') ##!! should only remove bp ?
-# to_remove = get_child_of_root(root_node,'bp') ##!! should only remove bp ?
-# to_remove = get_child_of_root(root_node,'cc') ##!! should only remove cc ?
+to_remove = get_child_of_root(root_node,'mf') ##!! should only remove bp ?
+to_remove = to_remove + get_child_of_root(root_node,'bp') ##!! should only remove bp ?
+to_remove = to_remove + get_child_of_root(root_node,'cc') ##!! should only remove cc ?
 
+to_remove = [ t for t in to_remove if (t in label_fraction) and (label_fraction[t]>0.1) ] 
+to_remove2 = [ key for key,value in label_fraction.items() if value>0.1 ]
+to_remove = list ( set ( to_remove + to_remove2 ) ) 
 
 
 for onto in ['cc','mf','bp']:
@@ -45,11 +57,13 @@ for onto in ['cc','mf','bp']:
         labelset[l] = 1
   #
   fin.close()
-  fout = open (onto+'-label.tsv','w')
+  fout = open (onto+'-label-rm10p.tsv','w')
   label = sorted( list( labelset.keys() ) )
   for l in sorted(label):
-    # if l not in to_remove: 
-    fout.write(l+'\t'+str( labelset[l]*1.0/num_line[onto] )+'\n')
+    #### the first run get all fraction count, then we reuse the same code to remove labels
+    # fout.write(l+'\t'+str( labelset[l]*1.0/num_line[onto] )+'\n')
+    if l not in to_remove: ##!! remove labels
+      fout.write(l+'\t'+str( labelset[l] )+'\n')
   fout.close()
 
 
