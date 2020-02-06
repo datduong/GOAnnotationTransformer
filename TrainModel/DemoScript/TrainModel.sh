@@ -2,6 +2,7 @@
 # conda activate tensorflow_gpuenv
 server='/local/datdb'
 
+## download this file from google drive link provided on github
 pretrained_label_path='/local/datdb/deepgo/data/BertLayer12Dim256/label_vector.pickle'
 
 ## model name 
