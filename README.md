@@ -20,7 +20,9 @@ The [config.json](https://drive.google.com/drive/folders/128Q5DBToXnpgBNpevuYv3Y
 
 ## How to train your model?
 
-You can **[train your own model](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel)**. Your **[input must match the input here.](https://drive.google.com/drive/folders/1xwLnypz6JRUoQkbfdscG-NyusECVzQ7t?usp=sharing)**
+You can **[train your own model](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel)**. Your **[input must match the input here.](https://drive.google.com/drive/u/1/folders/10mKp6vOzU9_3SYJ2Bd_NfqQ6ILjTJfXo)** The format is 
+
+protein_name \t sequence \t label \t protein_vector_from_external_source \t domain_motif_in_sequence
 
 **We support 4 training options:**
 1. Base Transformer
