@@ -25,7 +25,7 @@ for ontology in 'mf' ; do
   config_name=$output_dir/config.json
   model_name_or_path=$output_dir
 
-  train_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-aa-mut.csv' ## okay to call it as long as it has ppi
+  train_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-aa-mut.csv' ## okay to call it as long as it has ppi
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/dev-'$ontology'-aa-mut.csv'
   label_2test='/local/datdb/deepgo/data/train/deepgo.'$ontology'.csv'
 
@@ -35,13 +35,13 @@ for ontology in 'mf' ; do
 
   # 5040 batches train
   ## continue training use @model_name_or_path and turn off @config_override
-  CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_distance.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --num_train_epochs 20 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 10 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --learning_rate 0.0001 --seed 2019 --fp16 --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/train_point.txt # --no_cuda
+  CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_distance.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 20 --per_gpu_train_batch_size 4 --per_gpu_eval_batch_size 10 --config_name $config_name --do_train --model_type bert --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --learning_rate 0.0001 --seed 2019 --fp16 --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/train_point.txt # --no_cuda
 
   # ## testing phase
 
   # for test_data in 'test'; do # 'dev' 
   #   eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/'$test_data'-'$ontology'-aa-mut.csv'
-  #   CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_2emb_ppi.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 16 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --fp16 --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/'eval_'$test_data'_check_point.txt'
+  #   CUDA_VISIBLE_DEVICES=5 python3 -u run_token_classify_2emb_ppi.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size 16 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --fp16 --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/'eval_'$test_data'_check_point.txt'
   # done 
 
   ## view weights ?? 
@@ -51,7 +51,7 @@ for ontology in 'mf' ; do
 
   # model_name_or_path=$output_dir'/checkpoint-47026'
 
-  # CUDA_VISIBLE_DEVICES=1 python3 -u view_weight_aa_2emb.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 20 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/view_aa_weights.txt
+  # CUDA_VISIBLE_DEVICES=1 python3 -u view_weight_aa_2emb.py --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size 20 --config_name $config_name --do_eval --model_type bert --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --model_name_or_path $model_name_or_path --pretrained_label_path $pretrained_label_path --aa_type_emb > $output_dir/view_aa_weights.txt
 
 
 done

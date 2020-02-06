@@ -50,7 +50,7 @@ for ontology in 'mf' 'bp' 'cc' ; do
 
   aa_type_file='/local/datdb/deepgo/data/train/fold_1/train_'$ontology'_prot_annot_count.pickle'
 
-  train_masklm_data='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-prot-annot.tsv' ## okay to call it as long as it has ppi
+  train_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/train-'$ontology'-prot-annot.tsv' ## okay to call it as long as it has ppi
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/dev-'$ontology'-prot-annot.tsv'
   # label_2test='/local/datdb/deepgo/data/train/deepgo.'$ontology'.csv'
   label_2test='/local/datdb/deepgo/dataExpandGoSet/train/deepgo.'$ontology'.csv'
@@ -64,7 +64,7 @@ for ontology in 'mf' 'bp' 'cc' ; do
     # eval_data_file='/local/datdb/deepgo/data/train/fold_1/TokenClassify/TwoEmb/'$test_data'-'$ontology'-prot-annot.tsv'
     eval_data_file='/local/datdb/deepgo/dataExpandGoSet/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-prot-annot-input.tsv'
 
-    CUDA_VISIBLE_DEVICES=1 python3 -u MeanAttentionGoVec.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --govec_outname $govec_outname$test_data --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_masklm_data --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --eval_all_checkpoints --fp16 --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'make_govec_'$test_data'.txt'
+    CUDA_VISIBLE_DEVICES=1 python3 -u MeanAttentionGoVec.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --govec_outname $govec_outname$test_data --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --eval_all_checkpoints --fp16 --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'make_govec_'$test_data'.txt'
   done  # --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero
 
 
