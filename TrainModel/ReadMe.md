@@ -17,5 +17,5 @@ Our **[demo script](https://github.com/datduong/GOAnnotationTransformer/tree/mas
 
 Please rename the directory paths as you go through the entire demo script. We were able to train the all model options for any datasets on one single Gtx 1080Ti having 11GB mem. Training on MF ontology takes about 12 hrs, on CC about 12 hrs, on BP about 16 hrs. 
 
-
+Feel free to make any changes and extension to the model by using our [core model here](https://github.com/datduong/GOAnnotationTransformer/blob/master/TransformerModel/TokenClassifier.py).  
 
