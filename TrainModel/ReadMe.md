@@ -6,13 +6,16 @@ We discuss some key points about training this model. This code is built from [P
 
 There is a vocab.txt that was redesign to recognize only amino acids. We did not pre-train the sequences on any Language Model, because this step would require a lot of samples (in the millions). 
 
-The **[demo script](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel/DemoScript) shows:**
-1. How to train the model.
-2. How to test the trained model. 
-3. How to perform zeroshot on unseen labels (unimpressive accuracy). 
-4. How to extract GO label vectors from layer 12 of Transformer. 
+We trained our models on the DeepGO datasets which was used as a baseline. **[Download the train/dev/test data here.](https://drive.google.com/drive/folders/1xwLnypz6JRUoQkbfdscG-NyusECVzQ7t?usp=sharing)**
 
+Our **[demo script](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel/DemoScript)** shows:
+1. How to specify a model (for example, base model v.s. model with protein network data)
+2. How to train model.
+3. How to test trained model. 
+4. How to perform zeroshot on unseen labels (unimpressive accuracy). 
+5. How to extract GO label vectors from layer 12 of Transformer. 
 
+Please rename the directory paths as you go through the entire demo script. We were able to train the all model options for any datasets on one single Gtx 1080Ti having 11GB mem. Training on MF ontology takes about 12 hrs, on CC about 12 hrs, on BP about 16 hrs. 
 
 
 
