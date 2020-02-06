@@ -4,11 +4,15 @@ server='/local/datdb'
 
 pretrained_label_path='/local/datdb/deepgo/data/BertLayer12Dim256/label_vector.pickle'
 
-choice='YesPpiYesAaTypePreTrainBertLabel' ## model name
+## model name 
+## you can use NoPpiYesAaTypePreTrainBertLabel to apply only Motif data
+choice='YesPpiYesAaTypePreTrainBertLabel' 
 
+## suppose you chose NoPpiYesAaTypePreTrainBertLabel, then you must turn off "ppi" mode into "noppi"
 model_type='ppi' ##!! noppi--> not using ppi, and ppi--> uses extra data
 
-cache_name='YesPpiYesType' ## create a comprehensive datasets, so that we can use same pre-processed data
+## save data in pickle to avoid pre-processing, this called cache_name in Transformer code
+cache_name='DataInPickle' 
 
 ## define parameters for mf-ontology
 checkpoint=60480 ## use this when we want to test a specific checkpoint
@@ -53,6 +57,10 @@ for ontology in mf cc bp ; do
   ## continue training use @model_name_or_path and turn off @config_override
   ## add --pretrained_label_path $pretrained_label_path so that we run with pretrained GO embeddings
   ## add --aa_type_file $aa_type_file --reset_emb_zero when we have domain/motif info
+
+  ## suppose you chose NoPpiYesAaTypePreTrainBertLabel, then you will keep the flag --aa_type_file $aa_type_file --reset_emb_zero
+  ## suppose to run Base Transformer without any extra information, then you remove --aa_type_file $aa_type_file --reset_emb_zero
+  ## suppose you want to train end-to-end and not used a pre-trained GO embeddings, then you remove --pretrained_label_path $pretrained_label_path
 
   CUDA_VISIBLE_DEVICES=0 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt
 
