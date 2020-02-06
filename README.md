@@ -2,6 +2,12 @@
 
 ### [This is our paper.](https://www.biorxiv.org/content/10.1101/2020.01.31.929604v1)
 
+### Libraries needed
+
+[pytorch](https://pytorch.org/),
+[pytorch-transformers](https://pypi.org/project/pytorch-transformers/),
+[nvidia-apex](https://github.com/NVIDIA/apex)
+
 ## Pre-trained model, and training your own model
 
 We adapt the Transformer neural network model to predict GO labels for protein sequences. You can download our trained models are here. 
