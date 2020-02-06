@@ -43,5 +43,3 @@ for onto in ['cc','bp','mf']:
   fout.close()
 
 
-
-GO0005575 GO0005622 GO0009579 GO0016020 GO0034357 GO0042651
