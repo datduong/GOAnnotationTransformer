@@ -10,7 +10,7 @@
 
 ## Where are pre-trained models? 
 
-We adapt the Transformer neural network model to predict GO labels for protein sequences. You can download **[our trained models here](https://drive.google.com/drive/folders/1MfjpaZ4Mg0L6PovPzfjAlB_ny1zYFFNm?usp=sharing)**.  These models are trained on [DeepGO datasets](https://github.com/bio-ontology-research-group/deepgo#data), which we process from python pickle into **[text files] here.(https://drive.google.com/drive/folders/1xwLnypz6JRUoQkbfdscG-NyusECVzQ7t?usp=sharing)** 
+We adapt the Transformer neural network model to predict GO labels for protein sequences. You can download **[our trained models here](https://drive.google.com/drive/folders/1MfjpaZ4Mg0L6PovPzfjAlB_ny1zYFFNm?usp=sharing)**.  These models are trained on [DeepGO datasets](https://github.com/bio-ontology-research-group/deepgo#data), which we process from python pickle into **[text files here.](https://drive.google.com/drive/folders/1xwLnypz6JRUoQkbfdscG-NyusECVzQ7t?usp=sharing)** 
 
 ## How to train your model?
 
