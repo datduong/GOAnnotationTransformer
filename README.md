@@ -8,22 +8,17 @@
 [pytorch-transformers](https://pypi.org/project/pytorch-transformers/),
 [nvidia-apex](https://github.com/NVIDIA/apex)
 
-## Pre-trained model, and training your own model
+## Where are pre-trained models? 
 
-We adapt the Transformer neural network model to predict GO labels for protein sequences. You can download our trained models are here. 
+We adapt the Transformer neural network model to predict GO labels for protein sequences. You can download **[our trained models here](https://drive.google.com/drive/folders/1MfjpaZ4Mg0L6PovPzfjAlB_ny1zYFFNm?usp=sharing)**.  These models are trained on [DeepGO datasets](https://github.com/bio-ontology-research-group/deepgo#data), which we process from python pickle into **[text files here.](https://drive.google.com/drive/folders/1xwLnypz6JRUoQkbfdscG-NyusECVzQ7t?usp=sharing)** 
 
-You can also train your own model, see example shell script here. Your input must match the input here. 
+## How to train your model?
 
-**GOAT supports 4 training options:** (see example shell script to choose each option)
+You can **[train your own model](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel)**. Your **[input must match the input here.](https://drive.google.com/drive/folders/1xwLnypz6JRUoQkbfdscG-NyusECVzQ7t?usp=sharing)**
+
+**We support 4 training options:**
 1. Base Transformer
 2. Domain data (like motifs, compositional bias, etc.)
 3. External protein data (like 3D structure, protein-protein interaction network)
 4. Any combination of the above. 
 
-
-## Interesting properties
-
-We discuss two interesting properties that GOAT displays. 
-
-### Label co-occurances 
-GOAT models label co-occurances. 

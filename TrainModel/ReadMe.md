@@ -6,7 +6,7 @@ We discuss some key points about training this model. This code is built from [P
 
 There is a vocab.txt that was redesign to recognize only amino acids. We did not pre-train the sequences on any Language Model, because this step would require a lot of samples (in the millions). 
 
-The demo script shows:
+The **[demo script](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel/DemoScript) shows:**
 1. How to train the model.
 2. How to test the trained model. 
 3. How to perform zeroshot on unseen labels (unimpressive accuracy). 
