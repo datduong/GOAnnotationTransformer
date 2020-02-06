@@ -1,9 +1,8 @@
 
 # conda activate tensorflow_gpuenv
 server='/local/datdb'
-mkdir $server/'deepgo/data/BertNotFtAARawSeqGO'
 
-pretrained_label_path='/local/datdb/deepgo/data/cosine.AveWordClsSep768.Linear256.Layer12/label_vector.pickle'
+pretrained_label_path='/local/datdb/deepgo/data/BertLayer12Dim256/label_vector.pickle'
 
 choice='YesPpiYesAaTypePreTrainBertLabel' ## model name
 
@@ -18,7 +17,7 @@ block_size=1792 ## max len of amino+num_label, mf and cc 1792 but bp has more te
 batch_size=4
 seed=2019
 
-for ontology in mf cc bp ; do # 'cc' 'bp'
+for ontology in mf cc bp ; do 
 
   if [[ $ontology == 'cc' ]]
   then
@@ -36,12 +35,12 @@ for ontology in mf cc bp ; do # 'cc' 'bp'
     checkpoint=65475
   fi
 
-  output_dir=$server/'deepgo/data/BertNotFtAARawSeqGO/'$ontology/'fold_1'/$choice
+  output_dir=$server/'deepgo/data/TrainModel/'
   mkdir $output_dir
   bert_vocab=$output_dir/vocabAA.txt ## see example file in github
   config_name=$output_dir/config.json
 
-  ## download from google drive, and replace paths here.
+  #### download from google drive, and replace paths here.
   aa_type_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/train_'$ontology'_prot_annot_type_count.pickle' ## Domain info found in uniprot for train data
   train_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/train-'$ontology'-input.tsv' ## okay to call it as long as it has ppi
   eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/dev-'$ontology'-input.tsv'
