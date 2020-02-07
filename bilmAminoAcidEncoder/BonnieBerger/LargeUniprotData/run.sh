@@ -5,9 +5,9 @@
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
-python3 KeepIsA.py 
+python3 KeepIsA.py
 
-#### count labels 
+#### count labels
 
 #### filter label
 
@@ -15,4 +15,5 @@ python3 KeepIsA.py
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
-python3 GetProtDomain.py 
+python3 GetProtDomain.py
+
