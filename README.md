@@ -20,7 +20,7 @@ The [config.json](https://drive.google.com/drive/folders/128Q5DBToXnpgBNpevuYv3Y
 
 ## How to train your model?
 
-You can **[train your own model](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel)**. Your **[input must match the input here.](https://drive.google.com/drive/u/1/folders/10mKp6vOzU9_3SYJ2Bd_NfqQ6ILjTJfXo)** The format is 
+You can **[train your own model](https://github.com/datduong/GOAnnotationTransformer/tree/master/TrainModel)**. Your **[input must match the input here.](https://drive.google.com/drive/u/1/folders/10mKp6vOzU9_3SYJ2Bd_NfqQ6ILjTJfXo)** The high-level format is 
 
 protein_name \t sequence \t label \t protein_vector_from_external_source \t domain_motif_in_sequence
 
@@ -29,4 +29,11 @@ protein_name \t sequence \t label \t protein_vector_from_external_source \t doma
 2. Domain data (like motifs, compositional bias, etc.)
 3. External protein data (like 3D structure, protein-protein interaction network)
 4. Any combination of the above. 
+
+You can download the most updated manually annotated data at [Uniprot.org](https://www.uniprot.org/uniprot/?query=reviewed:yes). The site also provides all known motifs and domains for a given sequence. You may have to do a [custom download from Uniprot](https://www.uniprot.org/uniprot/?query=reviewed:yes#customize-columns) for these extra information. 
+
+We do not have a pre-trained encoder in DeepGO that provides embeddings for any proteins in a protein-protein interaction network. 
+
+We do have the pre-trained encoder that provides embeddings representing 3D structures of proteins. 
+
 
