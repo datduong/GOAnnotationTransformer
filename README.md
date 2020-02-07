@@ -32,7 +32,7 @@ protein_name \t sequence \t label \t protein_vector_from_external_source \t doma
 
 You can download the most updated manually annotated data at [Uniprot.org](https://www.uniprot.org/uniprot/?query=reviewed:yes). The site also provides all known motifs and domains for a given sequence. You may have to do a [custom download from Uniprot](https://www.uniprot.org/uniprot/?query=reviewed:yes#customize-columns) for these extra information. 
 
-We do not have a pre-trained encoder in DeepGO that provides embeddings for any proteins in a protein-protein interaction network. 
+We do not have the pre-trained encoder in DeepGO that provides embeddings for any proteins in a protein-protein interaction network. 
 
 We do have the pre-trained encoder that provides embeddings representing 3D structures of proteins. 
 
