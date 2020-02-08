@@ -21,7 +21,7 @@ for onto in ['cc','bp','mf']:
   for line in fin:
     line = line.strip().split("\t")
     num = float(line[1])
-    if num > 2: ##!! filter by occ
+    if num > 2: ##!! filter by occ ####
       label_to_test[ line[0] ] = num
   fin.close()
 
@@ -42,7 +42,7 @@ for onto in ['cc','bp','mf']:
     annot = " ".join(a for a in annot)
     annot = re.sub(":","",annot)
     if len(annot) == 0: 
-      continue ## no empty label
+      continue #### no empty label
 
     # want output: name, seq, label, vec, motif
     # seq = " ".join(line[2])
