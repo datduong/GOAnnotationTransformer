@@ -17,7 +17,7 @@ module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
 python3 GetProtDomain.py
 
-#### format data into form to train model 
+#### format data into form to train model
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
@@ -29,3 +29,4 @@ module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
 python3 SplitTrainDevTest.py
 
+#### get motifs seen only in train set. need both name+count
