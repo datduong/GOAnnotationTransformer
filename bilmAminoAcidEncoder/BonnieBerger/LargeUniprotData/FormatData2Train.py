@@ -45,55 +45,55 @@ Format2Train('cc-prot-annot.tsv','cc-input.tsv')
 ## very costly to train 2 models. so what should we do ??
 ## try to even split as many rare as possible.
 
-onto = 'mf'
+for onto in [ 'mf', 'cc', 'bp' ] : 
 
-rare_label_array = []
-label_to_test = {}
-fin = open(onto+"-label-rm20.tsv","r") # cc-label-rm10p.tsv
-for line in fin:
-  line = re.sub("GO:","GO",line) ## because input doesn't use GO:
-  line = line.strip().split("\t")
-  num = float(line[1])
-  if num > 2: ##!! filter by occ ####
-    label_to_test[ line[0] ] = num
-  if num <= 5:
-    rare_label_array[line[0]] = num
-fin.close()
+  print ('\nonto {}'.format(onto))
+  rare_label_array = {}
+  label_to_test = {}
+  fin = open(onto+"-label-rm20.tsv","r") # cc-label-rm10p.tsv
+  for line in fin:
+    line = re.sub("GO:","GO",line) ## because input doesn't use GO:
+    line = line.strip().split("\t")
+    num = float(line[1])
+    if num > 2: ##!! filter by occ ####
+      label_to_test[ line[0] ] = num
+      if num <= 5:
+        rare_label_array[line[0]] = num
+  fin.close()
+  print ('number of label {} is {}'.format(onto,len(label_to_test)))
+  print ('number of rare {} is {}'.format(onto,len(rare_label_array)))
 
-
-#### need to design a good test set.
-# name, seq, label, vec, motif
-rare_label_array_in_test = {}
-in_test = {}
-in_train = {}
-fin = open(onto+'-input.tsv',"r")
-for index,line in enumerate (fin) :
-  line = line.split("\t")
-  labels = line[2].split()
-  for l in labels:
-    if l in rare_label_array:
-      ## if rare label, we add 2 observations into test
-      if l not in rare_label_array_in_test:
-        rare_label_array_in_test[l] = 1 ## not seen this rare label, so add it immediately into testset
-        in_test[line[0]] = 1
-      else:
-        #
-        if rare_label_array_in_test[l] > 2:
-          ## we care about the rare labels
-          in_train[line[0]] = 1 ## if we add 2 obs into test already, then add the rest into train
-        else:
-          rare_label_array_in_test[l] = rare_label_array_in_test[l] + 1
+  #### need to design a good test set.
+  # name, seq, label, vec, motif
+  rare_label_array_in_test = {}
+  in_test = {}
+  in_train = {}
+  fin = open(onto+'-input.tsv',"r")
+  for index,line in enumerate (fin) :
+    line = line.split("\t")
+    labels = line[2].split()
+    for l in labels:
+      if l in rare_label_array:
+        ## if rare label, we add 2 observations into test
+        if l not in rare_label_array_in_test:
+          rare_label_array_in_test[l] = 1 ## not seen this rare label, so add it immediately into testset
           in_test[line[0]] = 1
+        else:
+          #
+          if rare_label_array_in_test[l] > 2:
+            ## we care about the rare labels
+            in_train[line[0]] = 1 ## if we add 2 obs into test already, then add the rest into train
+          else:
+            rare_label_array_in_test[l] = rare_label_array_in_test[l] + 1
+            in_test[line[0]] = 1
 
-
-#
-fin.close()
-
-#
-print ('len of test {}'.format(len(in_test)))
-print ('len of train {}'.format(len(in_train)))
-pickle.dump(in_test, open('in_test_name.pickle','wb'))
-pickle.dump(in_train, open('in_train_name.pickle','wb'))
+  #
+  fin.close()
+  #
+  print ('len of test {}'.format(len(in_test)))
+  print ('len of train {}'.format(len(in_train)))
+  pickle.dump(in_test, open(onto+'_in_test_name.pickle','wb'))
+  pickle.dump(in_train, open(onto+'_in_train_name.pickle','wb'))
 
 
 

@@ -21,5 +21,11 @@ python3 GetProtDomain.py
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
-python3 FormatData2Train.py
+python3 FormatData2Train.py > track_rare_count_in_data.txt
+
+#### split train/dev/test
+. /u/local/Modules/default/init/modules.sh
+module load python/3.7.2
+cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
+python3 SplitTrainDevTest.py
 
