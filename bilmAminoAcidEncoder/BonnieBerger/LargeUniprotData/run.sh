@@ -33,3 +33,6 @@ python3 SplitTrainDevTest.py
 
 
 #### go through and see what labels will be used. 
+
+#### replace nan with none 
+

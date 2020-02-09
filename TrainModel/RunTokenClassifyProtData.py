@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 sys.path.append("/local/datdb/GOAnnotationTransformer")
 import TransformerModel.TokenClassifier as TokenClassifier
 import evaluation_metric
-import PosthocCorrect
+# import PosthocCorrect
 
 
 MODEL_CLASSES = {
@@ -48,6 +48,9 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate)
   out = np.zeros((max_num_aa,len(annot_name_sorted))) ## maximum possible
   if string == 'none':
     return coo_matrix(out)
+
+  # if string == np.nan:
+  #   return coo_matrix(out)
 
   # @string is some protein data, delim by ";"
   annot = string.split(';')
@@ -97,6 +100,7 @@ class TextDataset(Dataset):
     self.args = args
     self.config = config
 
+    print (file_path)
     assert os.path.isfile(file_path)
     directory, filename = os.path.split(file_path)
     # if config.aa_type_emb:
@@ -741,15 +745,15 @@ def main():
 
   #### read in labels to be testing
   label_2test_array = pd.read_csv(args.label_2test,header=None,sep="\t")
-  label_2test_array = label_2test_array.sort_values(by=[0], ascending=True) 
+  label_2test_array = label_2test_array.sort_values(by=[0], ascending=True)
   label_2test_array = label_2test_array.reset_index(drop=True) ## otherwise get weird indexing
 
   entropy_loss_weight = None ## COMMENT downweight common terms
-  if args.entropy_loss_weight: 
+  if args.entropy_loss_weight:
     print ('\n\nuse weighted loss\n\n')
     # https://pytorch.org/docs/stable/nn.html#torch.nn.CrossEntropyLoss
     entropy_loss_weight = np.array ( [list(label_2test_array[1])] ) ## notice, 2D vector
-    # entropy_loss_weight = entropy_loss_weight / entropy_loss_weight.sum() ## scale to 1 
+    # entropy_loss_weight = entropy_loss_weight / entropy_loss_weight.sum() ## scale to 1
     entropy_loss_weight = torch.FloatTensor( entropy_loss_weight ).to(args.device) ## 1D tensor
 
   # label_2test_array = sorted(list( label_2test_array[0] )) ## don't need in new version
@@ -785,7 +789,7 @@ def main():
     print ('load in aa_type_file {}'.format(args.aa_type_file))
     annot_data = pickle.load ( open ( args.aa_type_file, 'rb' ) )
     print ('len of aa_type_file without special token {}'.format(len(annot_data)))
-    ## COMMENT fix value on-the-fly based on input file. 
+    ## COMMENT fix value on-the-fly based on input file.
     config.type_vocab_size = len(annot_data) + 2 # notice add 2 because PAD and UNK
 
   #### Prepare model
