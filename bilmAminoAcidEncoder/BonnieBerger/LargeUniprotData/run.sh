@@ -30,3 +30,6 @@ cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerg
 python3 SplitTrainDevTest.py
 
 #### get motifs seen only in train set. need both name+count
+
+
+#### go through and see what labels will be used. 
