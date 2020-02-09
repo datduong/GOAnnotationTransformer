@@ -7,7 +7,7 @@ pretrained_label_path='/local/datdb/deepgo/data/BertMeanLayer12Dim256/label_vect
 
 ## model name 
 ## you can use NoPpiYesAaTypePreTrainBertLabel to apply only Motif data
-choice='YesPpiYesAaTypePreTrainBertLabel' 
+choice='Yes3DYesAaTypePreTrainBertLabel' 
 
 ## suppose you chose NoPpiYesAaTypePreTrainBertLabel, then you must turn off "ppi" mode into "noppi"
 model_type='ppi' ##!! noppi--> not using ppi, and ppi--> uses extra data
@@ -22,7 +22,7 @@ block_size=1792 ## max len of amino+num_label, mf and cc 1792 but bp has more te
 batch_size=4
 seed=2019
 
-for ontology in mf cc bp ; do 
+for ontology in mf ; do 
 
   if [[ $ontology == 'cc' ]]
   then
