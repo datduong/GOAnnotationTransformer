@@ -27,6 +27,8 @@ for onto in ['cc','bp','mf']:
 
   ## read in a file which we already computed vector
   fout = open("uniprot-"+onto+"-isa-rm20-bonnie.tsv","w") ## has name seq go prot_vec domain
+  fout.write('Entry\tGene ontology IDs\tSequence\tProt Emb\n')
+
   fin = open("uniprot-"+onto+"-isa-bonnie.tsv","r")
   for index,line in enumerate(fin):
 
@@ -41,13 +43,13 @@ for onto in ['cc','bp','mf']:
     annot = sorted( [ a for a in annot if a in label_to_test ] )
     annot = " ".join(a for a in annot)
     annot = re.sub(":","",annot)
-    if len(annot) == 0: 
+    if len(annot) == 0:
       continue #### no empty label
 
     # want output: name, seq, label, vec, motif
     # seq = " ".join(line[2])
     seq = line[2] ## don't do this yet.
-    fout.write( name + "\t" + seq + "\t" + annot + "\t" + line[3] + '\n' )
+    fout.write( name + "\t" + annot + "\t" + seq + "\t" + line[3] + '\n' )
 
   #
   fin.close()

@@ -8,7 +8,7 @@ import pandas as pd
 def Format2Train (fin_name,fout_name):
   # for onto in ['mf','cc','bp']:
   fin = open(fin_name,"r")
-  fout = open(fout_name,"w")
+  # fout = open(fout_name,"w")
   for index,line in enumerate(fin):
     if index == 0: ## skip header
       continue
@@ -23,11 +23,16 @@ def Format2Train (fin_name,fout_name):
     # print (seq)
     # print (line[1])
     # want output: name, seq, label, vec, motif
-    fout.write( line[0]+"\t"+seq+"\t"+line[1]+"\t"+line[3]+"\t"+line[4]+"\n" )
+    if line[0] == 'A0A2U3Y4D7': 
+      print (line)
+      print (line[1])
+      print (seq)
+      exit()
+    # fout.write( line[0]+"\t"+seq+"\t"+line[1]+"\t"+line[3]+"\t"+line[4]+"\n" )
     # exit()
   #
   fin.close()
-  fout.close()
+  # fout.close()
 
 
 ####

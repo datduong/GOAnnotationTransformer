@@ -85,7 +85,7 @@ def get_location (string,where_change=None) :
 
 def format_write(tup): ## tuple
   if len(tup)==0:
-    return 'nan'
+    return 'none'
   out = ""
   for t in tup:
     out = out+t[0]+" "+t[1]+";"
@@ -98,7 +98,7 @@ path = "/u/scratch/d/datduong/UniprotJan2020/AddIsA/"
 os.chdir(path)
 
 # data_type = "test"
-# onto_type = 'mf'
+# onto_type = 'mf' MGIRYLLVLVLVLLVLGCEVQGAHMPQQDEATTSSLFTQMQESFYGYWGIAKSAAQGLYEKTYLTTMDEKIREIYNKSTAAVSTYAGIFTDQLLSMLKGDQ
 
 # for data_type in ['test','train','dev']:
 for onto_type in ['mf']:
@@ -106,8 +106,8 @@ for onto_type in ['mf']:
   print ('\n\n') ; print (onto_type) ; print ('\n\n')
 
   # uniprot-cc-isa-rm20-bonnie.tsv
-  fin = pd.read_csv(path+'uniprot-'+onto_type+'-isa-rm20-bonnie.tsv',sep='\t',header=None) # Entry Gene ontology IDs Sequence  Prot Emb
-  fin.columns = ["Entry", "Sequence", "Gene ontology IDs", "Prot Emb" ] ## add col names
+  fin = pd.read_csv(path+'uniprot-'+onto_type+'-isa-rm20-bonnie.tsv',sep='\t') # Entry Gene ontology IDs Sequence  Prot Emb
+  # fin.columns = ["Entry", "Sequence", "Gene ontology IDs", "Prot Emb" ] ## add col names
   prot_name = list (fin['Entry'])
 
   # uniprot = open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/uniprot-filtered-reviewed_yes_topology.tab','r')
@@ -174,8 +174,8 @@ for onto_type in ['mf']:
           else:
             prot_label_type[t] = 1
 
-    # Entry Gene ontology IDs Sequence  Prot Emb
-    fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
+    # Entry Gene ontology IDs Sequence  Prot Emb 'A0A2U3Y4D7'
+    fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in ['Entry', 'Gene ontology IDs', 'Sequence', 'Prot Emb']) + "\t" + format_write(prot_annot)+'\n' )
 
 
   if len(prot_name)>0: ## we have not remove all proteins used in deepgo.
@@ -183,7 +183,7 @@ for onto_type in ['mf']:
     fin2 = fin.loc[fin['Entry'].isin(prot_name)]
     colnames = fin2.columns
     for index,row in fin2.iterrows():
-      fout.write ( '\t'.join(row[k] for k in colnames ) + '\tnan\n' )
+      fout.write ( '\t'.join(row[k] for k in colnames ) + '\tnone\n' )
 
   fout.close()
   uniprot.close()
