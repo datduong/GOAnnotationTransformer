@@ -7,7 +7,7 @@ for onto in ['mf','cc','bp']:
   for data_type in ['train','test','dev']:
     fin = open(onto+"-"+data_type+".tsv","r")
     fout = open(onto+"-"+data_type+"-input.tsv","w")
-    for line in fin: 
+    for line in fin:
       line = line.strip().split('\t')
       last = line[-1]
       if last == 'nan':
@@ -17,5 +17,4 @@ for onto in ['mf','cc','bp']:
     #
     fin.close()
     fout.close()
-    
-    
+
