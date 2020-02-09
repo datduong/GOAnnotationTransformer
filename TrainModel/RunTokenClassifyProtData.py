@@ -217,6 +217,8 @@ class TextDataset(Dataset):
 
         if (len(this_aa) + num_label) > block_size:
           print ('len too long, expand block_size')
+          print ('len {} num label {}'.format(len(this_aa), num_label))
+          print (text)
           exit()
 
       ## save at end
@@ -256,7 +258,8 @@ class TextDataset(Dataset):
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False, config=None):
-  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, args=args, evaluate=evaluate, config=config)
+  # label_2test_array, file_path='train', block_size=512, max_aa_len=1024
+  dataset = TextDataset(tokenizer, label_2test_array, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size, max_aa_len=args.aa_block_size, args=args, evaluate=evaluate, config=config)
   return dataset
 
 
@@ -608,6 +611,7 @@ def main():
   parser.add_argument("--save_prediction", type=str, default=None)
   parser.add_argument("--entropy_loss_weight", action="store_true", default=False)
   parser.add_argument("--new_num_labels", type=int, default=None)
+  parser.add_argument("--aa_block_size", type=int, default=1024)
   parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--reset_emb_zero", action="store_true", default=False)
