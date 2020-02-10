@@ -9,20 +9,22 @@ python3 KeepIsA.py
 
 #### count labels
 
-#### filter label
-
 #### add motifs data
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
 python3 GetProtDomainMf.py
 
+
+#### filter label
+
 #### format data into form to train model
 #### also remove very long and very short sequences
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
-python3 FormatData2Train.py > track_rare_count_in_data.txt
+##!! we will do filter label after getting the motifs
+# python3 FormatData2Train.py > track_rare_count_in_data.txt
 python3 SplitTrainDevTest.py
 python3 GetMotifCountInTrain.py
 python3 GetLabel2Train.py

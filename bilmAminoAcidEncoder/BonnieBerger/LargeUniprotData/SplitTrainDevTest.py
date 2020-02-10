@@ -27,7 +27,7 @@ for onto in ['mf','cc','bp']:
   test_fout = open(TrainDevTest+onto+"-test.tsv","w")
   train_fout = open(TrainDevTest+onto+"-train.tsv","w")
   dev_fout = open(TrainDevTest+onto+"-dev.tsv","w")
-  fin = open(onto+"-input.tsv","r") # cc-input.tsv
+  fin = open(onto+"-input-ge5.tsv","r") # cc-input.tsv
   for index,line in enumerate(fin):
     name = line.split('\t')[0]
     if name in test_set:
