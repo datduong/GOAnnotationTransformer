@@ -51,3 +51,16 @@ for onto in ['mf','cc','bp']:
 
 
 
+#### check longest length in train
+for onto in ['mf','cc','bp']:
+  train_fout = open(TrainDevTest+onto+"-train.tsv","r")
+  max_len = 0
+  for line in train_fout:
+    line = re.sub ( " ","",line.split('\t')[1] )
+    if len(line) > max_len:
+      max_len = len(line)
+    #
+  train_fout.close()
+  print (onto)
+  print (max_len)
+

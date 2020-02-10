@@ -9,14 +9,22 @@ def Format2Train (fin_name,fout_name):
   # for onto in ['mf','cc','bp']:
   fin = open(fin_name,"r")
   fout = open(fout_name,"w")
+  max_len = 0 
+  num_at500 = 0
   for index,line in enumerate(fin):
     if index == 0: ## skip header
       continue
     line = line.strip().split("\t") # Entry Gene ontology IDs Sequence  Prot Emb  Type
     if len(line[2]) < 20:
       continue ## skip short sequences?
-    if len(line[2]) > 400:
-      continue ## skip long sequences otherwise too hard to fit on gpu
+    if len(line[2]) > 350:
+      if np.random.uniform() < .5: ## take half of the long range
+        continue ## skip long sequences otherwise too hard to fit on gpu
+    if len(line[2]) > max_len: 
+      max_len = len(line[2])
+    #
+    if len(line[2]) == 500:
+      num_at500 = num_at500 + 1
     seq = " ".join(line[2]) # we split the squence into single letter
     # want output: name, seq, label, vec, motif
     if line[0] == 'A0A2U3Y4D7': ## see example
@@ -26,6 +34,7 @@ def Format2Train (fin_name,fout_name):
   #
   fin.close()
   fout.close()
+  print ('max_len {}, and num at 500, {}'.format(max_len,num_at500))
 
 
 ####

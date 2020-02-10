@@ -23,6 +23,11 @@ python3 GetProtDomainMf.py
 module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
 python3 FormatData2Train.py > track_rare_count_in_data.txt
+python3 SplitTrainDevTest.py
+python3 GetMotifCountInTrain.py
+python3 GetLabel2Train.py
+
+
 
 #### split train/dev/test
 . /u/local/Modules/default/init/modules.sh
