@@ -18,6 +18,7 @@ cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerg
 python3 GetProtDomainMf.py
 
 #### format data into form to train model
+#### also remove very long and very short sequences
 . /u/local/Modules/default/init/modules.sh
 module load python/3.7.2
 cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
@@ -30,9 +31,15 @@ cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerg
 python3 SplitTrainDevTest.py
 
 #### get motifs seen only in train set. need both name+count
+cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
+python3 GetMotifCountInTrain.py
 
 
-#### go through and see what labels will be used. 
+#### go through and see what labels will be used.
+cd /u/scratch/d/datduong/GOAnnotationTransformer/bilmAminoAcidEncoder/BonnieBerger/LargeUniprotData
+python3 GetLabel2Train.py
 
-#### replace nan with none 
+
+#### replace nan with none .... don't really need this.
+
 

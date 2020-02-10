@@ -7,33 +7,36 @@ import pandas as pd
 
 from tqdm import tqdm
 
+path = '/u/scratch/d/datduong/UniprotJan2020/AddIsA/'
+os.chdir(path)
 
-#### get the motifs seen in traind ata only
+#### get the motifs seen in train data only
 ## we originally get the motif-count for all data sets, and not just train/dev/test
 ## we need to return to this step and recount for train data
 
 #### need to strip names just to be safe
-# for onto_type in ['mf','cc','bp']:
-#   prot_label_type = pickle.load(open(onto_type+'_prot_annot_type.pickle','rb'))
-#   prot_label_type_strip = {} ## 
-#   for key,val in prot_label_type.items(): 
-#     try: 
-#       prot_label_type_strip[key.strip()] = val
-#     except: 
-#       print (key)
-#   #
-#   pickle.dump(prot_label_type_strip,open(onto_type+'_prot_annot_type.pickle','wb'))
+for onto_type in ['mf','cc','bp']:
+  prot_label_type = pickle.load(open(onto_type+'_prot_annot_type.pickle','rb'))
+  prot_label_type_strip = {} ## 
+  for key,val in prot_label_type.items(): 
+    try: 
+      prot_label_type_strip[key.strip()] = val
+    except: 
+      print (key)
+  #
+  pickle.dump(prot_label_type_strip,open(onto_type+'_prot_annot_type.pickle','wb'))
 
 
 for onto_type in ['mf','cc','bp']:
   prot_label_type = pickle.load(open(onto_type+'_prot_annot_type.pickle','rb'))
   # read in train data again.
   counter_in_train = {}
-  fin = open ("/u/scratch/d/datduong/UniprotJan2020/AddIsA/"+onto_type+"-input.tsv","r")
+  #### read in the train file
+  fin = open ("/u/scratch/d/datduong/UniprotJan2020/AddIsA/TrainDevTest/"+onto_type+"-train.tsv","r")
   for index,line in enumerate(fin):
     motif = line.strip().split('\t')[-1] ## last col
     motif = motif.split(';') # COILED 272-319;DOMAIN ig-like v-type 30-139
-    if motif[0] == 'nan': 
+    if motif[0] == 'none': 
       continue
     for m in motif: 
       # if (line.split('\t')[0] == 'Q8ZPP9'):
@@ -52,7 +55,7 @@ for onto_type in ['mf','cc','bp']:
         counter_in_train[m] = 1
   #
   #
-  pickle.dump(counter_in_train, open('train_'+onto_type+'_prot_annot_type.pickle',"wb"))
+  pickle.dump(counter_in_train, open('TrainDevTest/train_'+onto_type+'_prot_annot_type.pickle',"wb"))
   ## write out in text anyway to see ? ... not really needed. 
 
 
@@ -61,7 +64,7 @@ for onto_type in ['mf','cc','bp']:
 
 #### get some data like zinc fingers etc..
 
-path = '/u/scratch/d/datduong/UniprotJan2020/AddIsA/'
+path = '/u/scratch/d/datduong/UniprotJan2020/AddIsA/TrainDevTest/'
 os.chdir(path)
 
 annot_name_arr = ['_prot_annot_type'] # , '_prot_annot_type_topo'

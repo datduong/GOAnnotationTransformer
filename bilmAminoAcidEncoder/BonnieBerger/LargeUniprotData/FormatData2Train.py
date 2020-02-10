@@ -8,34 +8,29 @@ import pandas as pd
 def Format2Train (fin_name,fout_name):
   # for onto in ['mf','cc','bp']:
   fin = open(fin_name,"r")
-  # fout = open(fout_name,"w")
+  fout = open(fout_name,"w")
   for index,line in enumerate(fin):
     if index == 0: ## skip header
       continue
     line = line.strip().split("\t") # Entry Gene ontology IDs Sequence  Prot Emb  Type
     if len(line[2]) < 20:
       continue ## skip short sequences?
-    # P0CK34  GO0006810 GO0006913 GO0016032 GO0030260 GO0044403 GO0044409 GO0044419 GO0044766 GO0046718 GO0046794 GO0046907 GO0051169 GO0051170 GO0051179 GO0051234 GO0051641 GO0051701 GO0051704 GO0075732 GO0075733 GO1902579 GO1902581 GO1902594 MPKRDAPWRHMAGTSKVSRSGNYSPSGGMGSKSNKANAWVNRPMYRKPRIYRMYKSPDVPKGCEGPCKVQSYEQRHDISHVGKVMCISDITRGNGITHRVGKRFCVKSVYILGKIWMDENIMLKNHTNSVIFWLVRDRRPYGTPMDFGQVFNMFDNEPSTATVKNDLRDRYQVMHRFNAKVSGGQYASNEQALVRRFWKVNNHVVYNHQEAGKYENHTENALLLYMACTHASNPVYATLKIRIYFYDSITN 2.0127356 2.3204482 -2.5727956 0.05463714 2.1264694 2.2226157 2.6598582 -1.3360673 0.47345287 -0.24576506 -1.5927457 0.5761297 0.30144203 1.1199504 -0.9677993 0.030553874 -1.190126 -0.6435121 1.3716252 1.8186872 -0.31875175 1.231084 -2.0255122 0.71411294 -3.0143094 -2.398779 -0.4160399 -0.5778183 0.9321428 2.1335223 1.7670814 2.252809 1.6116441 0.54933906 -1.9151797 1.6856685 -0.1230594 3.1120727 1.6652839 3.6802979 2.256363 1.3106073 -0.010380058 -3.0786116 -1.2762203 2.6824052 -0.9896302 0.9047133 -1.9570969 1.9116216 2.7822735 0.26710334 -0.019561993 -1.410613 -1.262366 1.628542 0.54004043 -0.8422738 -1.1750352 -0.5469422 1.089183 3.1632643 -1.871679 -2.4472032 2.0087004 0.6778927 -0.7896352 0.012454153 -1.3751782 -2.1542118 -1.4835027 0.82873815 -0.3728072 -1.6215867 1.0487263 -1.1527256 0.3341928 0.9411456 -1.2120696 -0.6230893 1.4279802 -1.1323034 -2.0770915 -1.1950109 1.3365928 -1.109156 1.1522198 0.3157159 -0.7521503 -1.8183339 -0.620338 1.6962907 -0.5209034 1.7124537 0.4186317 -1.9933925 2.2028923 -0.026782999 -0.52311456 -2.375578  ZN_FING 54-71;MOTIF bipartite nuclear localization signal 3-20;MOTIF nuclear localization signal 35-49;MOTIF nuclear export signal 96-117;MOTIF bipartite nuclear localization signal 195-242
-    # print (line[2])
-    # exit()
+    if len(line[2]) > 400:
+      continue ## skip long sequences otherwise too hard to fit on gpu
     seq = " ".join(line[2]) # we split the squence into single letter
-    # print (line[2])
-    # print (seq)
-    # print (line[1])
     # want output: name, seq, label, vec, motif
-    if line[0] == 'A0A2U3Y4D7': 
+    if line[0] == 'A0A2U3Y4D7': ## see example
       print (line)
-      print (line[1])
-      print (seq)
-      exit()
-    # fout.write( line[0]+"\t"+seq+"\t"+line[1]+"\t"+line[3]+"\t"+line[4]+"\n" )
-    # exit()
+    ##
+    fout.write( line[0]+"\t"+seq+"\t"+line[1]+"\t"+line[3]+"\t"+line[4]+"\n" )
   #
   fin.close()
-  # fout.close()
+  fout.close()
 
 
 ####
+
+print ('remove short and long sequences')
 os.chdir('/u/scratch/d/datduong/UniprotJan2020/AddIsA')
 Format2Train('bp-prot-annot.tsv','bp-input.tsv')
 Format2Train('mf-prot-annot.tsv','mf-input.tsv')
