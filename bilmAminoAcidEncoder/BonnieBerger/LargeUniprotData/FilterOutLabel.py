@@ -132,5 +132,5 @@ for onto in [ 'mf', 'cc', 'bp' ] :
   pickle.dump(in_train, open(onto+'_in_train_name.pickle','wb'))
 
 
-print (rare_label_array_in_test) # sanity
+# print (rare_label_array_in_test) # sanity
 

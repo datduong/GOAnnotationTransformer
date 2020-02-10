@@ -17,7 +17,7 @@ cache_name='DataInPickle'
 
 ## define parameters for mf-ontology
 checkpoint=60480 ## use this when we want to test a specific checkpoint
-block_size=5100 ## 6787 max len of amino+num_label, mf and cc 1792 but bp has more term 2048
+block_size=4500 ## 6787 max len of amino+num_label, mf and cc 1792 but bp has more term 2048
 
 batch_size=3
 seed=2020
