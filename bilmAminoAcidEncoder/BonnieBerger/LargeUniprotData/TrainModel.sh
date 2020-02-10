@@ -19,7 +19,7 @@ cache_name='DataInPickle'
 checkpoint=60480 ## use this when we want to test a specific checkpoint
 block_size=4500 ## 6787 max len of amino+num_label, mf and cc 1792 but bp has more term 2048
 
-batch_size=3
+batch_size=4
 seed=2020
 save_every=10000
 
@@ -67,7 +67,7 @@ for ontology in mf ; do
   ## suppose to run Base Transformer without any extra information, then you remove --aa_type_file $aa_type_file --reset_emb_zero
   ## suppose you want to train end-to-end and not used a pre-trained GO embeddings, then you remove --pretrained_label_path $pretrained_label_path
 
-  CUDA_VISIBLE_DEVICES=5,6,7 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --aa_block_size 512 --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt
+  CUDA_VISIBLE_DEVICES=2,5,6,7 python3 -u RunTokenClassifyProtData.py --cache_name $cache_name --aa_block_size 512 --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt
 
 
   #### testing phase
