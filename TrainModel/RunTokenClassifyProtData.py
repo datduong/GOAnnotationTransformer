@@ -288,12 +288,16 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
   train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
   train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=2)
 
+  #### params for optimization. notice, depends on @len(train_dataloader)
+
+  len_train_dataloader = int ( len(train_dataloader) * args.train_dev_fraction ) ## take 90% as train ?
+  len_dev_dataloader = len(train_dataloader) - len_train_dataloader
 
   if args.max_steps > 0:
     t_total = args.max_steps
-    args.num_train_epochs = args.max_steps // (len(train_dataloader) // args.gradient_accumulation_steps) + 1
+    args.num_train_epochs = args.max_steps // (len_train_dataloader // args.gradient_accumulation_steps) + 1
   else:
-    t_total = len(train_dataloader) // args.gradient_accumulation_steps * args.num_train_epochs
+    t_total = len_train_dataloader // args.gradient_accumulation_steps * args.num_train_epochs
 
   # Prepare optimizer and schedule (linear warmup and decay)
   no_decay = ['bias', 'LayerNorm.weight']
@@ -343,14 +347,24 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
 
   #### we will split the train into train+dev in each @epoch_counter
-  
+
   for epoch_counter in train_iterator:
-  
+
+    ## @train_dataloader is an iterator, and can access sample by doing train_dataloader[1]
+    ## must split this into 2 sets. train/dev
+
+    train_dataset_inside, dev_dataset_inside = torch.utils.data.random_split(train_dataset, [len_train_dataloader, len_dev_dataloader]) ##!! split the @dataset, so we have to redo the @sampler
+
+    train_sampler = RandomSampler(train_dataset_inside) if args.local_rank == -1 else DistributedSampler(train_dataset_inside)
+    train_dataloader = DataLoader(train_dataset_inside, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=2)
+
+    ## pass in @train_dataloader here.
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
+
     for step, batch in enumerate(epoch_iterator):
+
       # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
       ## !!!  WE ARE NOT GOING TO TRAIN MASKED-LM
-
 
       if config.ppi_front:
         max_len_in_batch = int( torch.max ( torch.sum(batch[3][:,1::],1) ) ) ## exclude 1st column, only need max len of AA
@@ -487,7 +501,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
   return global_step, tr_loss / global_step
 
 
-def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, entropy_loss_weight=None):
+def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, entropy_loss_weight=None, eval_dataset=None):
 
   if args.new_num_labels is None:
     num_labels = len(label_2test_array)
@@ -497,10 +511,11 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
   print ('num_labels {}'.format(num_labels))
   print ('len label to test {}'.format(len(label_2test_array)))
 
-  # Loop to handle MNLI double evaluation (matched, mis-matched)
   eval_output_dir = args.output_dir
 
-  eval_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=True, config=config)
+  if eval_dataset is None: ##!! read in data if a pre-made @eval_dataset is not given
+    ##!! otherwise we take @eval_dataset which is created from the @train_dataset as a random split
+    eval_dataset = load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=True, config=config)
 
   if not os.path.exists(eval_output_dir) and args.local_rank in [-1, 0]:
     os.makedirs(eval_output_dir)
@@ -576,7 +591,6 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
 
 
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-  # evaluation_metric.print_metrics( result )
   result['eval_loss'] = eval_loss / nb_eval_steps
 
   output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
@@ -586,24 +600,12 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
     writer.write("\n***** Eval results {} *****".format(prefix))
     for key in sorted(result.keys()):
       print( "  {} = {}".format( key, str(result[key]) ) )
-      # writer.write("%s = %s\n" % (key, str(result[key])))
+
 
   if args.save_prediction is not None:
     print ('\nsave prediction and gold standard, size num_ob x num_label\n') ## useful if we want to analyze each group of labels
     pickle.dump( {'prediction':prediction, 'true_label':true_label} , open( os.path.join(eval_output_dir, args.save_prediction+'.pickle') , 'wb' ) )
 
-  ## apply post hoc max
-  # prediction = PosthocCorrect.PosthocMax(label_2test_array,prediction)
-  # result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=[5,10,15,20,25]) ## we can pass vector of P@k and R@k
-  # # evaluation_metric.print_metrics( result )
-  # output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
-  # with open(output_eval_file, "a+") as writer:
-  #   logger.info("***** Eval results Posthoc max {} *****".format(prefix))
-  #   print("\n***** Eval results Posthoc max {} *****".format(prefix))
-  #   writer.write("\n***** Eval results Posthoc max {} *****".format(prefix))
-  #   for key in sorted(result.keys()):
-  #     print( "  {} = {}".format( key, str(result[key]) ) )
-  #     # writer.write("%s = %s\n" % (key, str(result[key])))
 
   return result
 
@@ -615,6 +617,7 @@ def main():
   parser.add_argument("--entropy_loss_weight", action="store_true", default=False)
   parser.add_argument("--new_num_labels", type=int, default=None)
   parser.add_argument("--aa_block_size", type=int, default=1024)
+  parser.add_argument("--train_dev_fraction", type=float, default=.90)
   parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--reset_emb_zero", action="store_true", default=False)
