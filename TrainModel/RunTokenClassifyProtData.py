@@ -342,7 +342,10 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
 
   set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
 
+  #### we will split the train into train+dev in each @epoch_counter
+  
   for epoch_counter in train_iterator:
+  
     epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=args.local_rank not in [-1, 0])
     for step, batch in enumerate(epoch_iterator):
       # inputs, labels, attention_mask = mask_tokens(batch, tokenizer, args) if args.mlm else (batch, batch)
