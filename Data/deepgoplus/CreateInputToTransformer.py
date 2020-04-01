@@ -42,7 +42,7 @@ for data_type in ['test','train']: #'test','train'
         line[1] = [ lab for lab in line[1] if graph.nodes[lab]['namespace'] == ontology_map[ontology] ]
       except: 
         print (line[0])
-        exit() ## check T100900015822
+        line[1] = [ 'none' ]
 
       line[1] = sorted(line[1]) ## just sort to read easier
       line[1] = [ re.sub(":","",lab) for lab in line[1] ]  ## remove GO:xyz style
