@@ -28,7 +28,7 @@ for data_type in ['test','train']: #'test','train'
   for ontology in ['mf','cc','bp']:
     # Entry Gene ontology IDs Sequence  Prot Emb  Type
     fin = open('deepgoplus.cafa3.'+data_type+'-bonnie.tsv',"r") # test-mf-prot-annot.tsv
-    fout = open('deepgoplus.cafa3.'+data_type+'-bonnie-input.tsv',"w") # test-mf-input.tsv
+    fout = open('deepgoplus.cafa3.'+data_type+'-bonnie-'+ontology+'.tsv',"w") # test-mf-input.tsv
     for index,line in tqdm ( enumerate(fin) ) :
       if index == 0 :
         continue ## skip header
@@ -40,6 +40,8 @@ for data_type in ['test','train']: #'test','train'
       ##!! filter out by ontology
       try: 
         line[1] = [ lab for lab in line[1] if graph.nodes[lab]['namespace'] == ontology_map[ontology] ]
+        if len(line[1]) == 0: ## may not have all categories 
+          line[1] = [ 'none' ]
       except: 
         print (line[0])
         line[1] = [ 'none' ]
