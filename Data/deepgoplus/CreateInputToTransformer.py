@@ -31,7 +31,7 @@ for data_type in ['test','train']: #'test','train'
   for ontology in ['mf','cc','bp']:
     # Entry Gene ontology IDs Sequence  Prot Emb  Type
     fin = open('deepgoplus.cafa3.'+data_type+'-bonnie.tsv',"r") # test-mf-prot-annot.tsv
-    fout = open('SeqLenLess1000/deepgoplus.cafa3.'+data_type+'-bonnie-'+ontology+'.tsv',"w") # test-mf-input.tsv
+    fout = open('SeqLenLess2000/deepgoplus.cafa3.'+data_type+'-bonnie-'+ontology+'.tsv',"w") # test-mf-input.tsv
     for index,line in tqdm ( enumerate(fin) ) :
       if index == 0 :
         continue ## skip header
@@ -39,14 +39,12 @@ for data_type in ['test','train']: #'test','train'
       line = line.strip().split('\t')
 
       #### remove long sequences, transformer will not handle it
-      if len( line[2] ) > 1000:
+      if len( line[2] ) > 2000:
         print ('LongLen '+line[0])
         LongLenCounter = LongLenCounter + 1
         continue
 
-      fout.write( line[0] + "\t" + " ".join(a for a in line[2]) + "\t") ## name and seq
       line[1] = line[1].split(";") ## split by space, and not ";"
-
       ##!! filter out by ontology
       try:
         line[1] = [ lab for lab in line[1] if graph.nodes[lab]['namespace'] == ontology_map[ontology] ]
@@ -55,6 +53,12 @@ for data_type in ['test','train']: #'test','train'
       except:
         print (line[0])
         line[1] = [ 'none' ]
+
+      #### do not record proteins without any labels?
+      if 'none' in line[1]:
+        continue
+
+      fout.write( line[0] + "\t" + " ".join(a for a in line[2]) + "\t") ## name and seq
 
       line[1] = sorted(line[1]) ## just sort to read easier
       line[1] = [ re.sub(":","",lab) for lab in line[1] ]  ## remove GO:xyz style
