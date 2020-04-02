@@ -114,8 +114,8 @@ class TextDataset(Dataset):
         self.input_ids_label = pickle.load(handle)
       with open(cached_features_file+'mask_ids_aa', 'rb') as handle:
         self.mask_ids_aa = pickle.load(handle)
-      with open(cached_features_file+'ppi_vec', 'rb') as handle:
-        self.ppi_vec = pickle.load(handle)
+      with open(cached_features_file+'metadata_prot_vec', 'rb') as handle:
+        self.metadata_prot_vec = pickle.load(handle)
       if args.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'rb') as handle:
           self.aa_type_emb = pickle.load(handle)
@@ -143,7 +143,7 @@ class TextDataset(Dataset):
       self.input_ids_aa = []
       self.input_ids_label = []
       self.mask_ids_aa = []
-      self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
+      self.metadata_prot_vec = [] ## some vector on the prot-prot interaction network... or something like that
       if args.aa_type_emb:
         self.aa_type_emb = []
 
@@ -167,7 +167,7 @@ class TextDataset(Dataset):
 
         ### !!!!
         ### !!!! now we append the protein-network vector
-        self.ppi_vec.append ([float(s) for s in text[3].split()]) ## 3rd tab
+        self.metadata_prot_vec.append ([float(s) for s in text[3].split()]) ## 3rd tab
 
         ## create a gold-standard label 1-hot vector.
         ## convert label into 1-hot style
@@ -198,7 +198,7 @@ class TextDataset(Dataset):
           print ('see sample {}'.format(counter))
           print (this_aa)
           print (label1hot)
-          print (self.ppi_vec[counter])
+          print (self.metadata_prot_vec[counter])
 
         if (len(this_aa) + num_label) > block_size:
           print ('len too long, expand block_size')
@@ -214,8 +214,8 @@ class TextDataset(Dataset):
         pickle.dump(self.input_ids_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'mask_ids_aa', 'wb') as handle:
         pickle.dump(self.mask_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      with open(cached_features_file+'ppi_vec', 'wb') as handle:
-          pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'metadata_prot_vec', 'wb') as handle:
+          pickle.dump(self.metadata_prot_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
       if args.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'wb') as handle:
@@ -230,14 +230,14 @@ class TextDataset(Dataset):
               torch.tensor(self.input_ids_aa[item]),
               torch.tensor(self.input_ids_label[item]),
               torch.tensor(self.mask_ids_aa[item]),
-              torch.tensor(self.ppi_vec[item]),
+              torch.tensor(self.metadata_prot_vec[item]),
               torch.LongTensor(self.aa_type_emb[item].toarray()))
     else:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
               torch.tensor(self.input_ids_label[item]),
               torch.tensor(self.mask_ids_aa[item]),
-              torch.tensor(self.ppi_vec[item]) )
+              torch.tensor(self.metadata_prot_vec[item]) )
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):

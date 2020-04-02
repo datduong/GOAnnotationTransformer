@@ -87,8 +87,8 @@ class TextDataset(Dataset):
         self.input_ids_label = pickle.load(handle)
       with open(cached_features_file+'mask_ids_aa', 'rb') as handle:
         self.mask_ids_aa = pickle.load(handle)
-      with open(cached_features_file+'ppi_vec', 'rb') as handle:
-        self.ppi_vec = pickle.load(handle)
+      with open(cached_features_file+'metadata_prot_vec', 'rb') as handle:
+        self.metadata_prot_vec = pickle.load(handle)
       if args.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'rb') as handle:
           self.aa_type_emb = pickle.load(handle)
@@ -107,7 +107,7 @@ class TextDataset(Dataset):
       self.input_ids_aa = []
       self.input_ids_label = []
       self.mask_ids_aa = []
-      self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
+      self.metadata_prot_vec = [] ## some vector on the prot-prot interaction network... or something like that
       if args.aa_type_emb:
         self.aa_type_emb = []
 
@@ -129,7 +129,7 @@ class TextDataset(Dataset):
 
         ### !!!!
         ### !!!! now we append the protein-network vector
-        self.ppi_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
+        self.metadata_prot_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
 
         ## create a gold-standard label 1-hot vector.
         ## convert label into 1-hot style
@@ -159,7 +159,7 @@ class TextDataset(Dataset):
           print ('see sample {}'.format(counter))
           print (this_aa)
           print (label1hot)
-          print (self.ppi_vec[counter])
+          print (self.metadata_prot_vec[counter])
 
         if (len(this_aa) + num_label) > block_size:
           print ('len too long, expand block_size')
@@ -175,8 +175,8 @@ class TextDataset(Dataset):
         pickle.dump(self.input_ids_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'mask_ids_aa', 'wb') as handle:
         pickle.dump(self.mask_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      with open(cached_features_file+'ppi_vec', 'wb') as handle:
-          pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'metadata_prot_vec', 'wb') as handle:
+          pickle.dump(self.metadata_prot_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
       if args.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'wb') as handle:
@@ -191,14 +191,14 @@ class TextDataset(Dataset):
             torch.tensor(self.input_ids_aa[item]),
             torch.tensor(self.input_ids_label[item]),
             torch.tensor(self.mask_ids_aa[item]),
-            torch.tensor(self.ppi_vec[item]),
+            torch.tensor(self.metadata_prot_vec[item]),
             torch.LongTensor(self.aa_type_emb[item]))
     else:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
               torch.tensor(self.input_ids_label[item]),
               torch.tensor(self.mask_ids_aa[item]),
-              torch.tensor(self.ppi_vec[item]) )
+              torch.tensor(self.metadata_prot_vec[item]) )
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
@@ -299,7 +299,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       # labels_mask[:,-1] = 0 ## must mask SEP in the label side
       # labels_mask = labels_mask.to(args.device) ## test all labels
 
-      ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
+      metadata_prot_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make 3D batchsize x 1 x dim
 
       if args.aa_type_emb:
         aa_type = batch[5][:,0:max_len_in_batch].to(args.device)
@@ -312,7 +312,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
 
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=metadata_prot_vec )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
@@ -451,7 +451,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     labels_mask = torch.cat((torch.zeros(input_ids_aa.shape),
       torch.ones(input_ids_label.shape)),dim=1).to(args.device) ## test all labels
 
-    ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make
+    metadata_prot_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,256).to(args.device) ## make
 
     if args.aa_type_emb:
       aa_type = batch[5][:,0:max_len_in_batch].to(args.device)
@@ -459,7 +459,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
       aa_type = None
 
     with torch.no_grad():
-      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
+      outputs = model(0, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=metadata_prot_vec )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 

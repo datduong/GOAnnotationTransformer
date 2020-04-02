@@ -36,7 +36,7 @@ import evaluation_metric
 # import PosthocCorrect
 
 
-MODEL_CLASSES = {
+MODEL_CLASSES = { #### pick a model
   'ppi': (BertConfig, TokenClassifier.BertForTokenClassification2EmbPPI, BertTokenizer), ## replace the standard @BertForTokenClassification
   'noppi': (BertConfig, TokenClassifier.BertForTokenClassification2Emb, BertTokenizer) ## replace the standard @BertForTokenClassification
 }
@@ -123,13 +123,16 @@ class TextDataset(Dataset):
         self.input_ids_label = pickle.load(handle)
       with open(cached_features_file+'mask_ids_aa', 'rb') as handle:
         self.mask_ids_aa = pickle.load(handle)
-      with open(cached_features_file+'ppi_vec', 'rb') as handle:
-        self.ppi_vec = pickle.load(handle)
+
+      if config.metadata_prot_vec:
+        with open(cached_features_file+'metadata_prot_vec', 'rb') as handle:
+          self.metadata_prot_vec = pickle.load(handle)
+
       if config.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'rb') as handle:
           self.aa_type_emb = pickle.load(handle)
 
-    else:
+    else: ## COMMENT not loading, will read from raw input
 
       annot_name_sorted = None
       if args.aa_type_file is not None:
@@ -153,7 +156,7 @@ class TextDataset(Dataset):
       self.input_ids_label = []
       self.mask_ids_aa = []
       if config.metadata_protein:
-        self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
+        self.metadata_prot_vec = [] ## some vector on the prot-prot interaction network... or something like that
       if config.aa_type_emb:
         self.aa_type_emb = []
 
@@ -176,7 +179,7 @@ class TextDataset(Dataset):
 
         ## COMMENT now we append the protein-network vector. this data may not exists?
         if config.metadata_protein:
-          self.ppi_vec.append ([float(s) for s in text[3].split()]) ## 3rd tab
+          self.metadata_prot_vec.append ([float(s) for s in text[3].split()]) ## 3rd tab
 
         ##!! create a gold-standard label 1-hot vector.
         ## convert label into 1-hot style
@@ -198,7 +201,7 @@ class TextDataset(Dataset):
         this_aa = this_aa + [0] * ( max_aa_len - len_withClsSep ) ## padding
 
         if config.ppi_front: ## put ppi vector in front ... PPIvec CLS--aa--SEP GOvec ... do we need to do CLS PPIvec SEP--aa--SEP GOvec SEP ??
-          if np.sum(self.ppi_vec[counter]) == 0:
+          if np.sum(self.metadata_prot_vec[counter]) == 0:
             mask_value = [0] ## vector not exist, mask 0
           else:
             mask_value = [1]
@@ -217,7 +220,7 @@ class TextDataset(Dataset):
           print ('see sample {}'.format(counter))
           print (this_aa)
           print (label1hot)
-          print (self.ppi_vec[counter])
+          print (self.metadata_prot_vec[counter])
 
         if (len(this_aa) + num_label) > block_size:
           print ('len too long, expand block_size')
@@ -237,8 +240,8 @@ class TextDataset(Dataset):
         pickle.dump(self.mask_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
       if config.metadata_protein:
-        with open(cached_features_file+'ppi_vec', 'wb') as handle:
-          pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(cached_features_file+'metadata_prot_vec', 'wb') as handle:
+          pickle.dump(self.metadata_prot_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
       if config.aa_type_emb:
         with open(cached_features_file+'aa_type_emb', 'wb') as handle:
@@ -248,37 +251,20 @@ class TextDataset(Dataset):
     return len(self.input_ids_aa)
 
   def __getitem__(self, item):
-    
-    if self.config.aa_type_emb and self.config.metadata_protein:
-      return (torch.LongTensor(self.label1hot[item]),
-              torch.tensor(self.input_ids_aa[item]),
-              torch.tensor(self.input_ids_label[item]),
-              torch.tensor(self.mask_ids_aa[item]),
-              torch.tensor(self.ppi_vec[item]),
-              torch.LongTensor(self.aa_type_emb[item].toarray()))
 
-    if not self.config.aa_type_emb and self.config.metadata_protein:
-      return (torch.LongTensor(self.label1hot[item]),
-              torch.tensor(self.input_ids_aa[item]),
-              torch.tensor(self.input_ids_label[item]),
-              torch.tensor(self.mask_ids_aa[item]),
-              torch.tensor(self.ppi_vec[item]) )
+    #### 4 cases
+    base = (torch.LongTensor(self.label1hot[item]),
+            torch.tensor(self.input_ids_aa[item]),
+            torch.tensor(self.input_ids_label[item]),
+            torch.tensor(self.mask_ids_aa[item]))
 
-    if self.config.aa_type_emb and not self.config.metadata_protein:
-      return (torch.LongTensor(self.label1hot[item]),
-              torch.tensor(self.input_ids_aa[item]),
-              torch.tensor(self.input_ids_label[item]),
-              torch.tensor(self.mask_ids_aa[item]),
-              torch.LongTensor(self.aa_type_emb[item].toarray()) )
+    if self.config.metadata_protein:
+      base = base + ( torch.tensor(self.metadata_prot_vec[item]) , ) ## add item to tuple
 
-    if not self.config.aa_type_emb and not self.config.metadata_protein:
-      return (torch.LongTensor(self.label1hot[item]),
-              torch.tensor(self.input_ids_aa[item]),
-              torch.tensor(self.input_ids_label[item]),
-              torch.tensor(self.mask_ids_aa[item]))
+    if self.config.aa_type_emb:
+      base = base + ( torch.LongTensor(self.aa_type_emb[item].toarray()) , )
 
-
-
+    return base
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False, config=None):
@@ -409,11 +395,11 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
 
       if args.model_type == 'ppi':
         if config.ppi_front:
-          ppi_vec = batch[4].unsqueeze(1).to(args.device)
+          metadata_prot_vec = batch[4].unsqueeze(1).to(args.device)
         else:
-          ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,config.protein_dim).to(args.device) ## make 3D batchsize x 1 x dim
+          metadata_prot_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,config.protein_dim).to(args.device) ## make 3D batchsize x 1 x dim
       else:
-        ppi_vec = None
+        metadata_prot_vec = None
 
       if config.aa_type_emb:
         ## batch x aa_len x type
@@ -427,7 +413,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
 
-      outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec,entropy_loss_weight=entropy_loss_weight )  # if args.mlm else model(inputs, labels=labels)
+      outputs = model(metadata_prot_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=metadata_prot_vec,entropy_loss_weight=entropy_loss_weight )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
@@ -583,11 +569,11 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
 
     if args.model_type == 'ppi':
       if config.ppi_front:
-        ppi_vec = batch[4].unsqueeze(1).to(args.device)
+        metadata_prot_vec = batch[4].unsqueeze(1).to(args.device)
       else:
-        ppi_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,config.protein_dim).to(args.device) ## make 3D batchsize x 1 x dim
+        metadata_prot_vec = batch[4].unsqueeze(1).expand(labels.shape[0],max_len_in_batch+num_labels,config.protein_dim).to(args.device) ## make 3D batchsize x 1 x dim
     else:
-      ppi_vec = None
+      metadata_prot_vec = None
 
     if config.aa_type_emb:
       aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
@@ -595,7 +581,7 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
       aa_type = None
 
     with torch.no_grad():
-      outputs = model(ppi_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec, entropy_loss_weight=entropy_loss_weight )
+      outputs = model(metadata_prot_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=metadata_prot_vec, entropy_loss_weight=entropy_loss_weight )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 

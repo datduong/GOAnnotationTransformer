@@ -86,8 +86,8 @@ class TextDataset(Dataset):
         self.label_mask = pickle.load(handle)
       with open(cached_features_file+'token_type', 'rb') as handle:
         self.token_type = pickle.load(handle)
-      with open(cached_features_file+'ppi_vec', 'rb') as handle:
-        self.ppi_vec = pickle.load(handle)
+      with open(cached_features_file+'metadata_prot_vec', 'rb') as handle:
+        self.metadata_prot_vec = pickle.load(handle)
 
     else:
       logger.info("Creating features from dataset file at %s", directory)
@@ -97,7 +97,7 @@ class TextDataset(Dataset):
       self.label1hot = [] ## take 1 hot (should short labels by alphabet)
       self.label_mask = []
       self.token_type = []
-      self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
+      self.metadata_prot_vec = [] ## some vector on the prot-prot interaction network... or something like that
 
       fin = open(file_path,"r",encoding='utf-8')
       for counter, text in tqdm(enumerate(fin)):
@@ -112,7 +112,7 @@ class TextDataset(Dataset):
 
         ### !!!!
         ### !!!! now we append the protein-network vector
-        self.ppi_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
+        self.metadata_prot_vec.append ([float(s) for s in text[2].split()]) ## 3rd tab
 
         kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
         num_kmer_text = len(kmer_text)
@@ -176,8 +176,8 @@ class TextDataset(Dataset):
         pickle.dump(self.label_mask, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'token_type', 'wb') as handle:
         pickle.dump(self.token_type, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      with open(cached_features_file+'ppi_vec', 'wb') as handle:
-          pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      with open(cached_features_file+'metadata_prot_vec', 'wb') as handle:
+          pickle.dump(self.metadata_prot_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
   def __len__(self):
     return len(self.examples)
@@ -185,7 +185,7 @@ class TextDataset(Dataset):
   def __getitem__(self, item):
     return (torch.tensor(self.attention_mask[item]), torch.tensor(self.examples[item]),
             torch.LongTensor(self.label1hot[item]), torch.tensor(self.label_mask[item]),
-            torch.tensor(self.token_type[item]), torch.tensor(self.ppi_vec[item]) )
+            torch.tensor(self.token_type[item]), torch.tensor(self.metadata_prot_vec[item]) )
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False):
@@ -282,7 +282,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
       token_type = batch[4][:,0:max_len_in_batch].to(args.device)
 
-      ppi_vec = batch[5].unsqueeze(1).expand(inputs.shape[0],max_len_in_batch,256).to(args.device) ## make 3D batchsize x 1 x dim
+      metadata_prot_vec = batch[5].unsqueeze(1).expand(inputs.shape[0],max_len_in_batch,256).to(args.device) ## make 3D batchsize x 1 x dim
 
       model.train()
 
@@ -290,7 +290,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array):
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
 
-      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )  # if args.mlm else model(inputs, labels=labels)
+      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=metadata_prot_vec )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
 
@@ -410,11 +410,11 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix=""):
     labels_mask = batch[3][:,0:max_len_in_batch].to(args.device) ## extract out labels from the array input... probably doesn't need this to be in GPU
     token_type = batch[4][:,0:max_len_in_batch].to(args.device)
 
-    ppi_vec = batch[5].unsqueeze(1).expand(inputs.shape[0],max_len_in_batch,256).to(args.device) ## make 3D batchsize x 1 x dim
+    metadata_prot_vec = batch[5].unsqueeze(1).expand(inputs.shape[0],max_len_in_batch,256).to(args.device) ## make 3D batchsize x 1 x dim
 
 
     with torch.no_grad():
-      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=ppi_vec )
+      outputs = model(inputs, token_type_ids=token_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=metadata_prot_vec )
       lm_loss = outputs[0]
       eval_loss += lm_loss.mean().item()
 
