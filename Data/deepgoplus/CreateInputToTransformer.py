@@ -25,24 +25,34 @@ ontology_map = {'mf':'molecular_function','bp':'biological_process','cc':'cellul
 
 for data_type in ['test','train']: #'test','train'
   #### we need to filter by category otherwise too much. can't run it.
+
+  LongLenCounter = 0
+
   for ontology in ['mf','cc','bp']:
     # Entry Gene ontology IDs Sequence  Prot Emb  Type
     fin = open('deepgoplus.cafa3.'+data_type+'-bonnie.tsv',"r") # test-mf-prot-annot.tsv
-    fout = open('deepgoplus.cafa3.'+data_type+'-bonnie-'+ontology+'.tsv',"w") # test-mf-input.tsv
+    fout = open('SeqLenLess1000/deepgoplus.cafa3.'+data_type+'-bonnie-'+ontology+'.tsv',"w") # test-mf-input.tsv
     for index,line in tqdm ( enumerate(fin) ) :
       if index == 0 :
         continue ## skip header
 
       line = line.strip().split('\t')
+
+      #### remove long sequences, transformer will not handle it
+      if len( line[2] ) > 1000:
+        print ('LongLen '+line[0])
+        LongLenCounter = LongLenCounter + 1
+        continue
+
       fout.write( line[0] + "\t" + " ".join(a for a in line[2]) + "\t") ## name and seq
       line[1] = line[1].split(";") ## split by space, and not ";"
 
       ##!! filter out by ontology
-      try: 
+      try:
         line[1] = [ lab for lab in line[1] if graph.nodes[lab]['namespace'] == ontology_map[ontology] ]
-        if len(line[1]) == 0: ## may not have all categories 
+        if len(line[1]) == 0: ## may not have all categories
           line[1] = [ 'none' ]
-      except: 
+      except:
         print (line[0])
         line[1] = [ 'none' ]
 
@@ -60,5 +70,7 @@ for data_type in ['test','train']: #'test','train'
     ## next data input
     fin.close()
     fout.close()
+    print ('LongLenCounter '+str(LongLenCounter))
+
 
 

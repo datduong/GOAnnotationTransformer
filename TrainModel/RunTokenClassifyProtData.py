@@ -152,7 +152,8 @@ class TextDataset(Dataset):
       self.input_ids_aa = []
       self.input_ids_label = []
       self.mask_ids_aa = []
-      self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
+      if config.metadata_protein:
+        self.ppi_vec = [] ## some vector on the prot-prot interaction network... or something like that
       if config.aa_type_emb:
         self.aa_type_emb = []
 
@@ -173,15 +174,18 @@ class TextDataset(Dataset):
         ## split at \t ?? [seq \t label]
         text = text.split("\t") ## position 0 is kmer sequence, position 1 is list of labels
 
-        ##!!##!!##!!##!! now we append the protein-network vector
-        self.ppi_vec.append ([float(s) for s in text[3].split()]) ## 3rd tab
+        ## COMMENT now we append the protein-network vector. this data may not exists?
+        if config.metadata_protein:
+          self.ppi_vec.append ([float(s) for s in text[3].split()]) ## 3rd tab
 
-        ## create a gold-standard label 1-hot vector.
+        ##!! create a gold-standard label 1-hot vector.
         ## convert label into 1-hot style
         label1hot = np.zeros(num_label) ## 1D array
         this_label = text[2].strip().split() ## by space
-        index_as1 = [label_index_map[label] for label in this_label]
-        label1hot [ index_as1 ] = 1
+        if 'none' not in this_label: ## has label, then we update the 1-hot
+          index_as1 = [label_index_map[label] for label in this_label]
+          label1hot [ index_as1 ] = 1
+        #
         self.label1hot.append( label1hot )
 
         ## kmer_text = text[0].split() ## !! we must not use string text, otherwise, we will get wrong len
@@ -231,7 +235,9 @@ class TextDataset(Dataset):
         pickle.dump(self.input_ids_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
       with open(cached_features_file+'mask_ids_aa', 'wb') as handle:
         pickle.dump(self.mask_ids_aa, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      with open(cached_features_file+'ppi_vec', 'wb') as handle:
+
+      if config.metadata_protein:
+        with open(cached_features_file+'ppi_vec', 'wb') as handle:
           pickle.dump(self.ppi_vec, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
       if config.aa_type_emb:
@@ -242,19 +248,37 @@ class TextDataset(Dataset):
     return len(self.input_ids_aa)
 
   def __getitem__(self, item):
-    if self.config.aa_type_emb:
+    
+    if self.config.aa_type_emb and self.config.metadata_protein:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
               torch.tensor(self.input_ids_label[item]),
               torch.tensor(self.mask_ids_aa[item]),
               torch.tensor(self.ppi_vec[item]),
               torch.LongTensor(self.aa_type_emb[item].toarray()))
-    else:
+
+    if not self.config.aa_type_emb and self.config.metadata_protein:
       return (torch.LongTensor(self.label1hot[item]),
               torch.tensor(self.input_ids_aa[item]),
               torch.tensor(self.input_ids_label[item]),
               torch.tensor(self.mask_ids_aa[item]),
               torch.tensor(self.ppi_vec[item]) )
+
+    if self.config.aa_type_emb and not self.config.metadata_protein:
+      return (torch.LongTensor(self.label1hot[item]),
+              torch.tensor(self.input_ids_aa[item]),
+              torch.tensor(self.input_ids_label[item]),
+              torch.tensor(self.mask_ids_aa[item]),
+              torch.LongTensor(self.aa_type_emb[item].toarray()) )
+
+    if not self.config.aa_type_emb and not self.config.metadata_protein:
+      return (torch.LongTensor(self.label1hot[item]),
+              torch.tensor(self.input_ids_aa[item]),
+              torch.tensor(self.input_ids_label[item]),
+              torch.tensor(self.mask_ids_aa[item]))
+
+
+
 
 
 def load_and_cache_examples(args, tokenizer, label_2test_array, evaluate=False, config=None):
