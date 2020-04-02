@@ -124,7 +124,7 @@ class TextDataset(Dataset):
       with open(cached_features_file+'mask_ids_aa', 'rb') as handle:
         self.mask_ids_aa = pickle.load(handle)
 
-      if config.metadata_prot_vec:
+      if config.metadata_protein:
         with open(cached_features_file+'metadata_prot_vec', 'rb') as handle:
           self.metadata_prot_vec = pickle.load(handle)
 
@@ -220,11 +220,13 @@ class TextDataset(Dataset):
           print ('see sample {}'.format(counter))
           print (this_aa)
           print (label1hot)
-          print (self.metadata_prot_vec[counter])
+          if config.metadata_protein:
+            print (self.metadata_prot_vec[counter])
 
         if (len(this_aa) + num_label) > block_size:
-          print ('len too long, expand block_size')
+          print ('len too long, expand block_size, current block {}'.format(block_size))
           print ('len {} num label {}'.format(len(this_aa), num_label))
+          print (this_aa)
           print (text)
           exit()
 
@@ -295,14 +297,21 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
     tb_writer = SummaryWriter()
 
   args.train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
-  train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
-  train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=2)
+  # train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
+  # train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=2)
 
   #### params for optimization. notice, depends on @len(train_dataloader)
+  ## COMMENT, we need to do a first split of the data. (kind of stupid.)
 
-  len_train_dataloader = int ( len(train_dataloader) * args.train_dev_fraction ) ## take 90% as train ?
-  len_dev_dataloader = len(train_dataloader) - len_train_dataloader
+  len_train_dataset_split = int ( len(train_dataset) * args.train_dev_fraction ) ## take 90% as train ?
+  len_dev_dataset_split = len(train_dataset) - len_train_dataset_split
 
+  train_dataset_inside, dev_dataset_inside = torch.utils.data.random_split(train_dataset, [len_train_dataset_split, len_dev_dataset_split]) ##!! split the @dataset, so we have to redo the @sampler
+
+  train_sampler = RandomSampler(train_dataset_inside) if args.local_rank == -1 else DistributedSampler(train_dataset_inside)
+  train_dataloader = DataLoader(train_dataset_inside, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=2)
+
+  len_train_dataloader = len(train_dataloader)
   if args.max_steps > 0:
     t_total = args.max_steps
     args.num_train_epochs = args.max_steps // (len_train_dataloader // args.gradient_accumulation_steps) + 1
@@ -362,8 +371,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
 
     ## @train_dataloader is an iterator, and can access sample by doing train_dataloader[1]
     ## must split this into 2 sets. train/dev
-
-    train_dataset_inside, dev_dataset_inside = torch.utils.data.random_split(train_dataset, [len_train_dataloader, len_dev_dataloader]) ##!! split the @dataset, so we have to redo the @sampler
+    train_dataset_inside, dev_dataset_inside = torch.utils.data.random_split(train_dataset, [len_train_dataset_split, len_dev_dataset_split]) ##!! split the @dataset, so we have to redo the @sampler
 
     train_sampler = RandomSampler(train_dataset_inside) if args.local_rank == -1 else DistributedSampler(train_dataset_inside)
     train_dataloader = DataLoader(train_dataset_inside, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=2)
@@ -464,7 +472,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
         epoch_iterator.close()
         break
 
-    ## end 1 epoch
+    ## COMMENT end 1 epoch
     print ('\n\neval end epoch {}'.format(epoch_counter))
 
     ## to save some time, let's just save at end of epoch
@@ -477,7 +485,8 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
     logger.info("Saving model checkpoint to %s", output_dir)
 
-    results = evaluate(args, model, tokenizer,label_2test_array, prefix=str(global_step), config=config, entropy_loss_weight=entropy_loss_weight)
+    ## COMMENT using @dev_dataset_inside
+    results = evaluate(args, model, tokenizer,label_2test_array, prefix=str(global_step), config=config, entropy_loss_weight=entropy_loss_weight, eval_dataset=dev_dataset_inside)
     # for key, value in results.items():
     #   tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
 
