@@ -770,14 +770,14 @@ def main():
   logger.warning("Process rank: %s, device: %s, n_gpu: %s, distributed training: %s, 16-bits training: %s",
           args.local_rank, device, args.n_gpu, bool(args.local_rank != -1), args.fp16)
 
-  set_seed(args) ####
+  set_seed(args) # ! set seed
 
   #### read in labels to be testing
   label_2test_array = pd.read_csv(args.label_2test,header=None,sep="\t")
   label_2test_array = label_2test_array.sort_values(by=[0], ascending=True)
   label_2test_array = label_2test_array.reset_index(drop=True) ## otherwise get weird indexing
 
-  entropy_loss_weight = None ## COMMENT downweight common terms
+  entropy_loss_weight = None ## ! downweight common terms ? didn't work well. 
   if args.entropy_loss_weight:
     print ('\n\nuse weighted loss\n\n')
     # https://pytorch.org/docs/stable/nn.html#torch.nn.CrossEntropyLoss
