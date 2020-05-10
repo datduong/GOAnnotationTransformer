@@ -773,7 +773,7 @@ def main():
   set_seed(args) # ! set seed
 
   #### read in labels to be testing
-  label_2test_array = pd.read_csv(args.label_2test,header=None,sep="\t")
+  label_2test_array = pd.read_csv(args.label_2test,header=None,sep="\t") # ! tab delim. col0=name col1=count
   label_2test_array = label_2test_array.sort_values(by=[0], ascending=True)
   label_2test_array = label_2test_array.reset_index(drop=True) ## otherwise get weird indexing
 
