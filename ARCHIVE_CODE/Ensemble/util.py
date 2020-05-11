@@ -26,7 +26,7 @@ def ReorderRow (test_file,prediction,need_header=None) :
   if need_header is None:
     test_file = pd.read_csv(test_file,header=need_header,sep="\t")
     name_original = list ( test_file[0] )
-    name_sort = sorted ( list ( test_file[0] ) ) ##!!##!! sort by name so that every input will be consistent
+    name_sort = sorted ( list ( test_file[0] ) ) # ! sort by name so that every input will be consistent
   else:
     test_file = pd.read_csv(test_file,sep="\t")
     name_original = list ( test_file['Entry'] )
@@ -51,6 +51,7 @@ def ReorderRow (test_file,prediction,need_header=None) :
   true_label = true_label[row_order]
   return prediction, true_label
 
+
 def CheckSameOrder (matrix1,matrix2) :
   for i in range(0,100,4):
     if (np.sum(matrix1[i] - matrix2[i]) != 0) : ## row must be the same for true label, then we know @row_order is correct.
@@ -58,6 +59,7 @@ def CheckSameOrder (matrix1,matrix2) :
       print (np.sum(matrix1[i] - matrix2[i]))
       break
   return 1
+
 
 def CombineResult (matrix1,matrix2,option='max') :
   if option == 'max':
