@@ -129,7 +129,7 @@ for data_type in ['train']:
     fout = open ( path+data_type+'-'+onto_type+'.tsv', 'w' )
     # fout.write('Entry\tSequence\tGene ontology IDs\tProt Emb\tType\n')
     # col = 'Entry\tGene ontology IDs\tSequence\tProt Emb'.split('\t')
-    col = np.arange(0,5) ## use indexing if no header
+    col = np.arange(0,4) ## use indexing if no header
     prot_label_type = {} ## total annotation type on the protein sequence
 
     for index, line in tqdm(enumerate(uniprot)): #! go through uniprot data
@@ -144,9 +144,11 @@ for data_type in ['train']:
       ##! COMMENT we will not retain same ordering as the input. this doesn't matter very much. but becareful.
       prot_annot = []
       row_found_in_data = fin.loc[fin[0] == line[0]]
+      # print (row_found_in_data)
 
       #! write data with motif
-      diff_and_not_same_len, where_change_index = find_change( line[15].strip(), list(row_found_in_data['Sequence'])[0] )
+      this_sequence = re.sub(" ","",list(row_found_in_data[1])[0]) # sequence is next to protein name
+      diff_and_not_same_len, where_change_index = find_change( line[15].strip(), this_sequence )
       if diff_and_not_same_len == 1:
         print ('found but not match sequence {}'.format(line[0]))
         fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
@@ -175,7 +177,7 @@ for data_type in ['train']:
     ## COMMENT: END READING IN UNIPROT DATA.
     if len(prot_name)>0: ## we have not remove all proteins used in deepgo.
       print ('\n*** not found in uniprot but in original deepgo {}'.format(prot_name))
-      fin2 = fin.loc[fin['Entry'].isin(prot_name)]
+      fin2 = fin.loc[fin[0].isin(prot_name)]
       colnames = fin2.columns
       for index,row in fin2.iterrows():
         fout.write ( '\t'.join(row[k] for k in colnames ) + '\tnan\n' )
@@ -192,7 +194,7 @@ for onto_type in ['mf','cc','bp']:
   train = pickle.load(open('train_'+onto_type+'_prot_annot_type.pickle','rb'))
   not_in_train = {} ## what can we do if domain not seen in train data ?
   all_prot_annot = {}
-  for data_type in ['dev','train','test']: #,'dev','test'
+  for data_type in ['train']: #,'dev','test'
     prot_label_type = pickle.load(open(data_type+'_'+onto_type+'_prot_annot_type.pickle','rb'))
     print ('data type {} len {}'.format(data_type,len(prot_label_type)))
     # get top domain only... may be too much to fit all types?
