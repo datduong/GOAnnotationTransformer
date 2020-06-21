@@ -42,21 +42,21 @@ MODEL_CLASSES = { #### pick a model
 }
 
 
-def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate):
+def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate,TRUNCATE=51):
 
   ## must do padding so all items get the same size
+  ##!! we will reduce size of @out
+  #! @out is max_num_aa x max_num_motif for each protein
+  #! it is likely that each protein will not have many annotation, so we can shorten @out later
   out = np.zeros((max_num_aa,len(annot_name_sorted))) ## maximum possible
   if string == 'none':
     return coo_matrix(out)
 
-  # if string == np.nan:
-  #   return coo_matrix(out)
-
-  # @string is some protein data, delim by ";"
-  annot = string.split(';')
+  annot = string.split(';') # @string is some protein data, delim by ";"
   annot_matrix = np.zeros((num_aa,len(annot))) ## exact @num_aa without CLS and SEP
 
-  for index, a in enumerate(annot): ## we do not need the whole matrix. we can use 1,2,3,4,5 indexing style on the column entry
+  for index, a in enumerate(annot): 
+    ## we do not need the whole matrix. we can use 1,2,3,4,5 indexing style on the column entry
     ## want annotation on protein sequence into matrix. Len x Type
     ## a = 'COILED 87-172;DOMAIN uba 2-42;DOMAIN ubx 211-293'.split(';')
     a = a.split() ## to get the position, which should always be at the last part
@@ -83,19 +83,22 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate)
     else:
       annot_matrix [ row,index ] = type_number
 
-  ## out is max_len (both aa + CSL SEP PAD) + len_annot
-  ## read by row, so CLS has annot=0
+  ## ! out is max_len (both aa + CSL SEP PAD) + len_annot
+  ## ! read by row, so CLS has annot=0
   ## only need to shift 1 row down
-  out[1:(num_aa+1), 0:len(annot)] = annot_matrix ## notice shifting by because of CLS and SEP
+  ## notice shifting because of CLS and SEP
+  out[1:(num_aa+1), 0:len(annot)] = annot_matrix 
 
-  # print ('\nsee annot matrix\n')
-  # print (annot_matrix)
+  #! sort each row, and then truncate
+  out = -np.sort(-out) # https://stackoverflow.com/questions/26984414/efficiently-sorting-a-numpy-array-in-descending-order
+  out = out [:, 0:TRUNCATE] ## take first 100 columns, don't think any protein will have more than 100 motifs at the same segment location
+
   return coo_matrix(out)
 
 
 class TextDataset(Dataset):
   def __init__(self, tokenizer, label_2test_array, file_path='train', block_size=512, max_aa_len=1024, args=None, evaluate=None, config=None):
-    # @max_aa_len is already cap at 1000 in deepgo, Facebook cap at 1024
+    #! @max_aa_len is already cap at 1000 in deepgo, Facebook paper cap at 1024
 
     self.args = args
     self.config = config
