@@ -642,7 +642,7 @@ def main():
   parser.add_argument("--entropy_loss_weight", action="store_true", default=False)
   parser.add_argument("--new_num_labels", type=int, default=None)
   parser.add_argument("--aa_block_size", type=int, default=1024)
-  parser.add_argument("--train_dev_fraction", type=float, default=.90)
+  parser.add_argument("--train_dev_fraction", type=float, default=.80)
   parser.add_argument("--cache_name", type=str, default=None)
   parser.add_argument("--checkpoint", type=str, default=None)
   parser.add_argument("--reset_emb_zero", action="store_true", default=False)

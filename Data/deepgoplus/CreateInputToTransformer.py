@@ -11,7 +11,7 @@ import networkx
 import obonet
 
 
-os.chdir('/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data')
+os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data') # /local/datdb
 
 graph = obonet.read_obo('go.obo') # https://github.com/dhimmel/obonet
 
@@ -23,6 +23,8 @@ graph = obonet.read_obo('go.obo') # https://github.com/dhimmel/obonet
 
 ontology_map = {'mf':'molecular_function','bp':'biological_process','cc':'cellular_component'}
 
+LEN_CUTOFF = 1500
+
 for data_type in ['test','train']: #'test','train'
   #### we need to filter by category otherwise too much. can't run it.
 
@@ -30,8 +32,8 @@ for data_type in ['test','train']: #'test','train'
 
   for ontology in ['mf','cc','bp']:
     # Entry Gene ontology IDs Sequence  Prot Emb  Type
-    fin = open('deepgoplus.cafa3.'+data_type+'-bonnie.tsv',"r") # test-mf-prot-annot.tsv
-    fout = open('SeqLenLess2000/deepgoplus.cafa3.'+data_type+'-bonnie-'+ontology+'.tsv',"w") # test-mf-input.tsv
+    fin = open('FullLen/deepgoplus.cafa3.'+data_type+'-bonnie.tsv',"r") # test-mf-prot-annot.tsv
+    fout = open('SeqLenLess'+str(LEN_CUTOFF)+'/deepgoplus.cafa3.'+data_type+'-bonnie-'+ontology+'.tsv',"w") # test-mf-input.tsv
     for index,line in tqdm ( enumerate(fin) ) :
       if index == 0 :
         continue ## skip header
@@ -39,7 +41,7 @@ for data_type in ['test','train']: #'test','train'
       line = line.strip().split('\t')
 
       #### remove long sequences, transformer will not handle it
-      if len( line[2] ) > 2000:
+      if len( line[2] ) > LEN_CUTOFF:
         print ('LongLen '+line[0])
         LongLenCounter = LongLenCounter + 1
         continue

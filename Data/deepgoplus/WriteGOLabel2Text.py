@@ -11,7 +11,7 @@ import numpy as np
 #### because we remove some proteins due to super long length, we may not get the same set of GO as in deepgoplus
 
 
-os.chdir('/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000')
+os.chdir('/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1500')
 
 ontology = ['cc','mf','bp']
 for onto in ontology:

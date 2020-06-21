@@ -9,13 +9,13 @@ from tqdm import tqdm
 
 #### get some data like zinc fingers etc..
 
-path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/bonnie+motif'
+path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1500/bonnie+motif'
 os.chdir(path)
 
 annot_name_arr = ['_prot_annot_type'] # , '_prot_annot_type_topo'
 
 for annot_name in annot_name_arr: 
-  for onto_type in ['mf','cc','bp']:
+  for onto_type in ['mf','cc']:
     train = pickle.load(open('train_'+onto_type+annot_name+'.pickle','rb'))
     train_count = {}
     ## must select something to be 'UNK' so that we can handle unseen domain
