@@ -411,7 +411,11 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
 
       if config.aa_type_emb:
         ## batch x aa_len x type
-        aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
+        if args.model_type == 'ppi':
+          aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
+        else: 
+          #! if no ppi, and fit type, then we need to fix the index 5-->4
+          aa_type = batch[4][:,0:max_len_in_batch,:].to(args.device)
       else:
         aa_type = None
 
@@ -420,7 +424,6 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
       # call to the @model
       # def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None,
       #   position_ids=None, head_mask=None, attention_mask_label=None):
-
       outputs = model(metadata_prot_vec, input_ids_aa=input_ids_aa, input_ids_label=input_ids_label, token_type_ids=aa_type, attention_mask=attention_mask, labels=labels, position_ids=None, attention_mask_label=labels_mask, prot_vec=metadata_prot_vec,entropy_loss_weight=entropy_loss_weight )  # if args.mlm else model(inputs, labels=labels)
 
       loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
@@ -585,7 +588,10 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
       metadata_prot_vec = None
 
     if config.aa_type_emb:
-      aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
+      if args.model_type == 'ppi': 
+        aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
+      else: 
+        aa_type = batch[4][:,0:max_len_in_batch,:].to(args.device)
     else:
       aa_type = None
 

@@ -163,8 +163,12 @@ class BertEmbeddingsAA(nn.Module):
   def __init__(self, config):
     super(BertEmbeddingsAA, self).__init__()
     self.word_embeddings = nn.Embedding(config.vocab_size, config.hidden_size, padding_idx=0)
+    print ('self.word_embeddings.weight.shape')
+    print (self.word_embeddings.weight.shape)
     # label should not need to have ordering ?
     self.position_embeddings = nn.Embedding(config.max_position_embeddings, config.hidden_size)
+    print ('self.position_embeddings.weight')
+    print (self.position_embeddings.weight.shape)
 
     self.config = config
 
@@ -177,6 +181,8 @@ class BertEmbeddingsAA(nn.Module):
 
       ## !! notice that padding_idx=0 will not be 0 because of initialization MUST MANUAL RESET 0
       self.token_type_embeddings = nn.Embedding(config.type_vocab_size, config.hidden_size, padding_idx=0)
+      print ('self.token_type_embeddings.weight.shape')
+      print (self.token_type_embeddings.weight.shape)
 
     # self.LayerNorm is not snake-cased to stick with TensorFlow model variable name and be able to load
     # any TensorFlow checkpoint file
@@ -191,11 +197,19 @@ class BertEmbeddingsAA(nn.Module):
     # if token_type_ids is None:
     #   token_type_ids = torch.zeros_like(input_ids)
 
+    print ('see input_ids')
+    print (input_ids)
+    print ('max')
+    print (torch.max(input_ids))
     words_embeddings = self.word_embeddings(input_ids)
+    print ('position_ids')
+    print (position_ids)
     position_embeddings = self.position_embeddings(position_ids)
+
 
     if self.config.aa_type_emb:
       # @token_type_ids is batch x aa_len x domain_type --> output batch x aa_len x domain_type x dim
+      print (self.token_type_embeddings.weight.shape)
       token_type_embeddings = self.token_type_embeddings(token_type_ids)
       ## must sum over domain (additive effect)
       token_type_embeddings = torch.sum(token_type_embeddings,dim=2) # get batch x aa_len x dim
