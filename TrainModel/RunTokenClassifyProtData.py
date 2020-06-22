@@ -50,13 +50,13 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate,
   #! it is likely that each protein will not have many annotation, so we can shorten @out later
   out = np.zeros((max_num_aa,len(annot_name_sorted))) ## maximum possible
   if string == 'none':
-    ##!! remember to truncate here too. 
+    ##!! remember to truncate here too.
     return coo_matrix(out [:, 0:TRUNCATE])
 
   annot = string.split(';') # @string is some protein data, delim by ";"
   annot_matrix = np.zeros((num_aa,len(annot))) ## exact @num_aa without CLS and SEP
 
-  for index, a in enumerate(annot): 
+  for index, a in enumerate(annot):
     ## we do not need the whole matrix. we can use 1,2,3,4,5 indexing style on the column entry
     ## want annotation on protein sequence into matrix. Len x Type
     ## a = 'COILED 87-172;DOMAIN uba 2-42;DOMAIN ubx 211-293'.split(';')
@@ -88,7 +88,7 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate,
   ## ! read by row, so CLS has annot=0
   ## only need to shift 1 row down
   ## notice shifting because of CLS and SEP
-  out[1:(num_aa+1), 0:len(annot)] = annot_matrix 
+  out[1:(num_aa+1), 0:len(annot)] = annot_matrix
 
   #! sort each row, and then truncate
   out = -np.sort(-out) # https://stackoverflow.com/questions/26984414/efficiently-sorting-a-numpy-array-in-descending-order
@@ -417,7 +417,7 @@ def train(args, train_dataset, model, tokenizer, label_2test_array, config=None,
         ## batch x aa_len x type
         if args.model_type == 'ppi':
           aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
-        else: 
+        else:
           #! if no ppi, and fit type, then we need to fix the index 5-->4
           aa_type = batch[4][:,0:max_len_in_batch,:].to(args.device)
       else:
@@ -592,9 +592,9 @@ def evaluate(args, model, tokenizer, label_2test_array, prefix="", config=None, 
       metadata_prot_vec = None
 
     if config.aa_type_emb:
-      if args.model_type == 'ppi': 
+      if args.model_type == 'ppi':
         aa_type = batch[5][:,0:max_len_in_batch,:].to(args.device)
-      else: 
+      else:
         aa_type = batch[4][:,0:max_len_in_batch,:].to(args.device)
     else:
       aa_type = None
@@ -787,7 +787,7 @@ def main():
   label_2test_array = label_2test_array.sort_values(by=[0], ascending=True)
   label_2test_array = label_2test_array.reset_index(drop=True) ## otherwise get weird indexing
 
-  entropy_loss_weight = None ## ! downweight common terms ? didn't work well. 
+  entropy_loss_weight = None ## ! downweight common terms ? didn't work well.
   if args.entropy_loss_weight:
     print ('\n\nuse weighted loss\n\n')
     # https://pytorch.org/docs/stable/nn.html#torch.nn.CrossEntropyLoss

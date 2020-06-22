@@ -7,28 +7,61 @@ import pandas as pd
 import numpy as np
 from difflib import SequenceMatcher
 
+prosite_uniprot_name_map = pickle.load(open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/prosite_uniprot_name_map.pickle','rb'))
+prosite_download_data_name = pickle.load(open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/prosite_download_data_name.pickle','rb'))
+
+
 def format_motif_name (name):
-  return re.sub(r"_[0-9]{1,}$","",name).lower()
+  return re.sub(r"_[0-9]{1,}$","",name) #.lower()
 
 #
 motif_in_test = {}
 prot_in_test = []
 test_data = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif.tsv","r")
+test_data2= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif-rename.tsv","w")
 for line in test_data:
-  line = line.split('\t')
-  prot_in_test.append( line[0] )
-  for motif in line[1::] :
-    if ('(-1)' in motif) or ('(0)' in motif): #! skip match by pattern ? https://prosite.expasy.org/scanprosite/scanprosite_doc.html#of_miniprofiles
-      continue
+  line2 = line.split('\t')
+  prot_in_test.append( line2[0] )
+  for motif in line2[1::] :
+    # if ('(-1)' in motif) or ('(0)' in motif): #! skip match by pattern ? https://prosite.expasy.org/scanprosite/scanprosite_doc.html#of_miniprofiles
+    #   continue
     motif = motif.split(';')
-    motif_name = format_motif_name ( motif[0] )
-    if motif_name in motif_in_test:
-      motif_in_test[motif_name] = motif_in_test[motif_name] + 1
-    else:
-      motif_in_test[motif_name] = 1
+    # if motif[0] == 'ABC_TRANSPORTER_1': 
+    #   print (line)
+    #   break
+    #! map back into naming used by uniprot
+    base_name = format_motif_name ( motif[0] )
+    base_name = re.compile ( base_name + "_[0-9]{1,}")
+    try: 
+      if prosite_download_data_name[motif[0]] in prosite_uniprot_name_map: 
+        motif_name_new = prosite_uniprot_name_map [ prosite_download_data_name[motif[0]] ] # name-->rule-->uniprot
+        line = re.sub(motif[0],motif_name_new,line)
+        line = re.sub(base_name,motif_name_new,line)
+    except: 
+      ##!! match key to name found 
+      base_name = format_motif_name ( motif[0] )
+      best_key = 'none'
+      for key in prosite_download_data_name: 
+        if re.match(base_name,key): 
+          best_key = key
+      if (best_key != 'none') and (prosite_download_data_name[best_key] in prosite_uniprot_name_map):
+        motif_name_new = prosite_uniprot_name_map [ prosite_download_data_name[best_key] ] # name-->rule-->uniprot
+        line = re.sub(motif[0],motif_name_new,line)
+    #
+    # if motif_name in motif_in_test:
+    #   motif_in_test[motif_name] = motif_in_test[motif_name] + 1
+    # else:
+    #   motif_in_test[motif_name] = 1
+  #! write out
+  test_data2.write(line)
 
+# DOMAIN 262 505 ABC transporter 2. {ECO:0000255|PROSITE-ProRule:PRU00434}
+# prosite_uniprot_name_map['PRU00434']
 
+prosite_uniprot_name_map [ prosite_download_data_name['ABC_TRANSPORTER_2'] ]
+# T96060017039  ABC_TRANSPORTER_1;229-243;(-1)
 #
+test_data2.close()
 test_data.close()
 
 #! load data found in training (after using uniprot)
@@ -61,23 +94,13 @@ for motif,count in motif_in_test.items():
       name_map [name_variation[0]] = name #! replace name later
 
 
-#! find by pattern matching substring ? 
-
-string1 = "cyt dcmp deaminases"
-string2 = "cmp/dcmp-type deaminase"
-
-match = SequenceMatcher(None, string1, string2).find_longest_match(0, len(string1), 0, len(string2))
-
-print(match)  # -> Match(a=0, b=15, size=9)
-print(string1[match.a: match.a + match.size])  # -> apple pie
-print(string2[match.b: match.b + match.size])  # -> apple pie
-
+#! find by pattern matching substring ?
 
 
 name_map_pattern = {}
 name_found_pattern = {}
 for motif,count in motif_in_test.items():
-  if motif_name in name_map: 
+  if motif_name in name_map:
     continue
   #
   name_variation = make_name_variation(motif)

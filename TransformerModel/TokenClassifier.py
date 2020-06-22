@@ -238,7 +238,6 @@ class BertEmbeddingsLabel(nn.Module):
     ## should always drop to avoid overfit
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-
   def forward(self, input_ids, token_type_ids=None, position_ids=None):
     # seq_length = input_ids.size(1)
     # if position_ids is None:
@@ -351,7 +350,6 @@ class BertModel2Emb(BertPreTrainedModel):
 
     return model_embeds
 
-
   def forward(self, input_ids, input_ids_aa, input_ids_label, attention_mask=None, token_type_ids=None, position_ids=None, head_mask=None):
 
     ##!! to avoid a lot of re-structuring, let's define @input_ids=>protein_vector from interaction network
@@ -436,7 +434,6 @@ class BertForTokenClassification2Emb (BertPreTrainedModel):
       ## by default, label emb will be passed into @init_weights
       ## if we load a fixed emb, we have to also normalize like how init_weights does it. ???
       self.bert.embeddings_label.word_embeddings.weight.requires_grad = False
-
 
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
         position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None, entropy_loss_weight=None):

@@ -21,13 +21,11 @@ def find_change(string1,string2):
     where_not_same = np.where (where_not_same)[0]
     return 0, where_not_same ## @0 says that strings are same len
 
-
 def is_in_interval(a,b,c):
   if (b<a) and (a<c):
     return True
   else:
     return False
-
 
 def get_1type (string,what_type=None): ## @what_type tells use sub category of Domain
   front = string.split('{') ## split by the name convention
