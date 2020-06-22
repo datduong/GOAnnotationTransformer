@@ -42,7 +42,7 @@ MODEL_CLASSES = { #### pick a model
 }
 
 
-def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate,TRUNCATE=51):
+def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate,TRUNCATE=50):
 
   ## must do padding so all items get the same size
   ##!! we will reduce size of @out
@@ -50,7 +50,8 @@ def ReadProtData(string,num_aa,max_num_aa,annot_data,annot_name_sorted,evaluate,
   #! it is likely that each protein will not have many annotation, so we can shorten @out later
   out = np.zeros((max_num_aa,len(annot_name_sorted))) ## maximum possible
   if string == 'none':
-    return coo_matrix(out)
+    ##!! remember to truncate here too. 
+    return coo_matrix(out [:, 0:TRUNCATE])
 
   annot = string.split(';') # @string is some protein data, delim by ";"
   annot_matrix = np.zeros((num_aa,len(annot))) ## exact @num_aa without CLS and SEP

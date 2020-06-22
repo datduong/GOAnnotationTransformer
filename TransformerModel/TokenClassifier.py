@@ -190,31 +190,25 @@ class BertEmbeddingsAA(nn.Module):
     self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
   def forward(self, input_ids, token_type_ids=None, position_ids=None):
+
     seq_length = input_ids.size(1)
+
     if position_ids is None:
       position_ids = torch.arange(seq_length, dtype=torch.long, device=input_ids.device)
       position_ids = position_ids.unsqueeze(0).expand_as(input_ids)
+
     # if token_type_ids is None:
     #   token_type_ids = torch.zeros_like(input_ids)
 
-    print ('see input_ids')
-    print (input_ids)
-    print ('max')
-    print (torch.max(input_ids))
     words_embeddings = self.word_embeddings(input_ids)
-    print ('position_ids')
-    print (position_ids)
     position_embeddings = self.position_embeddings(position_ids)
 
-
     if self.config.aa_type_emb:
-      # @token_type_ids is batch x aa_len x domain_type --> output batch x aa_len x domain_type x dim
-      print (self.token_type_embeddings.weight.shape)
+      #! @token_type_ids is batch x aa_len x domain_type --> output batch x aa_len x domain_type x dim
       token_type_embeddings = self.token_type_embeddings(token_type_ids)
       ## must sum over domain (additive effect)
       token_type_embeddings = torch.sum(token_type_embeddings,dim=2) # get batch x aa_len x dim
       embeddings = words_embeddings + position_embeddings  + token_type_embeddings
-
     else:
       embeddings = words_embeddings + position_embeddings  # + token_type_embeddings
 

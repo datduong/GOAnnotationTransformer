@@ -23,7 +23,7 @@ graph = obonet.read_obo('go.obo') # https://github.com/dhimmel/obonet
 
 ontology_map = {'mf':'molecular_function','bp':'biological_process','cc':'cellular_component'}
 
-LEN_CUTOFF = 1500
+LEN_CUTOFF = 1025 #### #! add+1 because python indexing.
 
 for data_type in ['test','train']: #'test','train'
   #### we need to filter by category otherwise too much. can't run it.

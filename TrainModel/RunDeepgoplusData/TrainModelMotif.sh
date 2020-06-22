@@ -19,12 +19,12 @@ save_every=7000
 
 ## define parameters for mf-ontology
 checkpoint=670152 ## use this when we want to test a specific checkpoint
-block_size=2250 ## max len of amino+num_label, mf and cc 1792 but bp has more term 2048
+block_size=2750 ## max len of amino+num_label, mf and cc 1792 but bp has more term 2048
 
 batch_size=2
-seed=1998 #2020
+seed=1998
 
-for ontology in mf ; do 
+for ontology in cc ; do 
 
   if [[ $ontology == 'cc' ]]
   then
@@ -42,13 +42,13 @@ for ontology in mf ; do
     checkpoint=65475
   fi
 
-  output_dir=$server'/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1500/'$choice'/'$ontology
+  output_dir=$server'/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/'$choice'/'$ontology
   # mkdir $output_dir
   bert_vocab=$output_dir/vocabAA.txt ## see example file in github
   config_name=$output_dir/config.json
 
   #### download from google drive, and replace paths here.
-  data_text_location='/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1500'
+  data_text_location='/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000'
   aa_type_file=$data_text_location/bonnie+motif/'train_'$ontology'_prot_annot_type_count.pickle' ## Domain info found in uniprot for train data
   train_data_file=$data_text_location/bonnie+motif/train-$ontology.tsv ## okay to call it as long as it has ppi
   eval_data_file=$data_text_location/bonnie+motif/test-$ontology.tsv
@@ -66,7 +66,7 @@ for ontology in mf ; do
   ## suppose to run Base Transformer without any extra information, then you remove --aa_type_file $aa_type_file --reset_emb_zero
   ## suppose you want to train end-to-end and not used a pre-trained GO embeddings, then you remove --pretrained_label_path $pretrained_label_path
 
-  CUDA_VISIBLE_DEVICES=6,7 python3 -u RunTokenClassifyProtData.py --aa_block_size 1548 --train_dev_fraction 0.90 --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt
+  CUDA_VISIBLE_DEVICES=6,7 python3 -u RunTokenClassifyProtData.py --aa_block_size 2048 --train_dev_fraction 0.90 --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt
 
 
   # #### testing phase

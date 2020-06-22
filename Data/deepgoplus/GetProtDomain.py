@@ -84,15 +84,15 @@ def get_location (string,where_change=None) :
 
 def format_write(tup): ## tuple
   if len(tup)==0:
-    return 'nan'
+    return 'none'
   out = ""
   for t in tup:
     out = out+t[0]+" "+t[1]+";"
   return re.sub(r';$','',out)
 
 ## get some data like zinc fingers etc..
-input_path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1500/'
-path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1500/bonnie+motif/'
+input_path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1025/'
+path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1025/bonnie+motif/'
 os.chdir(path)
 
 # data_type = "test"
