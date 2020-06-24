@@ -198,7 +198,7 @@ for line in test_data:
   motif_this_line = {} # more than 1 motifs
   for motif in line2[1::] :
     #! skip match by pattern ? https://prosite.expasy.org/scanprosite/scanprosite_doc.html#of_miniprofiles
-    if re.search (r'_REGION',motif): 
+    if re.search ('_REGION',motif): # ! don't use re.match 
       continue ## skip
     motif_this_line.update ( make_entry (motif) )
   # now we check overlap
@@ -222,3 +222,5 @@ test_data.close() #? close.
 # T96060019016  WD_REPEATS_2;39-79;8.804  WD_REPEATS_REGION;39-128;16.269 WD_REPEATS_2;80-128;10.508  WD_REPEATS_1;106-120;(-1) WD_REPEATS_REGION;319-359;11.102  WD_REPEATS_1;337-351;(-1)
 
 # T96060019016  WD_REPEATS;39-79;8.804  WD_REPEATS_REGION;39-128;16.269 WD_REPEATS;80-128;10.508  WD_REPEATS_REGION;319-359;11.102  WD_REPEATS;337-351;(-1)
+
+# T96060019016  WD_REPEATS;39-79;8.804  WD_REPEATS_REGION;39-128;16.269 WD_REPEATS;80-128;10.508  WD_REPEATS_REGION;319-359;11.102  
