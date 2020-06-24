@@ -26,23 +26,23 @@ for line in test_data:
     # if ('(-1)' in motif) or ('(0)' in motif): #! skip match by pattern ? https://prosite.expasy.org/scanprosite/scanprosite_doc.html#of_miniprofiles
     #   continue
     motif = motif.split(';')
-    # if motif[0] == 'ABC_TRANSPORTER_1': 
+    # if motif[0] == 'ABC_TRANSPORTER_1':
     #   print (line)
     #   break
-    #! map back into naming used by uniprot
-    base_name = format_motif_name ( motif[0] )
-    base_name = re.compile ( base_name + "_[0-9]{1,}")
-    try: 
-      if prosite_download_data_name[motif[0]] in prosite_uniprot_name_map: 
+    try:
+      #! map back into naming used by uniprot
+      if prosite_download_data_name[motif[0]] in prosite_uniprot_name_map:
         motif_name_new = prosite_uniprot_name_map [ prosite_download_data_name[motif[0]] ] # name-->rule-->uniprot
         line = re.sub(motif[0],motif_name_new,line)
+        base_name = format_motif_name ( motif[0] )
+        base_name = re.compile ( base_name + "_[0-9]{1,}") ## add back numbering, this might be used in prosite_rule.dat
         line = re.sub(base_name,motif_name_new,line)
-    except: 
-      ##!! match key to name found 
+    except:
+      ##!! match key in @prosite_download_data_name to name found
       base_name = format_motif_name ( motif[0] )
       best_key = 'none'
-      for key in prosite_download_data_name: 
-        if re.match(base_name,key): 
+      for key in prosite_download_data_name:
+        if re.match(base_name,key):
           best_key = key
       if (best_key != 'none') and (prosite_download_data_name[best_key] in prosite_uniprot_name_map):
         motif_name_new = prosite_uniprot_name_map [ prosite_download_data_name[best_key] ] # name-->rule-->uniprot
