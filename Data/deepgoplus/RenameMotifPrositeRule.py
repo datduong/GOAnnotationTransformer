@@ -110,13 +110,25 @@ for motif,count in motif_in_test.items():
       name_map [motif] = name #! replace name later
 
 
+#
+pickle.dump(name_map, open('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/domain_name_map.pickle','wb'))
+
+
 #### #! now we replace the name, must add in MOTIF and so forth
 
 # ZN_FING
 
 def make_entry (motif):
   motif = motif.split(';') # name, pos, score
-  return {motif[1] : [motif[0], motif[2]]} # return a dict so we can look up quick
+  #? must format name to remove the "_1" "_2" at the end?
+  #! have to do this, otherwise the names don't match, and we will not remove enough duplicated regions
+  # T96060019016  WD_REPEATS_2;39-79;8.804  WD_REPEATS_REGION;39-128;16.269 WD_REPEATS_2;80-128;10.508  WD_REPEATS_1;106-120;(-1) WD_REPEATS_REGION;319-359;11.102  WD_REPEATS_1;337-351;(-1)
+  name = format_motif_name (motif[0])
+  if ('_REPEAT' in name) or ('_REP' in name): 
+    name = format_repeat_name (name)
+  if ('ZINC_FINGER' in name) or ('ZF_' in name): 
+    name = format_zincfinger_name (name)
+  return { motif[1] : [name, motif[2]] } # return a dict so we can look up quick
 
 
 def check_overlap(range1,range2): #! @range1 is a string 123-456
@@ -132,6 +144,20 @@ def check_overlap(range1,range2): #! @range1 is a string 123-456
     return 1 ## yes overlap
 
 
+def format_zincfinger_name(string): 
+  # we just use single zinc finger... oh well... we don't care what type of zinc finger
+  return 'ZN_FING'
+
+
+def format_repeat_name(string): 
+  # notice that we use "REPEAT wd", but uniprot uses WD_REPEATS_2;39-79;8.804  WD_REPEATS_REGION;39-128;16.269
+  # check with map
+  if string in name_map: 
+    name = name_map[name]
+  else: 
+    name = string.split('_REP')[0].lower() ## just get first ?
+  return 'REPEAT ' + name
+
 def remove_overlap(motif_dict):
   to_remove = []
   position = list ( motif_dict.keys() )
@@ -139,6 +165,7 @@ def remove_overlap(motif_dict):
     for j in range(i+1,len(position)):
       # check range overlap
       if check_overlap(position[i],position[j]) == 1: ## yes overlap
+        ## check subset in name? WD_REPEATS;39-79;8.804  WD_REPEATS_REGION ??
         if motif_dict[position[i]][0] == motif_dict[position[j]][0]: ## same name
           if ('(0)' in motif_dict[position[i]][1]) or ('(-1)' in motif_dict[position[i]][1]):
             to_remove.append(position[i])
@@ -156,6 +183,8 @@ for line in test_data:
   # {1-2:name, 1-4:name} if overlap, then take domain over the match by pattern
   line2 = line.split('\t')
   #
+  # if line2[0] == 'T96060007054':
+  #   break
   if len(line2[1::]) == 1: # has exactly 1 len, then don't remove?
     motif = line2[1::][0]
     motif = motif.strip().split(';')
@@ -169,6 +198,8 @@ for line in test_data:
   motif_this_line = {} # more than 1 motifs
   for motif in line2[1::] :
     #! skip match by pattern ? https://prosite.expasy.org/scanprosite/scanprosite_doc.html#of_miniprofiles
+    if re.search (r'_REGION',motif): 
+      continue ## skip
     motif_this_line.update ( make_entry (motif) )
   # now we check overlap
   to_remove = remove_overlap (motif_this_line)
@@ -185,8 +216,9 @@ for line in test_data:
 
 #
 fout.close()
-test_data.close()
+test_data.close() #? close. 
 
 
-T96060019016  WD_REPEATS_2;39-79;8.804  WD_REPEATS_REGION;39-128;16.269 WD_REPEATS_2;80-128;10.508  WD_REPEATS_1;106-120;(-1) WD_REPEATS_REGION;319-359;11.102  WD_REPEATS_1;337-351;(-1)
+# T96060019016  WD_REPEATS_2;39-79;8.804  WD_REPEATS_REGION;39-128;16.269 WD_REPEATS_2;80-128;10.508  WD_REPEATS_1;106-120;(-1) WD_REPEATS_REGION;319-359;11.102  WD_REPEATS_1;337-351;(-1)
 
+# T96060019016  WD_REPEATS;39-79;8.804  WD_REPEATS_REGION;39-128;16.269 WD_REPEATS;80-128;10.508  WD_REPEATS_REGION;319-359;11.102  WD_REPEATS;337-351;(-1)
