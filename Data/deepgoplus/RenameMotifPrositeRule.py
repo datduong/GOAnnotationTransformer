@@ -17,8 +17,8 @@ def format_motif_name (name):
 
 #
 prot_in_test = []
-test_data = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif.tsv","r")
-test_data2= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif-rename.tsv","w")
+test_data = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-cc-motif.tsv","r")
+test_data2= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-cc-motif-rename.tsv","w")
 for line in test_data:
   line2 = line.split('\t')
   prot_in_test.append( line2[0] )
@@ -60,7 +60,7 @@ test_data.close()
 #### #! now we will merge new name into sequence data, and possibly keep similarity by seq??
 
 #! load data found in training (after using uniprot)
-in_train = pickle.load(open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/bonnie+motif/mf_all_prot_annot_type.pickle","rb"))
+in_train = pickle.load(open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/bonnie+motif/cc_all_prot_annot_type.pickle","rb"))
 
 name_in_train = {} #! remove words like DOMAIN, MOTIFS
 for name,count in in_train.items():
@@ -81,7 +81,7 @@ def make_name_variation (name):
 #### #! read the new file in again.
 
 motif_in_test = {}
-test_data= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif-rename.tsv","r")
+test_data= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-cc-motif-rename.tsv","r")
 for line in test_data:
   line2 = line.split('\t')
   for motif in line2[1::] :
@@ -177,8 +177,8 @@ def remove_overlap(motif_dict):
 
 
 motif_in_test = {}
-test_data= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif-rename.tsv","r")
-fout = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif-rename-pass2.tsv","w")
+test_data= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-cc-motif-rename.tsv","r")
+fout = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-cc-motif-rename-pass2.tsv","w")
 for line in test_data:
   # {1-2:name, 1-4:name} if overlap, then take domain over the match by pattern
   line2 = line.split('\t')

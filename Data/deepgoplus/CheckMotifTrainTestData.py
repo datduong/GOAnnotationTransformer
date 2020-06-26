@@ -17,8 +17,8 @@ def format_motif_name (name):
 #
 motif_in_test = {}
 prot_in_test = []
-test_data = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif.tsv","r")
-test_data2= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif-rename.tsv","w")
+test_data = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-cc-motif.tsv","r")
+test_data2= open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-cc-motif-rename.tsv","w")
 for line in test_data:
   line2 = line.split('\t')
   prot_in_test.append( line2[0] )
@@ -64,8 +64,14 @@ prosite_uniprot_name_map [ prosite_download_data_name['ABC_TRANSPORTER_2'] ]
 test_data2.close()
 test_data.close()
 
+
+
+exit() 
+#### ? don't need below
+
+#! don't need below ?
 #! load data found in training (after using uniprot)
-in_train = pickle.load(open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/bonnie+motif/mf_all_prot_annot_type.pickle","rb"))
+in_train = pickle.load(open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/bonnie+motif/cc_all_prot_annot_type.pickle","rb"))
 
 name_in_train = {}
 for name,count in in_train.items():
