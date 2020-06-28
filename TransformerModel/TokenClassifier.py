@@ -501,8 +501,8 @@ class BertForTokenClassification2EmbPPI (BertForTokenClassification2Emb):
   def forward(self, input_ids, input_ids_aa, input_ids_label, token_type_ids=None, attention_mask=None, labels=None,
         position_ids=None, head_mask=None, attention_mask_label=None, prot_vec=None, entropy_loss_weight=None):
 
-    ## !! add @attention_mask_label
-    ## !! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side.
+    #! add @attention_mask_label
+    #! add @input_ids, @input_ids_aa. Label side is computed differently from amino acid side.
 
     outputs = self.bert(input_ids, input_ids_aa, input_ids_label, position_ids=position_ids, token_type_ids=token_type_ids,
               attention_mask=attention_mask, head_mask=head_mask)
