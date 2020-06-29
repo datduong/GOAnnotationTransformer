@@ -28,8 +28,8 @@ done
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
 
-for onto in 'cc' ; do # 'bp'
-  for model in 'NoPpiNoAaTypeLabelBertAveL12' ; do # 'BaseExtraLayer'
+for onto in 'mf' ; do # 'bp'
+  for model in 'NoPpiYesAaTypeLabelBertAveL12Epo1000bz6' ; do # 'BaseExtraLayer'
 
     label_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/Label.'$onto'.tsv'
 
@@ -38,6 +38,7 @@ for onto in 'cc' ; do # 'bp'
     load_path=$output/EnsembleMetaGO.E100.max.pickle  # prediction_train_all_on_test.pickle EnsembleMetaGO.E100.max.pickle
 
     python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.EnsembleMetaGO.E100.max.txt
+    # $output/$onto.EnsembleMetaGO.E100.max.txt
 
   done
 done
