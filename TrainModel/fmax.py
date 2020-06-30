@@ -24,14 +24,16 @@ def pr_rc_it (truth, prob, t):
   pr_i = num / len(yhat)
 
   ##! recall
-  rc_i = num / len(truth)
+  rc_i = num / len(truth) ##? len(truth) is same as sum_over_each go_labelset Indicator(if go is true label for this protein)
 
   return pr_i, rc_i
 
 
 def pr_rc_t (pr_t, rc_t): # $pr_t is array over prot.
-  ## for each protein
-  mt = np.where ( pr_t > 0 ) [0]
+
+  #? @pr_t will be 0, when @num=0, or len(truth)=0, or len(yhat)=0
+
+  mt = np.where ( pr_t > 0 ) [0] 
   if len(mt) == 0 : # @mt is number of proteins on which at least one prediction was made above threshold t.
     pr_t = 0
   else:

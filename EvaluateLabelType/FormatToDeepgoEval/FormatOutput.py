@@ -2,6 +2,10 @@
 import pickle,os,sys,re
 import pandas as pd
 import numpy as np
+from copy import deepcopy
+
+import networkx
+import obonet
 
 
 #! smin score, follow deepgoplus paper.
@@ -16,11 +20,27 @@ os.chdir(main_dir)
 
 ####
 
-def MakeLabel1hot (true_label_set,label_tested_dict,num_label=1):
-  array = np.zeros(num_label)
-  where = np.array ( [ label_tested_dict[label] for label in true_label_set ] )
-  array[where] = 1
-  return list(array)
+# def MakeLabel1hot (true_label_set,label_tested_dict,num_label=1):
+#   array = np.zeros(num_label)
+#   where = np.array ( [ label_tested_dict[label] for label in true_label_set ] )
+#   array[where] = 1
+#   return list(array)
+
+
+####
+
+#! read in their prediction, because we need gold annotation
+df_their = pd.read_pickle('/u/scratch/d/datduong/deepgoplus/data-cafa/predictions.pkl') #! this is 3,000 something proteins, not 1,000 something
+
+
+#! ordering of @terms matter. but the question is why?
+
+onto = 'molecular_function'
+graph = obonet.read_obo('/u/scratch/d/datduong/deepgoplus/data-cafa/go.obo') # https://github.com/dhimmel/obonet
+terms = list( pd.read_pickle('/u/scratch/d/datduong/deepgoplus/data-cafa/terms.pkl')['terms'] ) #! ordering matters for @terms
+terms = [t for t in terms if graph.node[t]['namespace'] == onto] #? filter by ontology
+print ('number of term in term pickle after filter {}'.format(len(terms)))
+terms_position_map = {name:location for location,name in enumerate(terms)}
 
 
 #! need to format our matrix output into a panda data frame
@@ -31,7 +51,18 @@ prediction_matrix = prediction_matrix['prediction']
 
 label_tested = pd.read_csv(main_dir+'/Label.'+onto_name+'.tsv',header=None,sep='\t') ##!! do not need to reorder, we already sorted by names
 label_tested = list (label_tested[0]) ## panda format, take first col
-label_tested_dict = {label : index for index, label in enumerate(label_tested)}
+# label_tested_dict = {label : index for index, label in enumerate(label_tested)}
+
+##!! reorder @label_tested
+order_to_match_deepgo_dict = { terms_position_map[t]:index for index,t in enumerate(label_tested) } ## new-->old
+
+def reorder_array (array,order_to_match_deepgo_dict): 
+  output = np.array(deepcopy(array))
+  for i in range(len(array)):
+    output[ i ] = array [ order_to_match_deepgo_dict[i] ] ## in new place, put value of old
+  return output
+
+# z = reorder_array (label_tested,order_to_match_deepgo_dict) # ! try it 
 
 num_prot,num_label = prediction_matrix.shape
 
@@ -42,17 +73,24 @@ true_label_set = list (input_file_text[2] )
 annotations = []
 label_1hot = []
 prediction_list = [] ##!! list of array
+all_proteins_3_onto = []
 
-for index,prot in enumerate(protein_name):
-  this_label = re.sub("GO","GO:",true_label_set[index]) ##!! need {GO:abc, GO:xyz}
-  this_label = set ( this_label.split() )
-  annotations.append(this_label) # append set, later, we make this into a column
-  label_1hot.append( true_matrix[index] ) # we already have 1 hot
-  prediction_list.append( prediction_matrix[index] )
+for i,row in df_their.iterrows():
+  all_proteins_3_onto.append(row['proteins'])
+  if row['proteins'] in protein_name: #!! found in our prediction
+    # this_label = re.sub("GO","GO:",true_label_set[index]) ##!! need {GO:abc, GO:xyz}
+    # this_label = set ( this_label.split() )
+    # annotations.append( this_label ) # append set, later, we make this into a column
+    index = protein_name.index(row['proteins'])
+    label_1hot.append( reorder_array(true_matrix[index],order_to_match_deepgo_dict) ) # we already have 1 hot, #! reorder
+    prediction_list.append( reorder_array(prediction_matrix[index],order_to_match_deepgo_dict) )
+  #
+  else: #? we keep the same as before. 
+    label_1hot.append (np.zeros(num_label)) ## all 0, because they got no label
+    prediction_list.append (np.zeros(num_label)) ## all 0, because we never predict on them?? 
 
-
-data = {'proteins':protein_name,
-        'annotations':annotations,
+data = {'proteins':all_proteins_3_onto,
+        # 'annotations':annotations,
         'labels':label_1hot,
         'preds':prediction_list
         #! probably don't need sequence
@@ -61,4 +99,12 @@ data = {'proteins':protein_name,
 
 df = pd.DataFrame(data)
 
-df.to_pickle(pathout)
+####
+
+del df_their['labels']
+del df_their['preds']
+
+df2 = pd.merge(df,df_their, on='proteins')
+
+df2.to_pickle(pathout)
+
