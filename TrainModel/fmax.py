@@ -7,67 +7,65 @@ import numpy as np
 
 #### using f-max which is a variation of the f-measure (not exactly the standard f1-score)
 
+
 def pr_rc_it (truth, prob, t):
-
-  yhat = np.where ( prob > t ) [0] ## prediction probabilities
-
-  if (len(yhat) == 0) or (len(truth) == 0) :
-    return 0 , 0
-
+  yhat = np.where ( prob > t ) [0] ## prediction probabilities over a threshold
+  if (len(yhat) == 0) or (len(truth) == 0) : ## @truth can be [] if protein has no labels
+    return 0 , 0 , len(yhat)
+  #
   truth = np.where (truth > 0) [0] ## indexing of true labels
   if len(truth) == 0: ## sample with no labels
-    return 0 , 0
-
+    return 0 , 0 , len(yhat)
+  #
   num = len ( set (yhat).intersection ( set(truth) ) ) * 1.0
-
   ##! precision
   pr_i = num / len(yhat)
-
   ##! recall
   rc_i = num / len(truth) ##? len(truth) is same as sum_over_each go_labelset Indicator(if go is true label for this protein)
+  return pr_i, rc_i, len(yhat) #! @len(yhat) is number of labels over thresshold t in this protein
 
-  return pr_i, rc_i
 
-
-def pr_rc_t (pr_t, rc_t): # $pr_t is array over prot.
-
+def pr_rc_t (pr_t, rc_t, m_t): # $pr_t is array over prot.
   #? @pr_t will be 0, when @num=0, or len(truth)=0, or len(yhat)=0
-
-  mt = np.where ( pr_t > 0 ) [0] 
+  # mt = np.where ( pr_t > 0 ) [0]
+  mt = np.where ( m_t > 0 ) [0]
+  # print ('\ncount where proteins have non-zero prediction {}'.format(len(mt)))
   if len(mt) == 0 : # @mt is number of proteins on which at least one prediction was made above threshold t.
     pr_t = 0
   else:
     pr_t = np.mean ( pr_t [mt] )
-
+  #
   rc_t = np.mean ( rc_t ) ##! over all protein n
-
   f = 2 * pr_t * rc_t / ( pr_t + rc_t )
   return f
 
 
 def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
-
   # @true_set, @prob are np.2d-array
   # @threshold is np.vector
   f_value = np.zeros( len(threshold) )
   counter = -1
-
   for t in threshold :
     counter = counter + 1
     pr_t = []
     rc_t = []
-
+    m_t = []
     for prot in range(true_set.shape[0]):
-      pr_i , rc_i = pr_rc_it ( true_set[prot], prob[prot], t )
+      pr_i , rc_i, overT_i = pr_rc_it ( true_set[prot], prob[prot], t )
       pr_t.append ( pr_i )
       rc_t.append ( rc_i )
-
+      m_t.append ( overT_i )
     # get "f score" at each threshold
     pr_t = np.array(pr_t) #! many protein, at threshold t
     rc_t = np.array(rc_t)
-    f_value[counter] =  pr_rc_t (pr_t, rc_t)
-
+    m_t = np.array(m_t)
+    f_value[counter] =  pr_rc_t (pr_t, rc_t, m_t)
   return np.nanmax ( f_value )
 
 
+
+##! debug
+# true_set = np.array ( [[0,1,1,1,0,0], [0,0,1,1,0,0], [0,1,0,0,0,0] ] )
+# prob = np.array ( [[0,0,1,1,1,1], [0,0,0,0,0,0], [0,0,0,0,1,0]] )
+# f_max ( true_set, prob, threshold=np.array([.5]) )
 

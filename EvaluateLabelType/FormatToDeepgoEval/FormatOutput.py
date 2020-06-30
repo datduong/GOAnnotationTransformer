@@ -56,18 +56,18 @@ label_tested = list (label_tested[0]) ## panda format, take first col
 ##!! reorder @label_tested
 order_to_match_deepgo_dict = { terms_position_map[t]:index for index,t in enumerate(label_tested) } ## new-->old
 
-def reorder_array (array,order_to_match_deepgo_dict): 
+def reorder_array (array,order_to_match_deepgo_dict):
   output = np.array(deepcopy(array))
   for i in range(len(array)):
     output[ i ] = array [ order_to_match_deepgo_dict[i] ] ## in new place, put value of old
   return output
 
-# z = reorder_array (label_tested,order_to_match_deepgo_dict) # ! try it 
+# z = reorder_array (label_tested,order_to_match_deepgo_dict) # ! try it
 
 num_prot,num_label = prediction_matrix.shape
 
 input_file_text = pd.read_csv(main_dir+'/bonnie+motif/test-'+onto_name+'.tsv',header=None,sep='\t') ## need protein names
-protein_name = list ( input_file_text[0] ) 
+protein_name = list ( input_file_text[0] )
 true_label_set = list (input_file_text[2] )
 
 annotations = []
@@ -76,7 +76,9 @@ prediction_list = [] ##!! list of array
 all_proteins_3_onto = []
 
 for i,row in df_their.iterrows():
+  #
   all_proteins_3_onto.append(row['proteins'])
+  #
   if row['proteins'] in protein_name: #!! found in our prediction
     # this_label = re.sub("GO","GO:",true_label_set[index]) ##!! need {GO:abc, GO:xyz}
     # this_label = set ( this_label.split() )
@@ -85,9 +87,9 @@ for i,row in df_their.iterrows():
     label_1hot.append( reorder_array(true_matrix[index],order_to_match_deepgo_dict) ) # we already have 1 hot, #! reorder
     prediction_list.append( reorder_array(prediction_matrix[index],order_to_match_deepgo_dict) )
   #
-  else: #? we keep the same as before. 
+  else: #? we keep the same as before.
     label_1hot.append (np.zeros(num_label)) ## all 0, because they got no label
-    prediction_list.append (np.zeros(num_label)) ## all 0, because we never predict on them?? 
+    prediction_list.append (np.zeros(num_label)) ## all 0, because we never predict on them??
 
 data = {'proteins':all_proteins_3_onto,
         # 'annotations':annotations,
@@ -107,4 +109,14 @@ del df_their['preds']
 df2 = pd.merge(df,df_their, on='proteins')
 
 df2.to_pickle(pathout)
+
+
+#! double check strict 0
+count_nothing_predicted = 0
+for i,row in df2.iterrows():
+  if row['preds'].sum() == 0 :
+    count_nothing_predicted = count_nothing_predicted + 1
+
+#
+print ( 'number of strict 0 {}'.format( count_nothing_predicted ) )
 
