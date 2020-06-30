@@ -46,3 +46,15 @@ cd $output
 
 # ensemble helps, but R@k is not great (only small improvement)
 # best improvement happens at mid range 25-75 for both cc and mf.
+
+
+
+#### ! run on numpy output of original deepgoplus
+
+codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
+cd $codepath
+onto='mf'
+label_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/Label.'$onto'.tsv'
+load_path='/u/scratch/d/datduong/deepgoplus/data-cafa/predictions.numpy.pickle'
+python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > /u/scratch/d/datduong/deepgoplus/data-cafa/predictions.numpy.accuracy.txt
+

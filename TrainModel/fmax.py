@@ -19,9 +19,13 @@ def pr_rc_it (truth, prob, t):
     return 0 , 0
 
   num = len ( set (yhat).intersection ( set(truth) ) ) * 1.0
+
+  ##! precision
   pr_i = num / len(yhat)
-  ## recall
+
+  ##! recall
   rc_i = num / len(truth)
+
   return pr_i, rc_i
 
 
@@ -32,13 +36,14 @@ def pr_rc_t (pr_t, rc_t): # $pr_t is array over prot.
     pr_t = 0
   else:
     pr_t = np.mean ( pr_t [mt] )
-  rc_t = np.mean ( rc_t ) ## over all protein n
+
+  rc_t = np.mean ( rc_t ) ##! over all protein n
 
   f = 2 * pr_t * rc_t / ( pr_t + rc_t )
   return f
 
 
-def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) : # np.arange(0.000001,1,.00025) np.arange(0.005,1,.01)
+def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
 
   # @true_set, @prob are np.2d-array
   # @threshold is np.vector
@@ -56,7 +61,7 @@ def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) : # np.arange(0.0
       rc_t.append ( rc_i )
 
     # get "f score" at each threshold
-    pr_t = np.array(pr_t)
+    pr_t = np.array(pr_t) #! many protein, at threshold t
     rc_t = np.array(rc_t)
     f_value[counter] =  pr_rc_t (pr_t, rc_t)
 

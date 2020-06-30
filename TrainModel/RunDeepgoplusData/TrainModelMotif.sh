@@ -7,7 +7,7 @@ pretrained_label_path='/local/datdb/deepgo/data/BertMeanLayer12Dim256/label_vect
 
 ## model name 
 ## you can use NoPpiYesAaTypePreTrainBertLabel to apply only Motif data
-choice='NoPpiYesAaTypeLabelBertAveL12' #Epo1000bz6' #?'NoPpiYesAaTypeLabelBertAveL12' 
+choice='NoPpiYesAaTypeLabelBertAveL12Epo1000bz6' #Epo1000bz6' #?'NoPpiYesAaTypeLabelBertAveL12' 
 
 ## suppose you chose NoPpiYesAaTypePreTrainBertLabel, then you must turn off "ppi" mode into "noppi"
 model_type='noppi' ##!! noppi--> not using ppi, and ppi--> uses extra data
@@ -18,10 +18,10 @@ cache_name='DataWithMotifInPickle'
 save_every=7000
 
 ## define parameters for mf-ontology
-checkpoint=354600 #? 670152 ## use this when we want to test a specific checkpoint
+checkpoint=163904 #? 670152 ## use this when we want to test a specific checkpoint
 block_size=2750 ##? max len of amino+num_label, mf and cc 1792 but bp has more term 2048
 
-batch_size=6
+batch_size=4
 seed=1998
 
 for ontology in mf ; do 
@@ -31,7 +31,7 @@ for ontology in mf ; do
     # seed=1998 # 2020 ##!! we switch seed so that we can train at batch=4, we tried seed=2019 but kept on getting mem error for some unlucky batch
     # batch_size=2
     # block_size=1792
-    checkpoint=220700
+    checkpoint=256012 #220700
   fi
 
   if [[ $ontology == 'bp' ]]
