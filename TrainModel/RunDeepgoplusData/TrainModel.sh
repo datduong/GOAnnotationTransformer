@@ -7,7 +7,7 @@ pretrained_label_path='/local/datdb/deepgo/data/BertMeanLayer12Dim256/label_vect
 
 ## model name 
 ## you can use NoPpiYesAaTypePreTrainBertLabel to apply only Motif data
-choice='NoPpiNoAaTypeLabelBertAveL12' 
+choice='NoPpiNoAaTypeLabelBertAveL12Epo1000bz8' 
 
 ## suppose you chose NoPpiYesAaTypePreTrainBertLabel, then you must turn off "ppi" mode into "noppi"
 model_type='noppi' ##!! noppi--> not using ppi, and ppi--> uses extra data
@@ -22,9 +22,9 @@ checkpoint=670152 ## use this when we want to test a specific checkpoint
 block_size=2750 ## max len of amino+num_label, mf and cc 1792 but bp has more term 2048
 
 batch_size=4
-seed=2020
+seed=1998
 
-for ontology in cc ; do 
+for ontology in mf ; do 
 
   if [[ $ontology == 'cc' ]]
   then
@@ -42,14 +42,14 @@ for ontology in cc ; do
     checkpoint=65475
   fi
 
-  output_dir=$server'/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/NoPpiNoAaTypeLabelBertAveL12/'$ontology
+  output_dir=$server'/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/'$choice/$ontology
   # mkdir $output_dir
   bert_vocab=$output_dir/vocabAA.txt ## see example file in github
   config_name=$output_dir/config.json
 
   #### download from google drive, and replace paths here.
   aa_type_file='none' ## Domain info found in uniprot for train data
-  data_text_location='/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000'
+  data_text_location='/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000'
   train_data_file=$data_text_location/deepgoplus.cafa3.train-bonnie-$ontology.tsv ## okay to call it as long as it has ppi
   eval_data_file=$data_text_location/deepgoplus.cafa3.test-bonnie-$ontology.tsv
   label_2test=$data_text_location/Label.$ontology.tsv
@@ -66,7 +66,7 @@ for ontology in cc ; do
   ## suppose to run Base Transformer without any extra information, then you remove --aa_type_file $aa_type_file --reset_emb_zero
   ## suppose you want to train end-to-end and not used a pre-trained GO embeddings, then you remove --pretrained_label_path $pretrained_label_path
 
-  CUDA_VISIBLE_DEVICES=2 python3 -u RunTokenClassifyProtData.py --aa_block_size 2048 --train_dev_fraction 0.90 --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 100 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path > $output_dir/train_point.txt
+  CUDA_VISIBLE_DEVICES=3,4 python3 -u RunTokenClassifyProtData.py --aa_block_size 2048 --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 200 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path > $output_dir/train_point.txt
 
 
   # #### testing phase

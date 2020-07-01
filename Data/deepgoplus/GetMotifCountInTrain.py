@@ -7,9 +7,10 @@ import pandas as pd
 
 from tqdm import tqdm
 
+
 #### get some data like zinc fingers etc..
 
-path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1025/bonnie+motif'
+path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/bonnie+motif'
 os.chdir(path)
 
 annot_name_arr = ['_prot_annot_type'] # , '_prot_annot_type_topo'
