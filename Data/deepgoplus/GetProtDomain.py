@@ -89,8 +89,8 @@ def format_write(tup): ## tuple
   return re.sub(r';$','',out)
 
 ## get some data like zinc fingers etc..
-input_path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1025/'
-path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess1025/bonnie+motif/'
+input_path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/'
+path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/bonnie+motif/'
 os.chdir(path)
 
 # data_type = "test"
@@ -170,7 +170,11 @@ for data_type in ['train']:
               prot_label_type[t] = 1
 
       # Entry Gene ontology IDs Sequence  Prot Emb
-      fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
+      try: 
+        fout.write( "\t".join(row_found_in_data[i].tolist()[0] for i in col) + "\t" + format_write(prot_annot)+'\n' )
+      except: 
+        print (row_found_in_data)
+        exit()
 
     ## COMMENT: END READING IN UNIPROT DATA.
     if len(prot_name)>0: ## we have not remove all proteins used in deepgo.

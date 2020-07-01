@@ -37,6 +37,4 @@ cd $SCRATCH/deepgoplus
 where=/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000
 onto=mf
 python3 evaluate_deepgoplus.py -tsdf /u/scratch/d/datduong/deepgoplus/data-cafa/predictions_filter_by_mf.pkl -o $onto > debug.txt
-# python3 evaluate_naive.py -trdf data-cafa/train_data.pkl -tsdf data-cafa/predictions_filter_by_mf.pkl -o $onto > $onto.OriginalDeepgoCnn.Naive.FilterMf.txt
-
-
+vim debug.txt

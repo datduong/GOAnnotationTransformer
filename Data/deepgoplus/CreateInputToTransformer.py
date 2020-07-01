@@ -10,8 +10,13 @@ from tqdm import tqdm
 import networkx
 import obonet
 
+# BIOLOGICAL_PROCESS = 'GO:0008150'
+# MOLECULAR_FUNCTION = 'GO:0003674'
+# CELLULAR_COMPONENT = 'GO:0005575'
 
-os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data') # /local/datdb
+roots = ['GO:0008150','GO:0003674','GO:0005575']
+
+os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot') # /local/datdb
 
 graph = obonet.read_obo('go.obo') # https://github.com/dhimmel/obonet
 
@@ -23,7 +28,7 @@ graph = obonet.read_obo('go.obo') # https://github.com/dhimmel/obonet
 
 ontology_map = {'mf':'molecular_function','bp':'biological_process','cc':'cellular_component'}
 
-LEN_CUTOFF = 1025 #### #! add+1 because python indexing.
+LEN_CUTOFF = 2000 #### #! add+1 because python indexing.
 
 for data_type in ['test','train']: #'test','train'
   #### we need to filter by category otherwise too much. can't run it.
@@ -32,7 +37,7 @@ for data_type in ['test','train']: #'test','train'
 
   for ontology in ['mf','cc','bp']:
     # Entry Gene ontology IDs Sequence  Prot Emb  Type
-    fin = open('FullLen/deepgoplus.cafa3.'+data_type+'-bonnie.tsv',"r") # test-mf-prot-annot.tsv
+    fin = open('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/FullLen/deepgoplus.cafa3.'+data_type+'-bonnie.tsv',"r") # test-mf-prot-annot.tsv
     fout = open('SeqLenLess'+str(LEN_CUTOFF)+'/deepgoplus.cafa3.'+data_type+'-bonnie-'+ontology+'.tsv',"w") # test-mf-input.tsv
     for index,line in tqdm ( enumerate(fin) ) :
       if index == 0 :
@@ -47,6 +52,10 @@ for data_type in ['test','train']: #'test','train'
         continue
 
       line[1] = line[1].split(";") ## split by space, and not ";"
+
+      ##!! remove root
+      line[1] = [ lab for lab in line[1] if lab not in roots ]
+      
       ##!! filter out by ontology
       try:
         line[1] = [ lab for lab in line[1] if graph.nodes[lab]['namespace'] == ontology_map[ontology] ]

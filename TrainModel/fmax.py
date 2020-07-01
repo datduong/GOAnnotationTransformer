@@ -63,9 +63,76 @@ def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
   return np.nanmax ( f_value )
 
 
+def evaluate_annotations(real_annots, pred_annots):
+  total = 0
+  p = 0.0
+  r = 0.0
+  p_total= 0
+  ru = 0.0
+  mi = 0.0
+  fps = []
+  fns = []
+  for i in range(len(real_annots)):
+    if len(real_annots[i]) == 0: ##!! skip if proteins have no labels in this ontology
+      continue
+    tp = set(real_annots[i]).intersection(set(pred_annots[i]))
+    fp = pred_annots[i] - tp #? set operation
+    fn = real_annots[i] - tp
+    fps.append(fp)
+    fns.append(fn)
+    tpn = len(tp) #! count true positive
+    fpn = len(fp) #! count false positive
+    fnn = len(fn) #! count false negative
+    total += 1
+    recall = tpn / (1.0 * (tpn + fnn))
+    r += recall
+    if len(pred_annots[i]) > 0:
+      p_total += 1
+      precision = tpn / (1.0 * (tpn + fpn))
+      p += precision
+  ru /= total
+  mi /= total
+  r /= total
+  if p_total > 0:
+      p /= p_total
+  f = 0.0
+  if p + r > 0:
+      f = 2 * p * r / (p + r)
+  s = np.sqrt(ru * ru + mi * mi)
+  # print ('total protein count is {}, total with valid prediction {}'.format(total,p_total))
+  return f, p, r, s, ru, mi, fps, fns
+
+
+def f_max2 ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
+  # @true_set, @prob are np.2d-array
+  # @threshold is np.vector
+  f_value = np.zeros( len(threshold) )
+  counter = -1
+  # new threshold, we still have same true label
+  real_annots = []
+  for prot in range(true_set.shape[0]):
+    real_annots.append ( set ( np.where( true_set[prot] > 0 ) [0] ) )
+  # prob will have different set based on threshold @t
+  for t in threshold :
+    counter = counter + 1
+    pred_annots = []
+    for prot in range(true_set.shape[0]):
+      pred_annots.append ( set ( np.where( prob[prot] > t ) [0] ) ) #! keep index of where prediction is higher than t
+    #
+    output = evaluate_annotations(real_annots, pred_annots)
+    f_value[counter] =  output[0] # take first entry
+  return np.nanmax ( f_value )
+
 
 ##! debug
-# true_set = np.array ( [[0,1,1,1,0,0], [0,0,1,1,0,0], [0,1,0,0,0,0] ] )
-# prob = np.array ( [[0,0,1,1,1,1], [0,0,0,0,0,0], [0,0,0,0,1,0]] )
+# true_set = np.array ( [[0,1,1,1,0,0], [0,0,1,1,0,0], [0,1,0,0,0,0], [1,0,0,0,0,0] ] )
+# prob = np.array ( [[0,0,1,1,1,1], [0,0,0,0,0,0], [0,0,0,0,1,0], [0,0,0,0,0,0] ] )
 # f_max ( true_set, prob, threshold=np.array([.5]) )
+# f_max2 ( true_set, prob, threshold=np.array([.5]) )
+
+
+true_set = np.array ( [[0,1,1,1,0,0], [0,0,1,1,0,0], [0,0,0,0,0,0], [1,0,0,0,0,0] ] )
+prob = np.array ( [[0,0,0,0,0,1], [0,0,0,0,0,0], [0,0,0,0,0,0], [1,0,0,0,0,0] ] )
+f_max ( true_set, prob )
+f_max2 ( true_set, prob )
 

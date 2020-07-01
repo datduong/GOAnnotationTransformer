@@ -60,7 +60,7 @@ def all_metrics(yhat_binary, y, k=1, yhat_raw=None, calc_auc=True, threshold_fma
     metrics.update(roc_auc)
 
   metrics['hamming_loss'] = hamming_loss(y, yhat_binary)
-  metrics['fmax_score'] = fmax.f_max ( y, yhat_raw, threshold_fmax )
+  metrics['fmax_score'] = fmax.f_max2 ( y, yhat_raw, threshold_fmax ) #! @fmax.fmax or fmax2 ??
 
   # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html#the-average-precision-score-in-multi-label-settings
   metrics['micro_average_prec'], metrics['micro_average_rec'] = plot_precision_recall_curve(y,yhat_raw,path) # precision["micro"], recall["micro"]
