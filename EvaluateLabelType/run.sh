@@ -16,7 +16,7 @@ for onto in 'cc' 'mf' 'bp'; do
     output=$model_path/$model
     load_path=$output/test-$onto-prediction.pickle
 
-    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.txt
+    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.Jun30.txt
 
   done
 done
@@ -35,10 +35,10 @@ for onto in 'mf' ; do # 'bp'
 
     model_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/'
     output=$model_path/$model/$onto
-    load_path=$output/EnsembleMetaGO.E100.max.pickle  # prediction_train_all_on_test.pickle EnsembleMetaGO.E100.max.pickle
+    load_path=$output/prediction_train_all_on_test.pickle  # prediction_train_all_on_test.pickle EnsembleMetaGO.E100.max.pickle
 
-    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.EnsembleMetaGO.E100.max.txt
-    # $output/$onto.EnsembleMetaGO.E100.max.txt
+    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.Jun30.txt
+    # $output/$onto.EnsembleMetaGO.E100.max.txt $output/$onto.printout.Jun30.txt
 
   done
 done

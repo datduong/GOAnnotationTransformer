@@ -32,7 +32,7 @@ python3 evaluate_deepgoplus.py -tsdf /u/scratch/d/datduong/deepgoplus/data-cafa/
 # python3 evaluate_naive.py -trdf data-cafa/train_data.pkl -tsdf data-cafa/predictions_filter_by_mf.pkl -o $onto > $onto.OriginalDeepgoCnn.Naive.FilterMf.txt
 
 
-#### run editted code on the original prediction.plk, after keeping only mf
+#### debug
 cd $SCRATCH/deepgoplus
 where=/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000
 onto=mf
