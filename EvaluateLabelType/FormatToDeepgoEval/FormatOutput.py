@@ -84,8 +84,10 @@ for i,row in df_their.iterrows():
     # this_label = set ( this_label.split() )
     # annotations.append( this_label ) # append set, later, we make this into a column
     index = protein_name.index(row['proteins'])
-    label_1hot.append( reorder_array(true_matrix[index],order_to_match_deepgo_dict) ) # we already have 1 hot, #! reorder
-    prediction_list.append( reorder_array(prediction_matrix[index],order_to_match_deepgo_dict) )
+    # label_1hot.append( reorder_array(true_matrix[index],order_to_match_deepgo_dict) ) # we already have 1 hot, #! reorder
+    label_1hot.append( true_matrix[index] ) 
+    # prediction_list.append( reorder_array(prediction_matrix[index],order_to_match_deepgo_dict) )
+    prediction_list.append( prediction_matrix[index] )
   #
   else: #? we keep the same as before.
     label_1hot.append (np.zeros(num_label)) ## all 0, because they got no label

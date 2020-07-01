@@ -11,16 +11,13 @@ cd $SCRATCH/deepgoplus
 where=/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000
 model=NoPpiYesAaTypeLabelBertAveL12Epo1000bz6
 onto=mf
-python3 evaluate_deepgoplus.py -tsdf $where/$model/$onto/test_panda_deepgo_format.pickle -o $onto > $onto.Transformer+Motif.NoAddAnc.txt
-# python3 evaluate_naive.py -trdf data-cafa/train_data.pkl -tsdf $where/$model/$onto/test_panda_deepgo_format.pickle -o $onto > $onto.Transformer+Motif.naive.txt
-
+python3 evaluate_deepgoplus.py -tf /u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/Label.mf.pickle -tsdf $where/$model/$onto/test_panda_deepgo_format.pickle -o $onto > $onto.Transformer+Motif.NoAddAnc.txt
 
 #### run editted code on the original prediction.plk
 cd $SCRATCH/deepgoplus
 where=/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000
-model=NoPpiYesAaTypeLabelBertAveL12Epo1000bz6
 onto=mf
-# python3 evaluate_deepgoplus.py -o $onto > $onto.OriginalDeepgoCnn.NoAddAnc.DefaultFilterMf.txt
+python3 evaluate_deepgoplus.py -o $onto > $onto.OriginalDeepgoCnn.NoAddAnc.DefaultFilterMf.txt
 # python3 evaluate_naive.py -trdf data-cafa/train_data.pkl -tsdf data-cafa/predictions.pkl -o $onto > $onto.OriginalDeepgoCnn.Naive.DefaultFilterMf.txt
 
 

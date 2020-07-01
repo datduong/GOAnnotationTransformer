@@ -11,7 +11,7 @@ import numpy as np
 #### because we remove some proteins due to super long length, we may not get the same set of GO as in deepgoplus
 
 
-os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000')
+os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000')
 
 ontology = ['cc','mf','bp']
 for onto in ontology:
@@ -38,4 +38,8 @@ for onto in ontology:
     fout.write(key + "\t" + str(all_label[key]) + "\n")
   #
   fout.close()
+  #! convert to pickle format. (only needed for deepgoplus style)
+  data = {'terms':keys}
+  df = pd.DataFrame.from_dict (data) 
+  df.to_pickle ('Label.'+onto+'.pickle')
 

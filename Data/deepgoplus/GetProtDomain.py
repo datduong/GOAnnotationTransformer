@@ -182,7 +182,7 @@ for data_type in ['train']:
       fin2 = fin.loc[fin[0].isin(prot_name)]
       colnames = fin2.columns
       for index,row in fin2.iterrows():
-        fout.write ( '\t'.join(row[k] for k in colnames ) + '\tnan\n' )
+        fout.write ( '\t'.join(row[k] for k in colnames ) + '\tnone\n' )
 
     fout.close()
     uniprot.close()
