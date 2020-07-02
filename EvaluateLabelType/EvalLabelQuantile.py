@@ -7,6 +7,9 @@ import pandas as pd
 sys.path.append("/u/scratch/d/datduong/GOAnnotationTransformer/TrainModel")
 import evaluation_metric
 
+roots = ['GO0008150','GO0003674','GO0005575']
+
+
 def GetCountDict (filename):
   count = {}
   name = []
@@ -36,11 +39,11 @@ def GetIndexOfLabelInQuantRange (label_to_test,count_dict):
     else:
       quantile_index['25-75'].append(index)
   #
-  for key,value in quantile_index.items(): 
+  for key,value in quantile_index.items():
     quantile_index[key] = np.array (value) ## convert to np for indexing
   return quantile_index
 
-def eval (prediction_dict,sub_array=None): ## ! eval accuracy of labels ...
+def eval (prediction_dict,sub_array=None,IC_dict=None,label_name=None): ## ! eval accuracy of labels ...
   prediction = prediction_dict['prediction']
   key_name = 'truth'
   if key_name not in prediction_dict: # ! different save pickle has different names
@@ -51,16 +54,17 @@ def eval (prediction_dict,sub_array=None): ## ! eval accuracy of labels ...
     prediction = prediction [ : , sub_array ] ## obs x label
     true_label = true_label [ : , sub_array ]
   #
-  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=np.arange(10,110,10).tolist() )
+  result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=np.arange(10,110,10).tolist(), IC_dict=IC_dict, label_names=label_name )
   return result
 
 def submitJobs (label_path, onto, load_path):
 
+  IC_dict = pickle.load(open("/u/scratch/d/datduong/deepgoplus/data-cafa/ICsValueTable.pickle","rb"))
   # for onto in ['cc','mf','bp']:
 
   label_count , label_name = GetCountDict(label_path)
 
-  quantile_index = GetIndexOfLabelInQuantRange(label_name,label_count)
+  # quantile_index = GetIndexOfLabelInQuantRange(label_name,label_count)
 
   prediction_dict = pickle.load(open(load_path,"rb"))
 
@@ -68,11 +72,19 @@ def submitJobs (label_path, onto, load_path):
   print ('\nsize {}\n'.format(prediction_dict['prediction'].shape))
 
   print ('\nwhole')
-  evaluation_metric.print_metrics( eval(prediction_dict) )
+  #! remove roots.
+  where_not_roots = [ i for i,name in enumerate(label_name) if name not in roots ]
+  #! the IC require GO:xyz format
+  label_name = [ re.sub('GO','GO:',lab) for lab in label_name ]
+  label_name = np.array(label_name)
+  label_name = label_name [ where_not_roots ] 
+  evaluation_metric.print_metrics( eval(prediction_dict, where_not_roots, IC_dict, label_name ) )
 
-  for quant in ['25','25-75','75']:
-    print('\nq {}'.format(quant))
-    evaluation_metric.print_metrics( eval(prediction_dict, quantile_index[quant]) )
+  # evaluation_metric.print_metrics( eval(prediction_dict ) )
+
+  # for quant in ['25','25-75','75']:
+  #   print('\nq {}'.format(quant))
+  #   evaluation_metric.print_metrics( eval(prediction_dict, quantile_index[quant]) )
 
 
 if len(sys.argv)<1: #### run script

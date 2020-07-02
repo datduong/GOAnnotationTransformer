@@ -60,10 +60,10 @@ def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
     rc_t = np.array(rc_t)
     m_t = np.array(m_t)
     f_value[counter] =  pr_rc_t (pr_t, rc_t, m_t)
-  return np.nanmax ( f_value )
+  return np.nanmax ( f_value ) , 0
 
 
-def evaluate_annotations(real_annots, pred_annots):
+def evaluate_annotations(real_annots, pred_annots, IC_dict):
   total = 0
   p = 0.0
   r = 0.0
@@ -78,6 +78,12 @@ def evaluate_annotations(real_annots, pred_annots):
     tp = set(real_annots[i]).intersection(set(pred_annots[i]))
     fp = pred_annots[i] - tp #? set operation
     fn = real_annots[i] - tp
+    ## * compute Smin
+    for go_id in fp:
+      mi += IC_dict[go_id]
+    for go_id in fn:
+      ru += IC_dict[go_id]
+    ## *
     fps.append(fp)
     fns.append(fn)
     tpn = len(tp) #! count true positive
@@ -90,38 +96,43 @@ def evaluate_annotations(real_annots, pred_annots):
       p_total += 1
       precision = tpn / (1.0 * (tpn + fpn))
       p += precision
+  if total == 0: 
+    return 0, 0, 0, 0, 0, 0, 0, 0
   ru /= total
   mi /= total
   r /= total
   if p_total > 0:
-      p /= p_total
+    p /= p_total
   f = 0.0
   if p + r > 0:
-      f = 2 * p * r / (p + r)
+    f = 2 * p * r / (p + r)
   s = np.sqrt(ru * ru + mi * mi)
   # print ('total protein count is {}, total with valid prediction {}'.format(total,p_total))
   return f, p, r, s, ru, mi, fps, fns
 
 
-def f_max2 ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
+def f_max2 ( true_set, prob, threshold=np.arange(0.005,1,.01), IC_dict=None, label_names=None ) :
   # @true_set, @prob are np.2d-array
   # @threshold is np.vector
+  label_names = np.array(label_names) # for indexing
   f_value = np.zeros( len(threshold) )
+  s_min = np.zeros( len(threshold) ) * 100 ## large number
   counter = -1
-  # new threshold, we still have same true label
-  real_annots = []
+  real_annots = [] ##!! new threshold, we still have same true label
   for prot in range(true_set.shape[0]):
-    real_annots.append ( set ( np.where( true_set[prot] > 0 ) [0] ) )
+    # print (np.where( true_set[prot] > 0 ) [0])
+    real_annots.append ( set ( label_names [ np.where( true_set[prot] > 0 ) [0] ].tolist() ) ) ## actual names, not number indexing
   # prob will have different set based on threshold @t
   for t in threshold :
     counter = counter + 1
     pred_annots = []
     for prot in range(true_set.shape[0]):
-      pred_annots.append ( set ( np.where( prob[prot] > t ) [0] ) ) #! keep index of where prediction is higher than t
+      pred_annots.append ( set ( label_names [ np.where( prob[prot] > t ) [0] ].tolist() ) ) #! keep index of where prediction is higher than t
     #
-    output = evaluate_annotations(real_annots, pred_annots)
-    f_value[counter] =  output[0] # take first entry
-  return np.nanmax ( f_value )
+    output = evaluate_annotations(real_annots, pred_annots, IC_dict)
+    f_value[counter] = output[0] # take first entry
+    s_min[counter] = output[3]
+  return np.nanmax ( f_value ) , np.min(s_min)
 
 
 ##! debug
@@ -131,8 +142,8 @@ def f_max2 ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
 # f_max2 ( true_set, prob, threshold=np.array([.5]) )
 
 
-true_set = np.array ( [[0,1,1,1,0,0], [0,0,1,1,0,0], [0,0,0,0,0,0], [1,0,0,0,0,0] ] )
-prob = np.array ( [[0,0,0,0,0,1], [0,0,0,0,0,0], [0,0,0,0,0,0], [1,0,0,0,0,0] ] )
-f_max ( true_set, prob )
-f_max2 ( true_set, prob )
+# true_set = np.array ( [[0,1,1,1,0,0], [0,0,1,1,0,0], [0,0,0,0,0,0], [1,0,0,0,0,0] ] )
+# prob = np.array ( [[0,0,0,0,0,1], [0,0,0,0,0,0], [0,0,0,0,0,0], [1,0,0,0,0,0] ] )
+# f_max ( true_set, prob )
+# f_max2 ( true_set, prob )
 

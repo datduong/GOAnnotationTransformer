@@ -21,7 +21,7 @@ import pickle,gzip
 sys.path.append("/local/datdb/GOAnnotationTransformer/TrainModel")
 import fmax
 
-def all_metrics(yhat_binary, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01),path="",add_name=""):
+def all_metrics(yhat_binary, y, k=1, yhat_raw=None, calc_auc=True, threshold_fmax=np.arange(0.005,1,.01),path="",add_name="",IC_dict=None, label_names=None):
   """
     Inputs:
       yhat_binary: binary predictions matrix
@@ -60,7 +60,13 @@ def all_metrics(yhat_binary, y, k=1, yhat_raw=None, calc_auc=True, threshold_fma
     metrics.update(roc_auc)
 
   metrics['hamming_loss'] = hamming_loss(y, yhat_binary)
-  metrics['fmax_score'] = fmax.f_max2 ( y, yhat_raw, threshold_fmax ) #! @fmax.fmax or fmax2 ??
+  if label_names is not None:
+    print ('use fmax2 will compute smin')
+    metrics['fmax_score'] = fmax.f_max2 ( y, yhat_raw, threshold_fmax, IC_dict, label_names ) #! @fmax.fmax or fmax2 ??
+    # print (metrics['fmax_score'])
+  else:
+    print ('use fmax, will not compute smin')
+    metrics['fmax_score'] = fmax.f_max ( y, yhat_raw, threshold_fmax ) #! @fmax.fmax or fmax2 ??
 
   # https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html#the-average-precision-score-in-multi-label-settings
   metrics['micro_average_prec'], metrics['micro_average_rec'] = plot_precision_recall_curve(y,yhat_raw,path) # precision["micro"], recall["micro"]
@@ -304,7 +310,6 @@ def print_metrics(metrics):
   #   if metric.find("rec_at") != -1:
   #     print("%s: %.8f" % (metric, val))
 
-
   knumber = [ k for k in metrics.keys() if re.match('^rec_at_', k) ] ## get k values
   k = sorted ( [ int( re.sub('^rec_at_','', k) ) for k in knumber ] ) ## sort by numeric
   print('see k {}'.format(k))
@@ -322,7 +327,7 @@ def print_metrics(metrics):
   print (out_string)
 
   print ('hamming {0:.8f}'.format(metrics['hamming_loss']))
-  print ('fmax {0:.8f}'.format(metrics['fmax_score']))
+  print ('fmax {} (smin if needed)'.format( metrics['fmax_score'] ) ) #! we make it return smin=0 if not needed
   print ('max_micro_average_rec {}'.format(metrics['micro_average_rec']))
   print ('max_micro_average_prec {}'.format(metrics['micro_average_prec']))
 
