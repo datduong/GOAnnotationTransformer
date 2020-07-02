@@ -50,7 +50,7 @@ cd $output
 
 
 
-#### ! run on numpy output of original deepgoplus
+#### ! run on numpy output of original deepgoplus, single ontology but trained on all 3
 
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
@@ -62,7 +62,7 @@ vim /u/scratch/d/datduong/deepgoplus/data-cafa/predictions.numpy.accuracy.txt
 
 
 
-#### ! run on numpy output of original deepgoplus
+#### ! run on numpy output of original deepgoplus, single model
 
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
