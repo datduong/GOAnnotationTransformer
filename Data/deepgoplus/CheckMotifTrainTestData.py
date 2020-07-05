@@ -1,6 +1,6 @@
 
 #! same motif in prosite and uniprot?
-#! possible that uniprot has more than just prosite. but prosite should be all in uniprot.
+#! possible that uniprot has more than just prosite. but prosite should be all in uniprot?, no not really, because uniprot may just say the motif but not show location
 
 import pickle,os,sys,re
 import pandas as pd
@@ -67,6 +67,8 @@ test_data.close()
 
 
 exit() 
+
+
 #### ? don't need below
 
 #! don't need below ?

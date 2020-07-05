@@ -6,9 +6,9 @@ import re,sys,os,pickle
 import pandas as pd
 import numpy as np
 
-os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/bonnie+motif')
+os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/bonnie+motif')
 
-motif_in_train = pickle.load(open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/bonnie+motif/train_mf_prot_annot_type_count.pickle","rb"))
+motif_in_train = pickle.load(open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/bonnie+motif/train_mf_prot_annot_type_count.pickle","rb"))
 motif_in_train_dict = {}
 for key,val in motif_in_train.items():
   key = key.split()
@@ -16,11 +16,11 @@ for key,val in motif_in_train.items():
 
 
 #
-name_map = pickle.load(open('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/domain_name_map.pickle',"rb"))
+name_map = pickle.load(open('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/domain_name_map.pickle',"rb"))
 
 # make a dict {prot:[domain1,domain2]}
 motif_by_prosite = {}
-fin = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/test-mf-motif-rename-pass2.tsv","r")
+fin = open("/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/test-cc-motif-rename-pass2.tsv","r")
 for line in fin:
   line_out = ""
   line = line.split("\t") #? split each motif [motif1, motif2, motif3, ...]
@@ -47,8 +47,8 @@ fin.close()
 
 
 #! read in original file formated for our method, and then append motif at the end.
-fin = open ('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/deepgoplus.cafa3.test-bonnie-mf.tsv','r')
-fout = open ('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/data/SeqLenLess2000/bonnie+motif/test-mf.tsv','w')
+fin = open ('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/deepgoplus.cafa3.test-bonnie-cc.tsv','r')
+fout = open ('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/bonnie+motif/test-cc.tsv','w')
 for line in fin:
   protein = line.strip().split('\t')[0]
   if protein in motif_by_prosite:

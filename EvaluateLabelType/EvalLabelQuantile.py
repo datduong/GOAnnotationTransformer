@@ -44,6 +44,7 @@ def GetIndexOfLabelInQuantRange (label_to_test,count_dict):
   return quantile_index
 
 def eval (prediction_dict,sub_array=None,IC_dict=None,label_name=None): ## ! eval accuracy of labels ...
+
   prediction = prediction_dict['prediction']
   key_name = 'truth'
   if key_name not in prediction_dict: # ! different save pickle has different names
@@ -54,6 +55,15 @@ def eval (prediction_dict,sub_array=None,IC_dict=None,label_name=None): ## ! eva
     prediction = prediction [ : , sub_array ] ## obs x label
     true_label = true_label [ : , sub_array ]
   #
+
+  #! remove 1 single protein MF that had just root as label
+  has_true = np.where ( true_label.sum(1) > 0 ) [0] ## add up row, remove proteins with no true label
+  true_label = true_label [ has_true , ]
+  prediction = prediction [ has_true , ]
+
+  print ('new filter size {}'.format(prediction.shape))
+
+
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=np.arange(10,110,10).tolist(), IC_dict=IC_dict, label_names=label_name )
   return result
 
@@ -77,7 +87,8 @@ def submitJobs (label_path, onto, load_path):
   #! the IC require GO:xyz format
   label_name = [ re.sub('GO','GO:',lab) for lab in label_name ]
   label_name = np.array(label_name)
-  label_name = label_name [ where_not_roots ] 
+  label_name = label_name [ where_not_roots ]
+
   evaluation_metric.print_metrics( eval(prediction_dict, where_not_roots, IC_dict, label_name ) )
 
   # evaluation_metric.print_metrics( eval(prediction_dict ) )
