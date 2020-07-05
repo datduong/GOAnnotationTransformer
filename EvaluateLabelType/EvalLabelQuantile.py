@@ -63,7 +63,6 @@ def eval (prediction_dict,sub_array=None,IC_dict=None,label_name=None): ## ! eva
 
   print ('new filter size {}'.format(prediction.shape))
 
-
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=np.arange(10,110,10).tolist(), IC_dict=IC_dict, label_names=label_name )
   return result
 
@@ -74,7 +73,7 @@ def submitJobs (label_path, onto, load_path):
 
   label_count , label_name = GetCountDict(label_path)
 
-  # quantile_index = GetIndexOfLabelInQuantRange(label_name,label_count)
+  quantile_index = GetIndexOfLabelInQuantRange(label_name,label_count)
 
   prediction_dict = pickle.load(open(load_path,"rb"))
 
@@ -91,11 +90,12 @@ def submitJobs (label_path, onto, load_path):
 
   evaluation_metric.print_metrics( eval(prediction_dict, where_not_roots, IC_dict, label_name ) )
 
+  # print ('\n\neval by our code version\n')
   # evaluation_metric.print_metrics( eval(prediction_dict ) )
 
-  # for quant in ['25','25-75','75']:
-  #   print('\nq {}'.format(quant))
-  #   evaluation_metric.print_metrics( eval(prediction_dict, quantile_index[quant]) )
+  for quant in ['25','25-75','75']:
+    print('\nq {}'.format(quant))
+    evaluation_metric.print_metrics( eval(prediction_dict, quantile_index[quant]) )
 
 
 if len(sys.argv)<1: #### run script

@@ -27,8 +27,8 @@ def pr_rc_it (truth, prob, t):
 
 def pr_rc_t (pr_t, rc_t, m_t): # $pr_t is array over prot.
   #? @pr_t will be 0, when @num=0, or len(truth)=0, or len(yhat)=0
-  # mt = np.where ( pr_t > 0 ) [0]
-  mt = np.where ( m_t > 0 ) [0]
+  # mt = np.where ( pr_t > 0 ) [0] #! playing around
+  mt = np.where ( m_t > 0 ) [0] #! use this one
   # print ('\ncount where proteins have non-zero prediction {}'.format(len(mt)))
   if len(mt) == 0 : # @mt is number of proteins on which at least one prediction was made above threshold t.
     pr_t = 0

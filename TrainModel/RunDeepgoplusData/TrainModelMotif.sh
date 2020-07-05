@@ -31,7 +31,7 @@ for ontology in mf ; do
     # seed=1998 # 2020 ##!! we switch seed so that we can train at batch=4, we tried seed=2019 but kept on getting mem error for some unlucky batch
     # batch_size=2
     # block_size=1792
-    checkpoint=256012 #220700
+    checkpoint=234348 #256012 #220700
   fi
 
   if [[ $ontology == 'bp' ]]
@@ -81,7 +81,7 @@ for ontology in mf ; do
 
     save_prediction='prediction_train_all_on_'$test_data
     # eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-    CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --aa_block_size 2048 --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
+    CUDA_VISIBLE_DEVICES=7 python3 -u RunTokenClassifyProtData.py --aa_block_size 2048 --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.txt'
 
     # ##!! do zeroshot on larger set
     # save_prediction='save_prediction_expand'
