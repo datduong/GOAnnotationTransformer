@@ -60,14 +60,14 @@ def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
     rc_t = np.array(rc_t)
     m_t = np.array(m_t)
     f_value[counter] =  pr_rc_t (pr_t, rc_t, m_t)
-  return np.nanmax ( f_value ) , 0
+  return np.nanmax ( f_value ) , 0, 0
 
 
 def evaluate_annotations(real_annots, pred_annots, IC_dict):
-  total = 0
+  total = 0.0
   p = 0.0
   r = 0.0
-  p_total= 0
+  p_total= 0.0
   ru = 0.0
   mi = 0.0
   fps = []
@@ -108,7 +108,8 @@ def evaluate_annotations(real_annots, pred_annots, IC_dict):
     f = 2 * p * r / (p + r)
   s = np.sqrt(ru * ru + mi * mi)
   # print ('total protein count is {}, total with valid prediction {}'.format(total,p_total))
-  return f, p, r, s, ru, mi, fps, fns
+  coverage = p_total/total
+  return f, p, r, s, ru, mi, fps, fns, coverage
 
 
 def f_max2 ( true_set, prob, threshold=np.arange(0.005,1,.01), IC_dict=None, label_names=None ) :
@@ -117,6 +118,7 @@ def f_max2 ( true_set, prob, threshold=np.arange(0.005,1,.01), IC_dict=None, lab
   label_names = np.array(label_names) # for indexing
   f_value = np.zeros( len(threshold) )
   s_min = np.zeros( len(threshold) ) * 100 ## large number
+  coverage = np.zeros( len(threshold) )
   counter = -1
   real_annots = [] ##!! new threshold, we still have same true label
   for prot in range(true_set.shape[0]):
@@ -132,7 +134,10 @@ def f_max2 ( true_set, prob, threshold=np.arange(0.005,1,.01), IC_dict=None, lab
     output = evaluate_annotations(real_annots, pred_annots, IC_dict)
     f_value[counter] = output[0] # take first entry
     s_min[counter] = output[3]
-  return np.nanmax ( f_value ) , np.min(s_min)
+    coverage[counter] = output[8]
+  best_fmax = np.nanmax ( f_value )
+  best_coverage = coverage [ np.where ( f_value == best_fmax )[0] ] ## best coverage wrt fmax
+  return best_fmax , np.min(s_min), best_coverage
 
 
 ##! debug

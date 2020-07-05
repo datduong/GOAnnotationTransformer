@@ -73,8 +73,6 @@ def submitJobs (label_path, onto, load_path):
 
   label_count , label_name = GetCountDict(label_path)
 
-  quantile_index = GetIndexOfLabelInQuantRange(label_name,label_count)
-
   prediction_dict = pickle.load(open(load_path,"rb"))
 
   print ('\nmodel {} type {}'.format(load_path, onto ))
@@ -88,14 +86,21 @@ def submitJobs (label_path, onto, load_path):
   label_name = np.array(label_name)
   label_name = label_name [ where_not_roots ]
 
+  for key in prediction_dict:
+    prediction_dict[key] = prediction_dict[key][: , where_not_roots] #? filter col
+
   evaluation_metric.print_metrics( eval(prediction_dict, where_not_roots, IC_dict, label_name ) )
 
   # print ('\n\neval by our code version\n')
   # evaluation_metric.print_metrics( eval(prediction_dict ) )
 
+  label_name = [ re.sub('GO:','GO',lab) for lab in label_name ]
+  quantile_index = GetIndexOfLabelInQuantRange(label_name,label_count)
+  label_name = [ re.sub('GO','GO:',lab) for lab in label_name ] #!! SO STUPID
+
   for quant in ['25','25-75','75']:
     print('\nq {}'.format(quant))
-    evaluation_metric.print_metrics( eval(prediction_dict, quantile_index[quant]) )
+    evaluation_metric.print_metrics( eval(prediction_dict, quantile_index[quant], IC_dict, label_name) )
 
 
 if len(sys.argv)<1: #### run script

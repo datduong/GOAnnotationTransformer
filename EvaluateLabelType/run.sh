@@ -6,9 +6,9 @@
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
 
-model_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/MetaGO/'
+model_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/bonnie+motif/MetaGO/'
 
-for onto in 'cc' 'mf' 'bp'; do
+for onto in 'cc' 'mf' ; do
   for model in 'blastPsiblastResultEval10' 'blastPsiblastResultEval100' ; do # 'BaseExtraLayer'
 
     label_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/Label.'$onto'.tsv'
@@ -16,7 +16,7 @@ for onto in 'cc' 'mf' 'bp'; do
     output=$model_path/$model
     load_path=$output/test-$onto-prediction.pickle
 
-    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.Jun30.TheirFmax.RmRoot.txt
+    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.TheirFmax.RmRoot.txt
 
   done
 done
@@ -36,10 +36,10 @@ for onto in 'mf' ; do # 'bp'
 
     model_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/'
     output=$model_path/$model/$onto
-    load_path=$output/prediction_train_all_on_test.pickle  # prediction_train_all_on_test.pickle EnsembleMetaGO.E100.max.pickle
+    load_path=$output/prediction_train_all_on_test.pickle  # prediction_train_all_on_test.pickle EnsembleMetaGO.E100.max.pickle EnsembleMetaGO.E10.max.pickle
 
     python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.TheirFmax.RmRoot.txt
-    # $output/$onto.EnsembleMetaGO.E100.max.txt $output/$onto.printout.Jun30.txt
+    # $output/$onto.printout.TheirFmax.RmRoot.txt $output/$onto.printout.Jun30.txt
 
   done
 done
@@ -50,7 +50,7 @@ cd $output
 
 
 
-#### ! run on numpy output of original deepgoplus, single ontology but trained on all 3
+#### ! run on numpy output of original deepgoplus, test single ontology but was trained on all 3
 
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
@@ -62,7 +62,7 @@ vim /u/scratch/d/datduong/deepgoplus/data-cafa/predictions.numpy.accuracy.txt
 
 
 
-#### ! run on numpy output of original deepgoplus, single model
+#### ! run on numpy output, train/test single model
 
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
@@ -70,6 +70,7 @@ onto='mf'
 where_out='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/DeepgoplusSingleModel/'
 label_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/Label.'$onto'.tsv'
 load_path=$where_out/predictions.mf.numpy
-python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $where_out/predictions.mf.txt
-vim $where_out/predictions.mf.txt
+# load_path=$where_out/predictions.mf.EnsembleMetaGO.max.pickle #! ensemble max
+python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $where_out/predictions.mf.txt # EnsembleMetaGO
+cd $where_out
 

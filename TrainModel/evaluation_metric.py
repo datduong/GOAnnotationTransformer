@@ -327,7 +327,7 @@ def print_metrics(metrics):
   print (out_string)
 
   print ('hamming {0:.8f}'.format(metrics['hamming_loss']))
-  print ('fmax {} (smin if needed)'.format( metrics['fmax_score'] ) ) #! we make it return smin=0 if not needed
+  print ('fmax {} (smin and coverage-at-fmax if needed)'.format( metrics['fmax_score'] ) ) #! we make it return smin=0 if not needed
   print ('max_micro_average_rec {}'.format(metrics['micro_average_rec']))
   print ('max_micro_average_prec {}'.format(metrics['micro_average_prec']))
 

@@ -3,11 +3,11 @@
 
 
 #### create folders, make config for training
-run_option='NoPpiYesAaTypeLabelBertAveL12Epo1000bz6'
+run_option='Yes3dYesAaTypeLabelBertAveL12'
 new_dir='/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000'
 base_option='NoPpiYesAaTypeLabelBertAveL12Epo1000bz6'
 base_config='cc'
-for onto in bp mf cc ; do
+for onto in mf cc ; do
   mkdir $new_dir
   mkdir $new_dir/$run_option
   mkdir $new_dir/$run_option/$onto
