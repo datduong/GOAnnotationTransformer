@@ -37,13 +37,14 @@ def pr_rc_t (pr_t, rc_t, m_t): # $pr_t is array over prot.
   #
   rc_t = np.mean ( rc_t ) ##! over all protein n
   f = 2 * pr_t * rc_t / ( pr_t + rc_t )
-  return f
+  return f, len(mt)
 
 
 def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
   # @true_set, @prob are np.2d-array
   # @threshold is np.vector
   f_value = np.zeros( len(threshold) )
+  coverage = np.zeros( len(threshold) )
   counter = -1
   for t in threshold :
     counter = counter + 1
@@ -59,8 +60,11 @@ def f_max ( true_set, prob, threshold=np.arange(0.005,1,.01) ) :
     pr_t = np.array(pr_t) #! many protein, at threshold t
     rc_t = np.array(rc_t)
     m_t = np.array(m_t)
-    f_value[counter] =  pr_rc_t (pr_t, rc_t, m_t)
-  return np.nanmax ( f_value ) , 0, 0
+    f_value[counter], coverage[counter] =  pr_rc_t (pr_t, rc_t, m_t)
+  #
+  best_fmax = np.nanmax ( f_value )
+  best_coverage = coverage [ np.where ( f_value == best_fmax )[0] ] ## best coverage wrt fmax
+  return best_fmax , 0, best_coverage/true_set.shape[0]
 
 
 def evaluate_annotations(real_annots, pred_annots, IC_dict):
@@ -97,7 +101,7 @@ def evaluate_annotations(real_annots, pred_annots, IC_dict):
       precision = tpn / (1.0 * (tpn + fpn))
       p += precision
   if total == 0: 
-    return 0, 0, 0, 0, 0, 0, 0, 0
+    return 0, 0, 0, 0, 0, 0, 0, 0, 0
   ru /= total
   mi /= total
   r /= total

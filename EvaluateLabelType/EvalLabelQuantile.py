@@ -8,6 +8,7 @@ sys.path.append("/u/scratch/d/datduong/GOAnnotationTransformer/TrainModel")
 import evaluation_metric
 
 roots = ['GO0008150','GO0003674','GO0005575']
+roots_with_colon = ['GO:0008150','GO:0003674','GO:0005575']
 
 
 def GetCountDict (filename):
@@ -56,7 +57,8 @@ def eval (prediction_dict,sub_array=None,IC_dict=None,label_name=None): ## ! eva
     true_label = true_label [ : , sub_array ]
   #
 
-  #! remove 1 single protein MF that had just root as label
+  #! remove 1 single protein MF that had just root as label ??
+  #! remove any protein that has no true label?? this will change recall@k
   has_true = np.where ( true_label.sum(1) > 0 ) [0] ## add up row, remove proteins with no true label
   true_label = true_label [ has_true , ]
   prediction = prediction [ has_true , ]
@@ -89,12 +91,18 @@ def submitJobs (label_path, onto, load_path):
   for key in prediction_dict:
     prediction_dict[key] = prediction_dict[key][: , where_not_roots] #? filter col
 
-  evaluation_metric.print_metrics( eval(prediction_dict, where_not_roots, IC_dict, label_name ) )
+  evaluation_metric.print_metrics( eval(prediction_dict, None, IC_dict, label_name ) )
 
   # print ('\n\neval by our code version\n')
   # evaluation_metric.print_metrics( eval(prediction_dict ) )
 
-  label_name = [ re.sub('GO:','GO',lab) for lab in label_name ]
+  #! get accuracy based on quantile count
+  for r in roots_with_colon:
+    if r in label_count:
+      print ('remove root from label count')
+      del label_count[r]
+
+  label_name = [ re.sub('GO:','GO',lab) for lab in label_name ] ## put back naming convention GO:xyz
   quantile_index = GetIndexOfLabelInQuantRange(label_name,label_count)
   label_name = [ re.sub('GO','GO:',lab) for lab in label_name ] #!! SO STUPID
 

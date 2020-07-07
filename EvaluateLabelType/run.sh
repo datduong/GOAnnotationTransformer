@@ -1,6 +1,30 @@
 
 
 
+####
+### ! Do this on the larger deepgo dataset. Transformer. train on our own large deepgo dataset, and then we see what the result are for the added terms
+
+codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
+cd $codepath
+
+for onto in 'mf' ; do # 'bp'
+
+  for model in 'YesPpiAnd3DYesTypeScaleFreezeBert12Ep10e10Drop0.1' ; do # 'BaseExtraLayer' Epo1000bz6
+
+    where='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'$onto'/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/'
+
+    output=$where/$model
+    load_path=$output/prediction_train_all_on_test.pickle
+
+    python3 $codepath/EvalLabelUnseen.py $onto $where $model $load_path > $output/$onto.printout.txt
+
+  done
+done
+cd $output
+
+
+
+
 #### ! BLAST split by quantile counts, then get accuracy
 
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
@@ -16,7 +40,7 @@ for onto in 'cc' 'mf' ; do
     output=$model_path/$model
     load_path=$output/test-$onto-prediction.pickle
 
-    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.TheirFmax.RmRoot.txt
+    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.TheirFmax.txt
 
   done
 done
@@ -30,11 +54,12 @@ codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
 
 for onto in 'mf' ; do # 'bp'
-  for model in 'NoPpiYesAaTypeLabelBertAveL12Epo1000bz6' ; do # 'BaseExtraLayer'
+  for model in 'NoPpiYesAaTypeLabelBertAveL12Epo1000bz6' ; do # 'BaseExtraLayer' Epo1000bz6
 
     label_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/Label.'$onto'.tsv'
 
-    model_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/'
+    model_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000'  #'DataDelRoot/SeqLenLess2000/'
+
     output=$model_path/$model/$onto
     load_path=$output/prediction_train_all_on_test.pickle  # prediction_train_all_on_test.pickle EnsembleMetaGO.E100.max.pickle EnsembleMetaGO.E10.max.pickle
 
@@ -47,7 +72,6 @@ cd $output
 
 # ensemble helps, but R@k is not great (only small improvement)
 # best improvement happens at mid range 25-75 for both cc and mf.
-
 
 
 #### ! run on numpy output of original deepgoplus, test single ontology but was trained on all 3
