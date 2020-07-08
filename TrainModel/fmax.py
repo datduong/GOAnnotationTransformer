@@ -155,4 +155,3 @@ def f_max2 ( true_set, prob, threshold=np.arange(0.005,1,.01), IC_dict=None, lab
 # prob = np.array ( [[0,0,0,0,0,1], [0,0,0,0,0,0], [0,0,0,0,0,0], [1,0,0,0,0,0] ] )
 # f_max ( true_set, prob )
 # f_max2 ( true_set, prob )
-
