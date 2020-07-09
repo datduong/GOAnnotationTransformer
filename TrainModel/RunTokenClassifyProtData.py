@@ -234,7 +234,7 @@ class TextDataset(Dataset):
           print (text)
           exit()
 
-      ## save at end
+      ##!! save at end
       logger.info("To save read/write time... Saving features into cached file %s", cached_features_file)
       with open(cached_features_file+'label1hot', 'wb') as handle:
         pickle.dump(self.label1hot, handle, protocol=pickle.HIGHEST_PROTOCOL)

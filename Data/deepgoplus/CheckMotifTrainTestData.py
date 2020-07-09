@@ -7,6 +7,9 @@ import pandas as pd
 import numpy as np
 from difflib import SequenceMatcher
 
+#! note that we only need to do this once.
+#! we will merge these with the test-file with sequence and labels later.
+
 prosite_uniprot_name_map = pickle.load(open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/prosite_uniprot_name_map.pickle','rb'))
 prosite_download_data_name = pickle.load(open('/u/scratch/d/datduong/UniprotSeqTypeOct2019/prosite_download_data_name.pickle','rb'))
 
@@ -66,7 +69,7 @@ test_data.close()
 
 
 
-exit() 
+exit()
 
 
 #### ? don't need below
