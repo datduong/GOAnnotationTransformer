@@ -7,9 +7,9 @@
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
 
-for onto in 'mf' ; do # 'bp'
+for onto in 'cc' ; do # 'bp'
 
-  for model in 'YesPpiAnd3DYesTypeScaleFreezeBert12Ep10e10Drop0.1' ; do # 'BaseExtraLayer' Epo1000bz6
+  for model in 'YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1' ; do # 'BaseExtraLayer' Epo1000bz6
 
     where='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'$onto'/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/'
 
@@ -21,6 +21,22 @@ for onto in 'mf' ; do # 'bp'
   done
 done
 cd $output
+
+
+
+####
+###! we run deepgoplus on the original deepgo data expanded with rare labels
+
+codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
+cd $codepath
+for onto in bp ; do # 'cc' 'mf'
+  label_path='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/deepgo.'$onto'.csv'
+  load_path='/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/deepgoplusModel'
+  model='predictions_expanddata.'$onto'.numpy'
+  model_path=$load_path/$model
+  python3 $codepath/EvalLabelUnseen.py $onto $load_path $model $model_path > $load_path/$onto.numpy.accuracy.txt
+  # vim $load_path/$onto.numpy.accuracy.txt
+done
 
 
 
@@ -40,7 +56,7 @@ for onto in 'cc' 'mf' ; do
     output=$model_path/$model
     load_path=$output/test-$onto-prediction.pickle
 
-    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.TheirFmax.txt
+    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.txt
 
   done
 done
@@ -54,16 +70,16 @@ codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
 
 for onto in 'mf' ; do # 'bp'
-  for model in 'NoPpiYesAaTypeLabelBertAveL12Epo1000bz6' ; do # 'BaseExtraLayer' Epo1000bz6
+  for model in 'Yes3dYesAaTypeLabelBertAveL12Frac70' ; do # 'BaseExtraLayer' Epo1000bz6
 
     label_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/Label.'$onto'.tsv'
 
     model_path='/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000'  #'DataDelRoot/SeqLenLess2000/'
 
     output=$model_path/$model/$onto
-    load_path=$output/prediction_train_all_on_test.pickle  # prediction_train_all_on_test.pickle EnsembleMetaGO.E100.max.pickle EnsembleMetaGO.E10.max.pickle
+    load_path=$output/prediction_train_all_on_test125307.pickle  # prediction_train_all_on_test.pickle EnsembleMetaGO.E100.max.pickle EnsembleMetaGO.E10.max.pickle
 
-    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.TheirFmax.RmRoot.txt
+    python3 $codepath/EvalLabelQuantile.py $label_path $onto $load_path > $output/$onto.printout.txt
     # $output/$onto.printout.TheirFmax.RmRoot.txt $output/$onto.printout.Jun30.txt
 
   done

@@ -11,22 +11,31 @@ def make_1hot (onehot_array,true_label,label_array):
   return onehot_array
 
 
-os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/DeepgoplusSingleModel/')
+# os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/DeepgoplusSingleModel/')
 
-output_path = 'predictions.mf.numpy'
-onto_name = 'mf'
+os.chdir('/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/deepgoplusModel')
+
+output_path = 'predictions_expanddata.bp.numpy' # 'predictions.bp.numpy'
+
+onto_name = 'bp' # 'bp'
 
 #! need to reorder
-our_test_label = pd.read_csv('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/Label.'+onto_name+'.tsv',header=None,sep='\t') ##!! do not need to reorder, we already sorted by names
+# our_test_label = pd.read_csv('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/Label.'+onto_name+'.tsv',header=None,sep='\t') ##!! do not need to reorder, we already sorted by names
+
+our_test_label = pd.read_csv('/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/deepgo.bp.csv',header=None,sep='\t') ##!! do not need to reo
+
 our_test_label = list (our_test_label[0]) ## panda format, take first col
-num_label = len(our_test_label)
 
 num_label = len(our_test_label)
-df = pd.read_pickle('predictions.mf.pkl')
+
+df = pd.read_pickle('predictions_expanddata.bp.pkl')
+
+print ( df.shape ) 
+
 num_protein = df.shape[0]
 
-label_np = np.zeros( (num_protein,num_label) ) #! 677 mf labels - root
-prediction_np = np.zeros( (num_protein,num_label) ) #! 677 mf labels - root
+label_np = np.zeros( (num_protein,num_label) ) #! 677 bp labels - root
+prediction_np = np.zeros( (num_protein,num_label) ) #! 677 bp labels - root
 
 
 for index,row in df.iterrows():

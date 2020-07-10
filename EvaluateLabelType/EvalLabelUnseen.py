@@ -28,7 +28,7 @@ def eval (prediction_dict,sub_array=None,IC_dict=None,label_name=None): ## ! eva
   true_label = true_label [ has_true , ]
   prediction = prediction [ has_true , ]
 
-  print ('new filter size {}'.format(prediction.shape))
+  print ('new filter size {}'.format(true_label.shape))
 
   result = evaluation_metric.all_metrics ( np.round(prediction) , true_label, yhat_raw=prediction, k=np.arange(10,110,10).tolist(), IC_dict=IC_dict, label_names=label_name )
   return result

@@ -24,14 +24,14 @@ block_size=2750 ## max len of amino+num_label, mf and cc 1792 but bp has more te
 batch_size=4
 seed=1998
 
-for ontology in mf ; do 
+for ontology in cc ; do 
 
   if [[ $ontology == 'cc' ]]
   then
     seed=2020 ##!! we switch seed so that we can train at batch=4, we tried seed=2019 but kept on getting mem error for some unlucky batch
     # batch_size=2
     # block_size=1792
-    checkpoint=1105830
+    checkpoint=408336
   fi
 
   if [[ $ontology == 'bp' ]]

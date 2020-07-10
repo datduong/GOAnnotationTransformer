@@ -18,7 +18,7 @@ cache_name='DataWithMotifInPickle' # 'DataWithMotif3dInPickle'
 save_every=7000
 
 ## define parameters for mf-ontology
-checkpoint=501876 #266793 #163904 #? 670152 ## use this when we want to test a specific checkpoint
+checkpoint=693952 #266793 #163904 #? 670152 ## use this when we want to test a specific checkpoint
 block_size=2750 ##? max len of amino+num_label, mf and cc 1792 but bp has more term 2048
 
 batch_size=4
