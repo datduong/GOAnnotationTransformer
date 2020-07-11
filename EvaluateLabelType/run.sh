@@ -7,16 +7,16 @@
 codepath='/u/scratch/d/datduong/GOAnnotationTransformer/EvaluateLabelType'
 cd $codepath
 
-for onto in 'cc' ; do # 'bp'
+for onto in 'bp' ; do # 'bp'
 
-  for model in 'YesPpi100YesTypeScaleFreezeBert12Ep10e10Drop0.1' ; do # 'BaseExtraLayer' Epo1000bz6
+  for model in 'NoPpiNoTypeScaleFreezeBert12Ep10e10Drop0.1' ; do # 'BaseExtraLayer' Epo1000bz6
 
     where='/u/scratch/d/datduong/deepgo/data/BertNotFtAARawSeqGO/'$onto'/fold_1/2embPpiAnnotE256H1L12I512Set0/ProtAnnotTypeLarge16Jan20/'
 
     output=$where/$model
     load_path=$output/prediction_train_all_on_test.pickle
 
-    python3 $codepath/EvalLabelUnseen.py $onto $where $model $load_path > $output/$onto.printout.txt
+    python3 $codepath/EvalLabelUnseen.py $onto $where $model $load_path > $output/$onto.printout.Less75.txt
 
   done
 done

@@ -41,6 +41,8 @@ def submitJobs (onto,where,method,load_path):
 
 
   label_original = pd.read_csv('/u/scratch/d/datduong/deepgo/data/train/deepgo.'+onto+'.csv',sep="\t",header=None)
+  # label_original = pd.read_csv('/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/global-count-'+onto+'-below75.tsv',sep="\t",header=None)
+  #!!! special case, we try bp on expanded data with frequency below 100
   label_original = set(list(label_original[0])) ##!! do not sort here, so that we can use set-subtraction
 
   label_large = pd.read_csv('/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train/deepgo.'+onto+'.csv',sep="\t",header=None)

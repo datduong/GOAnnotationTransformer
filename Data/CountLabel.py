@@ -12,10 +12,10 @@ os.chdir ('/u/scratch/d/datduong/deepgo/dataExpandGoSet16Jan2020/train')
 
 # col = Entry Gene ontology IDs Sequence  Prot Emb
 
-for onto in ['mf','cc','bp']:
-
+for onto in ['bp']:  # 'mf','cc',
+  #
   global_count_in_onto = {} #! global count
-
+  #
   for data_type in ['train','test']:
     fin = pd.read_csv( data_type+'-'+onto+'-16Jan20.tsv', sep='\t' )
     for index, row in fin.iterrows():
@@ -25,13 +25,13 @@ for onto in ['mf','cc','bp']:
           global_count_in_onto[lab] = global_count_in_onto[lab] + 1
         else:
           global_count_in_onto[lab] = 1
-
   #! order by alphabet
-  fout = open( 'global-count-'+onto+'.tsv','w')
+  fout = open( 'global-count-'+onto+'-below75.tsv','w')
   terms = sorted ( list ( global_count_in_onto.keys() ) )
   for term in terms: # label \t count
-    fout.write( term + '\t' + str(global_count_in_onto[term]) + '\n' )
-
+    if global_count_in_onto[term] <= 75: 
+      fout.write( term + '\t' + str(global_count_in_onto[term]) + '\n' )
+  #
   fout.close()
 
 
