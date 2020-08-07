@@ -16,7 +16,9 @@ import obonet
 
 roots = ['GO:0008150','GO:0003674','GO:0005575']
 
-os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot') # /local/datdb
+# os.chdir('/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot') # /local/datdb
+
+os.chdir('/u/scratch/d/datduong/deepgoplus/ExpandGoSet/cafa3-data') # /local/datdb
 
 graph = obonet.read_obo('go.obo') # https://github.com/dhimmel/obonet
 
@@ -28,7 +30,7 @@ graph = obonet.read_obo('go.obo') # https://github.com/dhimmel/obonet
 
 ontology_map = {'mf':'molecular_function','bp':'biological_process','cc':'cellular_component'}
 
-LEN_CUTOFF = 2000 #### #! add+1 because python indexing.
+LEN_CUTOFF = 1000 #### #! add+1 because python indexing.
 
 for data_type in ['test','train']: #'test','train'
   #### we need to filter by category otherwise too much. can't run it.
@@ -55,7 +57,7 @@ for data_type in ['test','train']: #'test','train'
 
       ##!! remove root
       line[1] = [ lab for lab in line[1] if lab not in roots ]
-      
+
       ##!! filter out by ontology
       try:
         line[1] = [ lab for lab in line[1] if graph.nodes[lab]['namespace'] == ontology_map[ontology] ]

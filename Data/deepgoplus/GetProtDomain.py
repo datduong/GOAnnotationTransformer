@@ -89,8 +89,12 @@ def format_write(tup): ## tuple
   return re.sub(r';$','',out)
 
 ## get some data like zinc fingers etc..
-input_path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/'
-path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/bonnie+motif/'
+# input_path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/'
+# path = '/u/scratch/d/datduong/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/bonnie+motif/'
+
+input_path = '/u/scratch/d/datduong/deepgoplus/ExpandGoSet/cafa3-data/SeqLenLess1000/'
+path = '/u/scratch/d/datduong/deepgoplus/ExpandGoSet/cafa3-data/SeqLenLess1000/bonnie+motif/'
+
 os.chdir(path)
 
 # data_type = "test"
