@@ -3,9 +3,9 @@
 
 
 #### create folders, make config for training
-run_option='NoPpiNoAaTypeLabelBertAveL12'
+run_option='NoPpiYesAaTypeLabelBertAveL12'
 new_dir='/local/datdb/deepgoplus/ExpandGoSet/cafa3-data/SeqLenLess1000'
-base_option='NoPpiNoAaTypeLabelBertAveL12'
+base_option='NoPpiYesAaTypeLabelBertAveL12'
 base_config='cc'
 for onto in mf cc ; do
   mkdir $new_dir

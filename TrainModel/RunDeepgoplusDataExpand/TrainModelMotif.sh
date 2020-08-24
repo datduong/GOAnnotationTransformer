@@ -7,7 +7,7 @@ pretrained_label_path='/local/datdb/deepgo/data/BertMeanLayer12Dim256/label_vect
 
 ## model name 
 ## you can use NoPpiYesAaTypePreTrainBertLabel to apply only Motif data
-choice='NoPpiYesAaTypeLabelBertAveL12Lr0.0001' #'Yes3dYesAaTypeLabelBertAveL12' #Epo1000bz6' #?'NoPpiYesAaTypeLabelBertAveL12' 
+choice='NoPpiYesAaTypeLabelBertAveL12' #'Yes3dYesAaTypeLabelBertAveL12' #Epo1000bz6' #?'NoPpiYesAaTypeLabelBertAveL12' 
 
 ## suppose you chose NoPpiYesAaTypePreTrainBertLabel, then you must turn off "ppi" mode into "noppi"
 model_type='noppi' ##!! noppi--> not using ppi, and ppi--> uses extra data
@@ -19,7 +19,7 @@ save_every=7000
 
 ## define parameters for mf-ontology
 checkpoint=693952 #266793 #163904 #? 670152 ## use this when we want to test a specific checkpoint
-block_size=2750 ##? max len of amino+num_label, mf and cc 1792 but bp has more term 2048
+block_size=4096 ##? max len of amino+num_label, mf and cc 1792 but bp has more term 2048
 
 batch_size=4
 seed=1998
@@ -42,13 +42,13 @@ for ontology in mf ; do
     checkpoint=65475
   fi
 
-  output_dir=$server'/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000/'$choice'/'$ontology
+  output_dir=$server'/deepgoplus/ExpandGoSet/cafa3-data/SeqLenLess1000/'$choice/$ontology
   # mkdir $output_dir
   bert_vocab=$output_dir/vocabAA.txt ## see example file in github
   config_name=$output_dir/config.json
 
   #### download from google drive, and replace paths here.
-  data_text_location='/local/datdb/deepgoplus/deepgoplus.bio2vec.net/data-cafa/DataDelRoot/SeqLenLess2000'
+  data_text_location=$server'/deepgoplus/ExpandGoSet/cafa3-data/SeqLenLess1000/'
   aa_type_file=$data_text_location/bonnie+motif/'train_'$ontology'_prot_annot_type_count.pickle' ## Domain info found in uniprot for train data
   train_data_file=$data_text_location/bonnie+motif/train-$ontology.tsv ## okay to call it as long as it has ppi
   eval_data_file=$data_text_location/bonnie+motif/test-$ontology.tsv
@@ -66,48 +66,48 @@ for ontology in mf ; do
   ## suppose to run Base Transformer without any extra information, then you remove --aa_type_file $aa_type_file --reset_emb_zero
   ## suppose you want to train end-to-end and not used a pre-trained GO embeddings, then you remove --pretrained_label_path $pretrained_label_path
 
-  # CUDA_VISIBLE_DEVICES=5 python3 -u RunTokenClassifyProtData.py --train_dev_fraction 0.70 --aa_block_size 2048 --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 200 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt
+  CUDA_VISIBLE_DEVICES=1 python3 -u RunTokenClassifyProtData.py --train_dev_fraction 0.70 --aa_block_size 1024 --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --num_train_epochs 200 --per_gpu_train_batch_size $batch_size --per_gpu_eval_batch_size 2 --config_name $config_name --do_train --model_type $model_type --overwrite_output_dir --save_steps $save_every --logging_steps $save_every --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --learning_rate 0.0001 --seed $seed --fp16 --config_override --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/train_point.txt
 
 
   ####? testing phase
-  for test_data in 'test'  ; do # 'dev'
+  # for test_data in 'test'  ; do # 'dev'
 
-    ##!! normal testing on same set of labels
+  #   ##!! normal testing on same set of labels
 
-    ## we use exactly same arguement settings as training, except for --eval_all_checkpoints --checkpoint $checkpoint
-    ## use --aa_type_file $aa_type_file --reset_emb_zero to use domain/motif
-    ## use --eval_all_checkpoints to eval all checkpoints
-    ## --checkpoint $checkpoint will evaluate at only exactly one checkpoint
+  #   ## we use exactly same arguement settings as training, except for --eval_all_checkpoints --checkpoint $checkpoint
+  #   ## use --aa_type_file $aa_type_file --reset_emb_zero to use domain/motif
+  #   ## use --eval_all_checkpoints to eval all checkpoints
+  #   ## --checkpoint $checkpoint will evaluate at only exactly one checkpoint
 
-    save_prediction='prediction_train_all_on_'$test_data$checkpoint
-    # eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-    CUDA_VISIBLE_DEVICES=1 python3 -u RunTokenClassifyProtData.py --aa_block_size 2048 --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.'$checkpoint'.txt'
+  #   save_prediction='prediction_train_all_on_'$test_data$checkpoint
+  #   # eval_data_file='/local/datdb/deepgo/data/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
+  #   CUDA_VISIBLE_DEVICES=1 python3 -u RunTokenClassifyProtData.py --aa_block_size 2048 --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size 2 --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_check_point.'$checkpoint'.txt'
 
-    # ##!! do zeroshot on larger set
-    # save_prediction='save_prediction_expand'
-    # eval_data_file='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
-    # label_2test='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
+  #   # ##!! do zeroshot on larger set
+  #   # save_prediction='save_prediction_expand'
+  #   # eval_data_file='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/fold_1/ProtAnnotTypeData/'$test_data'-'$ontology'-input.tsv'
+  #   # label_2test='/local/datdb/deepgo/dataExpandGoSet16Jan2020/train/deepgo.'$ontology'.csv' ## COMMENT larger label set
 
-    # ## define params for mf-ontology
-    # new_num_labels=1697 ##!! more labels than original set
-    # block_size=2816 ##!! zeroshot need larger block size because more labels
+  #   # ## define params for mf-ontology
+  #   # new_num_labels=1697 ##!! more labels than original set
+  #   # block_size=2816 ##!! zeroshot need larger block size because more labels
 
-    # if [[ $ontology == 'cc' ]]
-    # then
-    #   new_num_labels=989
-    #   block_size=2816
-    # fi
+  #   # if [[ $ontology == 'cc' ]]
+  #   # then
+  #   #   new_num_labels=989
+  #   #   block_size=2816
+  #   # fi
 
-    # if [[ $ontology == 'bp' ]]
-    # then
-    #   new_num_labels=2980
-    #   block_size=4048
-    # fi
+  #   # if [[ $ontology == 'bp' ]]
+  #   # then
+  #   #   new_num_labels=2980
+  #   #   block_size=4048
+  #   # fi
 
-    # model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!! load in checkpoint, then replace emb for correct size
-    # CUDA_VISIBLE_DEVICES=0 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
+  #   # model_name_or_path=$output_dir/'checkpoint-'$checkpoint ##!! load in checkpoint, then replace emb for correct size
+  #   # CUDA_VISIBLE_DEVICES=0 python3 -u RunTokenClassifyProtData.py --model_name_or_path $model_name_or_path --new_num_labels $new_num_labels --save_prediction $save_prediction --cache_name $cache_name --block_size $block_size --mlm --bert_vocab $bert_vocab --train_data_file $train_data_file --output_dir $output_dir --per_gpu_eval_batch_size $batch_size --config_name $config_name --do_eval --model_type $model_type --overwrite_output_dir --evaluate_during_training --eval_data_file $eval_data_file --label_2test $label_2test --config_override --eval_all_checkpoints --checkpoint $checkpoint --pretrained_label_path $pretrained_label_path --aa_type_file $aa_type_file --reset_emb_zero > $output_dir/'eval_'$test_data'_expand.txt'
 
-  done
+  # done
 
   #### see attention map
 
